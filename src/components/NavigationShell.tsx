@@ -3,6 +3,7 @@ import * as DropdownMenu from '@radix-ui/react-dropdown-menu';
 import { useStore, type Screen, type Role } from '../store/useStore';
 import { Menu, ChevronLeft, ChevronRight, ChevronDown, Droplets, Search, Settings } from 'lucide-react';
 import { AvatarDropdown } from './ui/Dropdown';
+import { Sidebar } from './Sidebar';
 import { t } from '../i18n/translations';
 
 const OFFICIAL_SCREEN_ORDER: Screen[] = [
@@ -11,6 +12,7 @@ const OFFICIAL_SCREEN_ORDER: Screen[] = [
   'sensor-health',
   'network',
   'audit-log',
+  'citizen-home', // Alerts placeholder
   'executive-summary',
 ];
 
@@ -74,7 +76,6 @@ export function NavigationShell({ children }: NavigationShellProps) {
   const [transitionDirection, setTransitionDirection] = useState<'forward' | 'backward' | null>(null);
   const [isTransitioning, setIsTransitioning] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const mainRef = useRef<HTMLElement>(null);
   const swipeStartRef = useRef<{ x: number; y: number; time: number } | null>(null);
   
@@ -115,8 +116,6 @@ export function NavigationShell({ children }: NavigationShellProps) {
       } else if (e.key === 'ArrowRight' && (!isInput || e.altKey)) {
         e.preventDefault();
         if (nextScreen) navigateTo(nextScreen, 'forward');
-      } else if (e.key === 'Escape') {
-        setMobileMenuOpen(false);
       }
     };
 
@@ -126,9 +125,9 @@ export function NavigationShell({ children }: NavigationShellProps) {
 
   // Swipe gesture handling
   const handlePointerDown = useCallback((e: React.PointerEvent) => {
-    if (isTransitioning || mobileMenuOpen) return;
+    if (isTransitioning) return;
     swipeStartRef.current = { x: e.clientX, y: e.clientY, time: Date.now() };
-  }, [isTransitioning, mobileMenuOpen]);
+  }, [isTransitioning]);
 
   const handlePointerMove = useCallback((e: React.PointerEvent) => {
     if (!swipeStartRef.current || isTransitioning) return;
@@ -183,7 +182,6 @@ export function NavigationShell({ children }: NavigationShellProps) {
     
     setTransitionDirection(direction);
     setIsTransitioning(true);
-    setMobileMenuOpen(false);
     
     setTimeout(() => {
       setCurrentScreen(screen);
@@ -282,63 +280,35 @@ export function NavigationShell({ children }: NavigationShellProps) {
               </span>
             </button>
 
-            {/* Desktop Menu Items */}
-            <nav className="hidden md:flex items-center gap-1" role="navigation" aria-label="Main">
-              {menuItems.map((item, idx) => {
-                const isActive = isMenuItemActive(item);
-                
-                if ('dropdown' in item && item.dropdown) {
+            {/* Breadcrumb - only for official roles */}
+            {isOfficial && (
+              <span className="hidden md:block text-sm text-text-secondary">
+                {getScreenLabel(currentScreen, lang)}
+              </span>
+            )}
+
+            {/* Desktop Menu Items - only for citizens */}
+            {!isOfficial && (
+              <nav className="hidden md:flex items-center gap-1" role="navigation" aria-label="Main">
+                {menuItems.map((item, idx) => {
+                  const isActive = isMenuItemActive(item);
+                  
                   return (
-                    <DropdownMenu.Root key={idx}>
-                      <DropdownMenu.Trigger asChild>
-                        <button
-                          className={`flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-sm font-medium transition-colors ${
-                            isActive 
-                              ? 'bg-[#F4F6F8] text-text-primary' 
-                              : 'text-text-secondary hover:bg-[#F4F6F8] hover:text-text-primary'
-                          }`}
-                          aria-haspopup="menu"
-                        >
-                          {item.label}
-                          <ChevronDown size={12} className="transition-transform" />
-                        </button>
-                      </DropdownMenu.Trigger>
-                      <DropdownMenu.Portal>
-                        <DropdownMenu.Content
-                          align="start"
-                          sideOffset={4}
-                          className="bg-white rounded-[10px] border border-[#EAECEF] shadow-[0_8px_24px_rgba(0,0,0,0.08)] p-1.5 min-w-[180px] z-[60]"
-                        >
-                          {item.dropdown.map((dropdownItem, dIdx) => (
-                            <DropdownMenu.Item
-                              key={dIdx}
-                              onSelect={() => navigateTo(dropdownItem.screen, 'forward')}
-                              className="flex items-center px-2.5 py-2 rounded-md text-sm text-text-primary hover:bg-[#F4F6F8] cursor-pointer outline-none transition-colors"
-                            >
-                              {dropdownItem.label}
-                            </DropdownMenu.Item>
-                          ))}
-                        </DropdownMenu.Content>
-                      </DropdownMenu.Portal>
-                    </DropdownMenu.Root>
+                    <button
+                      key={idx}
+                      onClick={() => navigateTo(item.screen!, 'forward')}
+                      className={`px-2.5 py-1.5 rounded-lg text-sm font-medium transition-colors ${
+                        isActive 
+                          ? 'bg-[#F4F6F8] text-text-primary' 
+                          : 'text-text-secondary hover:bg-[#F4F6F8] hover:text-text-primary'
+                      }`}
+                    >
+                      {item.label}
+                    </button>
                   );
-                }
-                
-                return (
-                  <button
-                    key={idx}
-                    onClick={() => navigateTo(item.screen!, 'forward')}
-                    className={`px-2.5 py-1.5 rounded-lg text-sm font-medium transition-colors ${
-                      isActive 
-                        ? 'bg-[#F4F6F8] text-text-primary' 
-                        : 'text-text-secondary hover:bg-[#F4F6F8] hover:text-text-primary'
-                    }`}
-                  >
-                    {item.label}
-                  </button>
-                );
-              })}
-            </nav>
+                })}
+              </nav>
+            )}
           </div>
 
           {/* Spacer */}
@@ -401,16 +371,6 @@ export function NavigationShell({ children }: NavigationShellProps) {
               {lang === 'en' ? 'हिं' : 'EN'}
             </button>
 
-            {/* Mobile Menu Button */}
-            <button
-              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="md:hidden p-1.5 rounded-lg hover:bg-[#F4F6F8] transition-colors"
-              aria-label="Toggle menu"
-              aria-expanded={mobileMenuOpen}
-            >
-              <Menu size={20} />
-            </button>
-
             {/* Avatar Menu */}
             {session && (
               <AvatarDropdown
@@ -424,89 +384,7 @@ export function NavigationShell({ children }: NavigationShellProps) {
         </div>
       </header>
 
-      {/* Mobile Drawer */}
-      {mobileMenuOpen && (
-        <>
-          <div 
-            className="fixed inset-0 bg-black/20 z-[55] md:hidden"
-            onClick={() => setMobileMenuOpen(false)}
-          />
-          <div className="fixed top-0 left-0 bottom-0 w-[280px] bg-white z-[60] md:hidden shadow-[0_8px_24px_rgba(0,0,0,0.08)] overflow-y-auto">
-            <div className="p-4">
-              {/* Logo */}
-              <div className="flex items-center gap-2 mb-6">
-                <Droplets size={20} className="text-primary" />
-                <span className="text-[15px] font-semibold text-text-primary">
-                  {t('app.name', lang)}
-                </span>
-              </div>
 
-              {/* Menu Items */}
-              <nav className="space-y-1">
-                {menuItems.map((item, idx) => {
-                  const isActive = isMenuItemActive(item);
-                  
-                  if ('dropdown' in item && item.dropdown) {
-                    return (
-                      <div key={idx} className="space-y-1">
-                        <div className={`px-3 py-2.5 rounded-lg text-sm font-medium ${
-                          isActive ? 'bg-[#F4F6F8] text-text-primary' : 'text-text-secondary'
-                        }`}>
-                          {item.label}
-                        </div>
-                        <div className="ml-4 space-y-1">
-                          {item.dropdown.map((dropdownItem, dIdx) => (
-                            <button
-                              key={dIdx}
-                              onClick={() => navigateTo(dropdownItem.screen, 'forward')}
-                              className={`w-full text-left px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
-                                currentScreen === dropdownItem.screen
-                                  ? 'bg-[#F4F6F8] text-text-primary'
-                                  : 'text-text-secondary hover:bg-[#F4F6F8] hover:text-text-primary'
-                              }`}
-                            >
-                              {dropdownItem.label}
-                            </button>
-                          ))}
-                        </div>
-                      </div>
-                    );
-                  }
-                  
-                  return (
-                    <button
-                      key={idx}
-                      onClick={() => navigateTo(item.screen!, 'forward')}
-                      className={`w-full text-left px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
-                        isActive 
-                          ? 'bg-[#F4F6F8] text-text-primary' 
-                          : 'text-text-secondary hover:bg-[#F4F6F8] hover:text-text-primary'
-                      }`}
-                    >
-                      {item.label}
-                    </button>
-                  );
-                })}
-              </nav>
-
-              {/* Mobile-only items */}
-              <div className="mt-6 pt-6 border-t border-[#EAECEF] space-y-2">
-                {isOfficial && (
-                  <div className="flex items-center gap-2 px-3 py-2">
-                    <div className={`w-2 h-2 rounded-full ${tierColor}`} />
-                    <span className="text-xs font-medium text-text-primary">
-                      {activeRiskFilter 
-                        ? `${t(`risk.${activeRiskFilter}`, lang)} only`
-                        : `${rainfallMm}mm · 6h`
-                      }
-                    </span>
-                  </div>
-                )}
-              </div>
-            </div>
-          </div>
-        </>
-      )}
 
       {/* Navigation Hint Toast */}
       {showNavHint && (
@@ -520,6 +398,15 @@ export function NavigationShell({ children }: NavigationShellProps) {
         Now viewing {getScreenLabel(currentScreen, lang)}
       </div>
 
+      {/* Sidebar - only for official roles */}
+      {isOfficial && session && (
+        <Sidebar 
+          role={session.role} 
+          currentScreen={currentScreen} 
+          onNavigate={(screen) => navigateTo(screen, 'forward')} 
+        />
+      )}
+
       {/* Main Content with Swipe Handler */}
       <main
         ref={mainRef}
@@ -527,7 +414,8 @@ export function NavigationShell({ children }: NavigationShellProps) {
         className="flex-1 overflow-auto focus:outline-none"
         style={{ 
           marginTop: '48px',
-          transition: isTransitioning ? 'opacity 180ms ease-out, transform 180ms ease-out' : 'none',
+          marginLeft: isOfficial ? '14rem' : '0', // 240px = 15rem, but collapsed is 56px = 3.5rem
+          transition: isTransitioning ? 'opacity 180ms ease-out, transform 180ms ease-out, margin-left 180ms ease-in-out' : 'margin-left 180ms ease-in-out',
           opacity: isTransitioning ? 0 : 1,
           transform: isTransitioning 
             ? transitionDirection === 'forward' 

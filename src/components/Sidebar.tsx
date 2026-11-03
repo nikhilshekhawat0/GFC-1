@@ -1,0 +1,351 @@
+import React, { useState, useEffect } from 'react';
+import { useStore, type Screen, type Role } from '../store/useStore';
+import { 
+  Map, ListChecks, Activity, Network, History, Bell, LayoutDashboard, 
+  HelpCircle, Settings, ChevronLeft, ChevronRight, ChevronDown, Menu,
+  type LucideIcon
+} from 'lucide-react';
+import { t } from '../i18n/translations';
+
+interface SidebarItem {
+  label: string;
+  icon: LucideIcon;
+  screen: Screen;
+  badge?: string;
+  badgeTone?: 'default' | 'warning' | 'danger' | 'info';
+}
+
+interface SidebarSection {
+  header: string;
+  items: SidebarItem[];
+}
+
+interface SidebarProps {
+  role: Role;
+  currentScreen: Screen;
+  onNavigate: (screen: Screen) => void;
+}
+
+export function Sidebar({ role, currentScreen, onNavigate }: SidebarProps) {
+  const { lang, activeRiskFilter } = useStore();
+  const [collapsed, setCollapsed] = useState(() => {
+    const saved = localStorage.getItem('gfc_sidebar_collapsed');
+    return saved === 'true';
+  });
+  const [collapsedSections, setCollapsedSections] = useState<Record<string, boolean>>(() => {
+    const saved = localStorage.getItem('gfc_sidebar_sections');
+    return saved ? JSON.parse(saved) : {};
+  });
+  const [mobileOpen, setMobileOpen] = useState(false);
+
+  // Get role label
+  const getRoleLabel = () => {
+    switch (role) {
+      case 'ward_engineer': return lang === 'en' ? 'MCG · Ward Engineer' : 'MCG · वार्ड अभियंता';
+      case 'control_room': return lang === 'en' ? 'MCG · Control Room' : 'MCG · नियंत्रण कक्ष';
+      case 'commissioner': return lang === 'en' ? 'MCG · Commissioner' : 'MCG · आयुक्त';
+      case 'ddma_officer': return lang === 'en' ? 'DDMA · Officer' : 'DDMA · अधिकारी';
+      default: return '';
+    }
+  };
+
+  // Sidebar structure
+  const sections: SidebarSection[] = [
+    {
+      header: lang === 'en' ? 'MONITOR' : 'निगरानी',
+      items: [
+        { 
+          label: lang === 'en' ? 'Risk Map' : 'जोखिम मानचित्र', 
+          icon: Map, 
+          screen: 'risk-map',
+          badge: activeRiskFilter ? '●' : undefined
+        },
+        { 
+          label: lang === 'en' ? 'Action List' : 'कार्रवाई सूची', 
+          icon: ListChecks, 
+          screen: 'action-list',
+          badge: '12'
+        },
+        { 
+          label: lang === 'en' ? 'Sensor Health' : 'सेंसर स्थिति', 
+          icon: Activity, 
+          screen: 'sensor-health',
+          badge: '3',
+          badgeTone: 'warning'
+        },
+      ]
+    },
+    {
+      header: lang === 'en' ? 'COORDINATE' : 'समन्वय',
+      items: [
+        { 
+          label: lang === 'en' ? 'Network Feeds' : 'नेटवर्क फ़ीड', 
+          icon: Network, 
+          screen: 'network',
+          badge: '4/7',
+          badgeTone: 'warning'
+        },
+        { 
+          label: lang === 'en' ? 'Audit Log' : 'ऑडिट लॉग', 
+          icon: History, 
+          screen: 'audit-log'
+        },
+        { 
+          label: lang === 'en' ? 'Alerts' : 'अलर्ट', 
+          icon: Bell, 
+          screen: 'citizen-home' // Placeholder - would be a dedicated alerts screen
+        },
+      ]
+    },
+    {
+      header: lang === 'en' ? 'REPORT' : 'रिपोर्ट',
+      items: [
+        { 
+          label: lang === 'en' ? 'Executive View' : 'कार्यकारी दृश्य', 
+          icon: LayoutDashboard, 
+          screen: 'executive-summary'
+        },
+      ]
+    }
+  ];
+
+  // Filter sections based on role
+  const visibleSections = sections.map(section => ({
+    ...section,
+    items: section.items.filter(item => {
+      // Ward engineer doesn't see network
+      if (role === 'ward_engineer' && item.screen === 'network') return false;
+      // Commissioner doesn't see action-list, sensor-health, network
+      if (role === 'commissioner' && ['action-list', 'sensor-health', 'network'].includes(item.screen)) return false;
+      return true;
+    })
+  })).filter(section => section.items.length > 0);
+
+  // Persist collapsed state
+  useEffect(() => {
+    localStorage.setItem('gfc_sidebar_collapsed', String(collapsed));
+  }, [collapsed]);
+
+  // Persist section collapse state
+  useEffect(() => {
+    localStorage.setItem('gfc_sidebar_sections', JSON.stringify(collapsedSections));
+  }, [collapsedSections]);
+
+  // Keyboard shortcut for collapse
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key === 'b') {
+        e.preventDefault();
+        setCollapsed(!collapsed);
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [collapsed]);
+
+  // Close mobile drawer on route change
+  useEffect(() => {
+    setMobileOpen(false);
+  }, [currentScreen]);
+
+  const toggleSection = (header: string) => {
+    setCollapsedSections(prev => ({
+      ...prev,
+      [header]: !prev[header]
+    }));
+  };
+
+  const getBadgeStyle = (tone?: string) => {
+    switch (tone) {
+      case 'warning': return 'bg-[#FEF3C7] text-[#92400E]';
+      case 'danger': return 'bg-[#FEE2E2] text-[#991B1B]';
+      case 'info': return 'bg-[#DBEAFE] text-[#1E40AF]';
+      default: return 'bg-[#E8EBEF] text-[#5A6475]';
+    }
+  };
+
+  const SidebarContent = ({ isMobile = false }: { isMobile?: boolean }) => (
+    <nav 
+      aria-label="Primary"
+      className={`flex flex-col h-full ${isMobile ? 'p-4' : 'p-2'}`}
+    >
+      {/* Workspace Header */}
+      <div className={`${isMobile ? 'mb-6' : 'px-2.5 pb-3 pt-2'}`}>
+        {collapsed && !isMobile ? (
+          <div className="flex items-center justify-center h-10">
+            <div className="w-6 h-6 bg-primary rounded flex items-center justify-center">
+              <span className="text-white text-[10px] font-bold">GFC</span>
+            </div>
+          </div>
+        ) : (
+          <>
+            <h2 className="text-[13px] font-semibold text-text-primary">
+              {t('app.name', lang)}
+            </h2>
+            <p className="text-[11px] text-[#8A93A0] mt-0.5">
+              {getRoleLabel()}
+            </p>
+          </>
+        )}
+      </div>
+
+      {/* Sections */}
+      <div className="flex-1 overflow-y-auto">
+        {visibleSections.map((section, idx) => {
+          const isCollapsed = collapsedSections[section.header];
+          
+          return (
+            <div key={idx} className="mb-2">
+              {/* Section Header */}
+              {!collapsed && (
+                <button
+                  onClick={() => toggleSection(section.header)}
+                  className="w-full flex items-center justify-between px-2.5 py-1.5 text-[11px] font-semibold tracking-[0.06em] uppercase text-[#8A93A0] hover:text-text-primary transition-colors"
+                  aria-expanded={!isCollapsed}
+                >
+                  <h3>{section.header}</h3>
+                  <ChevronDown 
+                    size={12} 
+                    className={`transition-transform ${isCollapsed ? '-rotate-90' : ''}`} 
+                  />
+                </button>
+              )}
+
+              {/* Section Items */}
+              {!isCollapsed && (
+                <ul className="space-y-0.5">
+                  {section.items.map((item, itemIdx) => {
+                    const isActive = currentScreen === item.screen;
+                    const Icon = item.icon;
+                    
+                    return (
+                      <li key={itemIdx}>
+                        <button
+                          onClick={() => onNavigate(item.screen)}
+                          className={`
+                            w-full flex items-center gap-2.5 h-9 rounded-lg text-[13.5px] font-medium transition-colors relative
+                            ${collapsed && !isMobile ? 'justify-center px-0' : 'px-2.5'}
+                            ${isActive 
+                              ? 'bg-[#EEF2F7] text-primary font-semibold' 
+                              : 'text-[#3F4754] hover:bg-[#F0F2F5] hover:text-text-primary'
+                            }
+                          `}
+                          aria-current={isActive ? 'page' : undefined}
+                          title={collapsed && !isMobile ? item.label : undefined}
+                        >
+                          {/* Active indicator bar */}
+                          {isActive && (
+                            <div className="absolute left-0 top-1 bottom-1 w-0.5 bg-primary rounded-r" />
+                          )}
+                          
+                          <Icon 
+                            size={16} 
+                            className={`flex-shrink-0 ${isActive ? 'text-primary' : 'text-[#6B7280]'}`}
+                          />
+                          
+                          {(!collapsed || isMobile) && (
+                            <>
+                              <span className="flex-1 text-left truncate">{item.label}</span>
+                              {item.badge && (
+                                <span className={`
+                                  flex-shrink-0 h-[18px] min-w-[20px] px-1.5 rounded-md flex items-center justify-center
+                                  text-[11px] font-semibold tabular-nums
+                                  ${getBadgeStyle(item.badgeTone)}
+                                `}>
+                                  {item.badge}
+                                </span>
+                              )}
+                            </>
+                          )}
+                          
+                          {/* Collapsed badge dot */}
+                          {collapsed && !isMobile && item.badge && (
+                            <div className="absolute top-1 right-1 w-1 h-1 rounded-full bg-primary" />
+                          )}
+                        </button>
+                      </li>
+                    );
+                  })}
+                </ul>
+              )}
+            </div>
+          );
+        })}
+      </div>
+
+      {/* Footer */}
+      <div className={`${isMobile ? 'mt-6 pt-6 border-t border-[#EAECEF]' : 'mt-2 pt-2 border-t border-[#EAECEF]'}`}>
+        <ul className="space-y-0.5">
+          <li>
+            <button className={`
+              w-full flex items-center gap-2.5 h-9 rounded-lg text-[13.5px] font-medium text-[#3F4754] hover:bg-[#F0F2F5] hover:text-text-primary transition-colors
+              ${collapsed && !isMobile ? 'justify-center px-0' : 'px-2.5'}
+            `}>
+              <HelpCircle size={16} className="text-[#6B7280]" />
+              {(!collapsed || isMobile) && <span>{lang === 'en' ? 'Help' : 'सहायता'}</span>}
+            </button>
+          </li>
+          <li>
+            <button className={`
+              w-full flex items-center gap-2.5 h-9 rounded-lg text-[13.5px] font-medium text-[#3F4754] hover:bg-[#F0F2F5] hover:text-text-primary transition-colors
+              ${collapsed && !isMobile ? 'justify-center px-0' : 'px-2.5'}
+            `}>
+              <Settings size={16} className="text-[#6B7280]" />
+              {(!collapsed || isMobile) && <span>{lang === 'en' ? 'Settings' : 'सेटिंग्स'}</span>}
+            </button>
+          </li>
+        </ul>
+      </div>
+
+      {/* Collapse Button (desktop only) */}
+      {!isMobile && (
+        <button
+          onClick={() => setCollapsed(!collapsed)}
+          className="absolute bottom-4 right-2 w-12 h-8 flex items-center justify-center rounded-lg hover:bg-[#F0F2F5] transition-colors"
+          aria-label={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+          aria-expanded={!collapsed}
+        >
+          {collapsed ? <ChevronRight size={16} /> : <ChevronLeft size={16} />}
+        </button>
+      )}
+    </nav>
+  );
+
+  return (
+    <>
+      {/* Desktop Sidebar */}
+      <aside
+        className={`
+          hidden md:flex fixed left-0 top-12 bottom-0 bg-[#FAFBFC] border-r border-[#EAECEF] z-30
+          transition-[width] duration-[180ms] ease-in-out
+          ${collapsed ? 'w-14' : 'w-60'}
+        `}
+        style={{ willChange: 'width' }}
+      >
+        <SidebarContent />
+      </aside>
+
+      {/* Mobile Drawer */}
+      {mobileOpen && (
+        <>
+          <div 
+            className="fixed inset-0 bg-[rgba(15,23,42,0.35)] z-40 md:hidden animate-[fadeIn_150ms_ease-out]"
+            onClick={() => setMobileOpen(false)}
+          />
+          <aside className="fixed top-12 left-0 bottom-0 w-[280px] bg-white z-50 md:hidden shadow-[0_8px_24px_rgba(0,0,0,0.08)] animate-[slideInLeft_220ms_ease-out] overflow-y-auto">
+            <SidebarContent isMobile />
+          </aside>
+        </>
+      )}
+
+      {/* Mobile Hamburger Button */}
+      <button
+        onClick={() => setMobileOpen(true)}
+        className="md:hidden fixed top-3 left-3 z-30 p-2 rounded-lg bg-white border border-[#EAECEF] shadow-sm hover:bg-[#F4F6F8] transition-colors"
+        aria-label="Open menu"
+      >
+        <Menu size={20} />
+      </button>
+    </>
+  );
+}
