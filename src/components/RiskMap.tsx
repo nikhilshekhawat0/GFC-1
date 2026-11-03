@@ -1,9 +1,9 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, useMemo } from 'react';
 import L from 'leaflet';
 import { useStore } from '../store/useStore';
 import { t } from '../i18n/translations';
 import { hotspots } from '../data/mockData';
-import { MapPin, AlertTriangle, ArrowUp, ArrowDown, Eye } from 'lucide-react';
+import { MapPin, AlertTriangle, ArrowUp, ArrowDown, Eye, Check, X } from 'lucide-react';
 
 function getRiskColor(riskPct: number): string {
   if (riskPct >= 70) return '#C62828';
@@ -19,18 +19,41 @@ function getRiskTier(riskPct: number): 'high' | 'medium' | 'low' | 'unknown' {
   return 'unknown';
 }
 
+function getTierColor(tier: 'high' | 'medium' | 'low' | 'unknown'): string {
+  switch (tier) {
+    case 'high': return '#C62828';
+    case 'medium': return '#F9A825';
+    case 'low': return '#2E7D32';
+    case 'unknown': return '#757575';
+  }
+}
+
 export function RiskMap() {
-  const { lang, rainfallMm, setRainfallMm, filterType, setFilterType, getRiskScores, sensors, setCurrentScreen } = useStore();
+  const { lang, rainfallMm, setRainfallMm, filterType, setFilterType, getRiskScores, sensors, setCurrentScreen, activeRiskFilter, setActiveRiskFilter, addToast } = useStore();
   const mapRef = useRef<HTMLDivElement>(null);
   const mapInstanceRef = useRef<L.Map | null>(null);
   const markersRef = useRef<L.LayerGroup | null>(null);
+  const polylinesRef = useRef<L.LayerGroup | null>(null);
   const [selectedHotspot, setSelectedHotspot] = useState<string | null>(null);
+  const [announcement, setAnnouncement] = useState('');
 
   const riskScores = getRiskScores();
   const offlineSensors = sensors.filter(s => s.status === 'offline').length;
   const highRisk = riskScores.filter(r => r.risk_pct >= 70).length;
   const medRisk = riskScores.filter(r => r.risk_pct >= 50 && r.risk_pct < 70).length;
   const lowRisk = riskScores.filter(r => r.risk_pct >= 30 && r.risk_pct < 50).length;
+
+  // Compute matching hotspot IDs based on active filter
+  const matchingHotspotIds = useMemo(() => {
+    if (!activeRiskFilter) return null;
+    return new Set(
+      riskScores
+        .filter(r => getRiskTier(r.risk_pct) === activeRiskFilter)
+        .map(r => r.hotspot_id)
+    );
+  }, [activeRiskFilter, riskScores]);
+
+  const matchingCount = matchingHotspotIds ? matchingHotspotIds.size : 0;
 
   const filteredHotspots = filterType === 'all'
     ? hotspots
@@ -54,47 +77,158 @@ export function RiskMap() {
 
     mapInstanceRef.current = map;
     markersRef.current = L.layerGroup().addTo(map);
+    polylinesRef.current = L.layerGroup().addTo(map);
 
-    // Invalidate size after mount to handle container resize
     setTimeout(() => map.invalidateSize(), 100);
+
+    // Keyboard: Esc clears filter
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && activeRiskFilter) {
+        setActiveRiskFilter(null);
+      }
+    };
+    document.addEventListener('keydown', handleKeyDown);
 
     return () => {
       map.remove();
       mapInstanceRef.current = null;
+      document.removeEventListener('keydown', handleKeyDown);
     };
   }, []);
 
-  // Update markers
+  // Update markers and topology based on filter
   useEffect(() => {
-    if (!markersRef.current) return;
+    if (!markersRef.current || !polylinesRef.current || !mapInstanceRef.current) return;
+    
     markersRef.current.clearLayers();
+    polylinesRef.current.clearLayers();
+
+    const map = mapInstanceRef.current;
+    const matchingBounds: L.LatLngBounds | null = matchingHotspotIds ? L.latLngBounds([]) : null;
 
     filteredHotspots.forEach(hotspot => {
       const score = riskScores.find(r => r.hotspot_id === hotspot.id);
       if (!score) return;
 
       const color = getRiskColor(score.risk_pct);
-      const size = Math.max(14, Math.min(28, hotspot.leverage_score / 4));
+      const tier = getRiskTier(score.risk_pct);
+      const isMatching = matchingHotspotIds ? matchingHotspotIds.has(hotspot.id) : true;
+      const baseSize = Math.max(14, Math.min(28, hotspot.leverage_score / 4));
+      const size = isMatching && activeRiskFilter ? baseSize * 1.5 : baseSize;
+      const opacity = isMatching ? 1 : 0.2;
 
+      // Create marker with pulse ring if matching and filter active
+      const pulseClass = isMatching && activeRiskFilter ? 'marker-pulse' : '';
       const icon = L.divIcon({
         className: 'custom-marker',
-        html: `<div style="width:${size}px;height:${size}px;background:${color};border:3px solid white;border-radius:50%;box-shadow:0 2px 6px rgba(0,0,0,0.3);display:flex;align-items:center;justify-content:center;">
-          <span style="color:white;font-size:9px;font-weight:bold;">${score.risk_pct}</span>
-        </div>`,
-        iconSize: [size, size],
+        html: `
+          <div style="position:relative;width:${size}px;height:${size}px;">
+            ${isMatching && activeRiskFilter ? `<div class="${pulseClass}" style="position:absolute;inset:-4px;border-radius:50%;border:2px solid ${getTierColor(tier)};opacity:0.3;"></div>` : ''}
+            <div style="width:${size}px;height:${size}px;background:${color};border:3px solid white;border-radius:50%;box-shadow:0 2px 6px rgba(0,0,0,0.3);display:flex;align-items:center;justify-content:center;opacity:${opacity};transition:opacity 200ms ease,transform 200ms ease;">
+              <span style="color:white;font-size:${isMatching && activeRiskFilter ? '11px' : '9px'};font-weight:bold;">${score.risk_pct}</span>
+            </div>
+            ${isMatching && activeRiskFilter ? `<div style="position:absolute;top:100%;left:50%;transform:translateX(-50%);margin-top:4px;white-space:nowrap;font-size:10px;font-weight:500;color:#1A1F2B;background:white;padding:2px 6px;border-radius:4px;box-shadow:0 1px 3px rgba(0,0,0,0.1);">${hotspot.name}</div>` : ''}
+          </div>
+        `,
+        iconSize: [size, size + (isMatching && activeRiskFilter ? 20 : 0)],
         iconAnchor: [size / 2, size / 2],
       });
 
       const marker = L.marker([hotspot.lat, hotspot.lng], { icon })
-        .on('click', () => setSelectedHotspot(hotspot.id));
+        .on('click', () => {
+          setSelectedHotspot(hotspot.id);
+          setActiveRiskFilter(tier);
+        });
+      
       markersRef.current!.addLayer(marker);
+
+      // Collect bounds for auto-zoom
+      if (matchingBounds && isMatching) {
+        matchingBounds.extend([hotspot.lat, hotspot.lng]);
+      }
     });
-  }, [filteredHotspots, riskScores, filterType]);
+
+    // Draw topology edges for matching hotspots
+    if (matchingHotspotIds && matchingHotspotIds.size > 0) {
+      filteredHotspots.forEach(hotspot => {
+        if (!matchingHotspotIds.has(hotspot.id)) return;
+        
+        // Draw edges to upstream/downstream
+        const connections = [...hotspot.upstream_of, ...hotspot.downstream_of];
+        connections.forEach(connectedId => {
+          const connectedHotspot = hotspots.find(h => h.id === connectedId);
+          if (!connectedHotspot) return;
+          
+          const connectedScore = riskScores.find(r => r.hotspot_id === connectedId);
+          if (!connectedScore) return;
+          
+          const connectedTier = getRiskTier(connectedScore.risk_pct);
+          const isEdgeMatching = matchingHotspotIds.has(connectedId);
+          const edgeColor = isEdgeMatching ? getTierColor(connectedTier) : '#757575';
+          const edgeOpacity = isEdgeMatching ? 0.8 : 0.1;
+          
+          const polyline = L.polyline(
+            [[hotspot.lat, hotspot.lng], [connectedHotspot.lat, connectedHotspot.lng]],
+            {
+              color: edgeColor,
+              weight: isEdgeMatching ? 3 : 1,
+              opacity: edgeOpacity,
+              dashArray: isEdgeMatching ? undefined : '5,5',
+            }
+          );
+          polylinesRef.current!.addLayer(polyline);
+        });
+      });
+    }
+
+    // Auto-zoom to matching markers
+    if (matchingBounds && matchingHotspotIds && matchingHotspotIds.size > 0) {
+      if (matchingHotspotIds.size === 1) {
+        const singleId = Array.from(matchingHotspotIds)[0];
+        const singleHotspot = hotspots.find(h => h.id === singleId);
+        if (singleHotspot) {
+          map.setView([singleHotspot.lat, singleHotspot.lng], 15, { animate: true, duration: 0.6 });
+        }
+      } else {
+        map.fitBounds(matchingBounds, { padding: [40, 40], maxZoom: 15, animate: true, duration: 0.6 });
+      }
+    } else if (!activeRiskFilter) {
+      // Reset to citywide view
+      map.setView([28.435, 77.01], 12, { animate: true });
+    }
+  }, [filteredHotspots, riskScores, filterType, activeRiskFilter, matchingHotspotIds]);
+
+  // Handle filter change with toast for empty tiers
+  const handleFilterChange = (tier: 'high' | 'medium' | 'low' | 'unknown' | null) => {
+    if (tier === null) {
+      setActiveRiskFilter(null);
+      return;
+    }
+
+    const count = riskScores.filter(r => getRiskTier(r.risk_pct) === tier).length;
+    if (count === 0) {
+      addToast(lang === 'en' ? `No hotspots in ${tier.toUpperCase()} tier right now` : `${tier.toUpperCase()} जोखिम में कोई हॉटस्पॉट नहीं`, 'info');
+      return;
+    }
+
+    setActiveRiskFilter(tier);
+    
+    // Announce for screen readers
+    const tierLabel = t(`risk.${tier}`, lang);
+    setAnnouncement(lang === 'en' ? `Filtered to ${tierLabel}. ${count} hotspots highlighted.` : `${tierLabel} पर फ़िल्टर किया गया। ${count} हॉटस्पॉट हाइलाइट किए गए।`);
+  };
 
   const selectedData = selectedHotspot ? {
     hotspot: hotspots.find(h => h.id === selectedHotspot),
     score: riskScores.find(r => r.hotspot_id === selectedHotspot),
   } : null;
+
+  // Close bottom sheet if selected hotspot no longer matches filter
+  useEffect(() => {
+    if (selectedHotspot && matchingHotspotIds && !matchingHotspotIds.has(selectedHotspot)) {
+      setSelectedHotspot(null);
+    }
+  }, [matchingHotspotIds, selectedHotspot]);
 
   const filters = [
     { id: 'all', labelKey: 'risk_map.filter_all' },
@@ -104,8 +238,20 @@ export function RiskMap() {
     { id: 'residential-sector', labelKey: 'risk_map.filter_residential' },
   ];
 
+  const riskTiers: { tier: 'high' | 'medium' | 'low' | 'unknown'; count: number; label: string }[] = [
+    { tier: 'high', count: highRisk, label: t('risk.high', lang) },
+    { tier: 'medium', count: medRisk, label: t('risk.medium', lang) },
+    { tier: 'low', count: lowRisk, label: t('risk.low', lang) },
+    { tier: 'unknown', count: riskScores.length - highRisk - medRisk - lowRisk, label: t('risk.unknown', lang) },
+  ];
+
   return (
     <div className="h-full flex flex-col">
+      {/* Aria-live region for announcements */}
+      <div aria-live="polite" aria-atomic="true" className="sr-only">
+        {announcement}
+      </div>
+
       {/* Top Banner */}
       <div className="bg-white border-b border-border px-4 py-3">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
@@ -132,8 +278,36 @@ export function RiskMap() {
           </div>
         </div>
 
-        {/* Filter chips */}
+        {/* Risk Tier Filter Chips */}
         <div className="flex gap-2 mt-3 overflow-x-auto pb-1">
+          <button
+            onClick={() => handleFilterChange(null)}
+            className={`px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap transition-all
+              ${!activeRiskFilter ? 'bg-primary text-white' : 'bg-background text-text-secondary hover:bg-border border border-border'}
+            `}
+            aria-pressed={!activeRiskFilter}
+          >
+            {lang === 'en' ? 'All' : 'सभी'}
+          </button>
+          {riskTiers.map(({ tier, count, label }) => (
+            <button
+              key={tier}
+              onClick={() => handleFilterChange(tier)}
+              className={`px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap transition-all flex items-center gap-1.5
+                ${activeRiskFilter === tier ? 'text-white' : 'bg-background text-text-secondary hover:bg-border border border-border'}
+              `}
+              style={activeRiskFilter === tier ? { backgroundColor: getTierColor(tier) } : {}}
+              aria-pressed={activeRiskFilter === tier}
+              aria-label={lang === 'en' ? `Highlight ${label} hotspots, currently showing ${count}` : `${label} हॉटस्पॉट हाइलाइट करें, वर्तमान में ${count} दिखा रहे हैं`}
+            >
+              <span className="w-2 h-2 rounded-full" style={{ backgroundColor: activeRiskFilter === tier ? 'white' : getTierColor(tier) }} />
+              {label} ({count})
+            </button>
+          ))}
+        </div>
+
+        {/* Type filter chips */}
+        <div className="flex gap-2 mt-2 overflow-x-auto pb-1">
           {filters.map(f => (
             <button
               key={f.id}
@@ -150,40 +324,70 @@ export function RiskMap() {
 
       {/* Map + Summary */}
       <div className="flex-1 flex flex-col lg:flex-row relative">
-        <div ref={mapRef} className="flex-1 min-h-[300px]" />
+        <div ref={mapRef} className="flex-1 min-h-[300px] relative">
+          {/* Filter Banner */}
+          {activeRiskFilter && (
+            <div
+              className="absolute top-4 left-1/2 -translate-x-1/2 z-[1000] px-4 py-2 rounded-full shadow-lg flex items-center gap-2 text-sm font-medium text-white"
+              style={{ backgroundColor: getTierColor(activeRiskFilter) }}
+            >
+              <span>
+                {lang === 'en'
+                  ? `Showing ${matchingCount} ${t(`risk.${activeRiskFilter}`, lang).toUpperCase()} hotspots`
+                  : `${matchingCount} ${t(`risk.${activeRiskFilter}`, lang).toUpperCase()} हॉटस्पॉट दिखा रहे हैं`
+                }
+              </span>
+              <button
+                onClick={() => handleFilterChange(null)}
+                className="ml-1 hover:bg-white/20 rounded-full p-0.5 transition-colors"
+                aria-label={lang === 'en' ? 'Clear filter' : 'फ़िल्टर साफ़ करें'}
+              >
+                <X size={14} />
+              </button>
+            </div>
+          )}
+        </div>
 
         {/* Summary Cards (right panel on desktop, bottom on mobile) */}
         <div className="lg:w-64 bg-white border-t lg:border-t-0 lg:border-l border-border p-4 space-y-3">
           <h3 className="text-xs font-semibold text-text-secondary uppercase tracking-wide">{t('risk_map.legend', lang)}</h3>
           <div className="grid grid-cols-2 lg:grid-cols-1 gap-2">
-            <div className="flex items-center gap-2 p-2 rounded-lg bg-red-50 border border-red-100">
-              <div className="w-4 h-4 rounded-full bg-risk-high" />
-              <div>
-                <p className="text-xs font-semibold text-risk-high">{t('risk.high', lang)} ({highRisk})</p>
-                <p className="text-[10px] text-text-secondary">≥70%</p>
-              </div>
-            </div>
-            <div className="flex items-center gap-2 p-2 rounded-lg bg-yellow-50 border border-yellow-100">
-              <div className="w-4 h-4 rounded-full bg-risk-medium" />
-              <div>
-                <p className="text-xs font-semibold text-yellow-700">{t('risk.medium', lang)} ({medRisk})</p>
-                <p className="text-[10px] text-text-secondary">50-69%</p>
-              </div>
-            </div>
-            <div className="flex items-center gap-2 p-2 rounded-lg bg-green-50 border border-green-100">
-              <div className="w-4 h-4 rounded-full bg-risk-low" />
-              <div>
-                <p className="text-xs font-semibold text-risk-low">{t('risk.low', lang)} ({lowRisk})</p>
-                <p className="text-[10px] text-text-secondary">30-49%</p>
-              </div>
-            </div>
-            <div className="flex items-center gap-2 p-2 rounded-lg bg-gray-50 border border-gray-200">
-              <div className="w-4 h-4 rounded-full bg-risk-unknown" />
-              <div>
-                <p className="text-xs font-semibold text-risk-unknown">{t('risk.unknown', lang)}</p>
-                <p className="text-[10px] text-text-secondary">&lt;30%</p>
-              </div>
-            </div>
+            {riskTiers.map(({ tier, count, label }) => {
+              const isActive = activeRiskFilter === tier;
+              return (
+                <button
+                  key={tier}
+                  onClick={() => handleFilterChange(tier)}
+                  className={`flex items-center gap-2 p-2 rounded-lg border transition-all text-left
+                    ${isActive ? 'border-2' : 'border'}
+                  `}
+                  style={{
+                    backgroundColor: isActive ? `${getTierColor(tier)}10` : 'transparent',
+                    borderColor: isActive ? getTierColor(tier) : undefined,
+                  }}
+                  aria-pressed={isActive}
+                  aria-label={lang === 'en' ? `Highlight ${label} hotspots, currently showing ${count}` : `${label} हॉटस्पॉट हाइलाइट करें, वर्तमान में ${count} दिखा रहे हैं`}
+                >
+                  <div className="w-4 h-4 rounded-full flex-shrink-0" style={{ backgroundColor: getTierColor(tier) }} />
+                  <div className="flex-1 min-w-0">
+                    <p className={`text-xs font-semibold ${isActive ? '' : ''}`} style={{ color: isActive ? getTierColor(tier) : undefined }}>
+                      {label} {isActive && <Check size={10} className="inline ml-1" />}
+                    </p>
+                    <p className="text-[10px] text-text-secondary">
+                      {tier === 'high' && '≥70%'}
+                      {tier === 'medium' && '50-69%'}
+                      {tier === 'low' && '30-49%'}
+                      {tier === 'unknown' && '<30%'}
+                    </p>
+                  </div>
+                  {isActive && (
+                    <span className="px-1.5 py-0.5 rounded text-[9px] font-medium text-white" style={{ backgroundColor: getTierColor(tier) }}>
+                      {lang === 'en' ? 'Viewing' : 'देख रहे हैं'}
+                    </span>
+                  )}
+                </button>
+              );
+            })}
           </div>
         </div>
 

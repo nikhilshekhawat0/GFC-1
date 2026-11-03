@@ -20,6 +20,8 @@ const DEMO_EMAIL_MAP: Record<string, Role> = {
   'commissioner@mcg.gov.in': 'commissioner',
 };
 
+export type RiskTier = 'high' | 'medium' | 'low' | 'unknown';
+
 interface AppState {
   // Auth
   session: Session | null;
@@ -31,6 +33,7 @@ interface AppState {
   rainfallMm: number;
   filterType: string;
   citizenSector: string;
+  activeRiskFilter: RiskTier | null;
 
   // Data
   sensors: Sensor[];
@@ -63,6 +66,7 @@ interface AppState {
   getRiskScores: () => RiskScore[];
   getRankedActions: () => ActionItem[];
   resolveRole: (email: string) => Role;
+  setActiveRiskFilter: (tier: RiskTier | null) => void;
 }
 
 function computeRisk(hotspot: Hotspot, rainfallMm: number, sensors: Sensor[]): RiskScore {
@@ -194,6 +198,7 @@ export const useStore = create<AppState>()(
       rainfallMm: 85,
       filterType: 'all',
       citizenSector: '',
+      activeRiskFilter: null,
       sensors: initialSensors,
       auditLog: [
         { id: 'AL-001', timestamp: '2026-11-04T05:00:00+05:30', actor: 'System', action: 'system_ranking', hotspot_id: 'HSP-005', original_rank: null, new_rank: 1, reason: 'Highest leverage score + rainfall forecast' },
@@ -247,6 +252,11 @@ export const useStore = create<AppState>()(
       setRainfallMm: (mm) => set({ rainfallMm: mm }),
       setFilterType: (type) => set({ filterType: type }),
       setCitizenSector: (sector) => set({ citizenSector: sector }),
+      setActiveRiskFilter: (tier: RiskTier | null) => {
+        const current = get().activeRiskFilter;
+        // Toggle behavior: clicking same tier clears it
+        set({ activeRiskFilter: current === tier ? null : tier });
+      },
 
       setSensorStatus: (sensorId, status) => {
         set(state => ({

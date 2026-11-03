@@ -5,7 +5,7 @@ import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recha
 import { Users, MapPin, AlertTriangle, Target, Download, TrendingUp, FileText, ChevronRight, WifiOff, Truck } from 'lucide-react';
 
 export function ExecutiveView() {
-  const { lang, getRiskScores, auditLog, sensors, setCurrentScreen } = useStore();
+  const { lang, getRiskScores, auditLog, sensors, setCurrentScreen, setActiveRiskFilter } = useStore();
   const riskScores = getRiskScores();
 
   const highRisk = riskScores.filter(r => r.risk_pct >= 70).length;
@@ -48,14 +48,23 @@ export function ExecutiveView() {
             {lang === 'en' ? 'Citywide Exposure' : 'शहरव्यापी जोखिम'}
           </h3>
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-            <div className="bg-white rounded-xl border border-border p-4">
+            <button
+              onClick={() => {
+                setActiveRiskFilter('high');
+                setCurrentScreen('risk-map');
+              }}
+              className="bg-white rounded-xl border border-border p-4 text-left hover:shadow-md hover:border-risk-high transition-all group"
+            >
               <div className="flex items-center gap-2 mb-2">
                 <MapPin size={16} className="text-risk-high" />
                 <span className="text-xs font-medium text-text-secondary">{lang === 'en' ? 'High Risk' : 'उच्च जोखिम'}</span>
               </div>
               <p className="text-2xl font-bold text-text-primary">{highRisk}</p>
               <p className="text-xs text-text-secondary">{lang === 'en' ? 'hotspots' : 'हॉटस्पॉट'}</p>
-            </div>
+              <p className="text-xs text-primary mt-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                {lang === 'en' ? 'View on map →' : 'मानचित्र पर देखें →'}
+              </p>
+            </button>
             <div className="bg-white rounded-xl border border-border p-4">
               <div className="flex items-center gap-2 mb-2">
                 <Users size={16} className="text-primary" />
