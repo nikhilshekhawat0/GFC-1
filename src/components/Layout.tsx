@@ -1,14 +1,15 @@
 import React from 'react';
 import { useStore } from '../store/useStore';
 import { t } from '../i18n/translations';
-import { Map, List, Activity, FileText, BarChart3, Home, Route, Bell, AlertTriangle, Menu, X, Globe, Droplets, CloudRain } from 'lucide-react';
+import { Map, List, Activity, FileText, BarChart3, Home, Route, Bell, AlertTriangle, Menu, X, Globe, Droplets, Network as NetworkIcon } from 'lucide-react';
 import { AvatarDropdown, Dropdown } from './ui/Dropdown';
 
 export function Layout({ children }: { children: React.ReactNode }) {
   const { lang, setLang, session, logout, currentScreen, setCurrentScreen, rainfallMm, getRiskScores, sensors } = useStore();
 
-  const isOps = session?.role === 'ward_engineer' || session?.role === 'control_room' || session?.role === 'commissioner';
+  const isOps = session?.role === 'ward_engineer' || session?.role === 'control_room' || session?.role === 'commissioner' || session?.role === 'ddma_officer';
   const isCitizen = session?.role === 'citizen' || !session;
+  const canSeeNetwork = session?.role === 'control_room' || session?.role === 'commissioner' || session?.role === 'ddma_officer';
 
   const riskScores = getRiskScores();
   const highRisk = riskScores.filter(r => r.risk_pct >= 70).length;
@@ -21,6 +22,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
     { id: 'sensor-health', icon: Activity, labelKey: 'nav.sensor_health' },
     { id: 'audit-log', icon: FileText, labelKey: 'nav.audit_log' },
     { id: 'executive-summary', icon: BarChart3, labelKey: 'nav.executive' },
+    ...(canSeeNetwork ? [{ id: 'network', icon: NetworkIcon, label: lang === 'en' ? 'Network' : 'नेटवर्क' }] : []),
   ] as const;
 
   const citizenNavItems = [
@@ -133,6 +135,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
                   {session?.role === 'ward_engineer' && (lang === 'en' ? 'Ward Engineer' : 'वार्ड अभियंता')}
                   {session?.role === 'control_room' && (lang === 'en' ? 'Control Room' : 'नियंत्रण कक्ष')}
                   {session?.role === 'commissioner' && (lang === 'en' ? 'Commissioner' : 'आयुक्त')}
+                  {session?.role === 'ddma_officer' && (lang === 'en' ? 'DDMA Officer' : 'DDMA अधिकारी')}
                 </p>
                 <p className="text-text-secondary truncate">{session?.email}</p>
               </div>

@@ -5,6 +5,7 @@ import { ActionList } from './components/ActionList';
 import { SensorHealth } from './components/SensorHealth';
 import { AuditLog } from './components/AuditLog';
 import { ExecutiveView } from './components/ExecutiveView';
+import { Network } from './components/Network';
 import { PublicRouteCheck, PublicAlerts, PublicReport } from './components/PublicScreens';
 import { Toasts } from './components/Toasts';
 import { Login } from './pages/Login';
@@ -23,10 +24,16 @@ function App() {
 
   const renderScreen = () => {
     // Route guards
-    const officialScreens = ['ward-home', 'control-room-home', 'action-list', 'sensor-health', 'audit-log', 'executive-summary'];
+    const officialScreens = ['ward-home', 'control-room-home', 'action-list', 'sensor-health', 'audit-log', 'executive-summary', 'network'];
+    const networkScreens = ['network'];
     const isOfficial = session.role !== 'citizen';
+    const canSeeNetwork = session.role === 'control_room' || session.role === 'commissioner' || session.role === 'ddma_officer';
 
     if (officialScreens.includes(currentScreen) && !isOfficial) {
+      return <Denied />;
+    }
+
+    if (networkScreens.includes(currentScreen) && !canSeeNetwork) {
       return <Denied />;
     }
 
@@ -47,6 +54,8 @@ function App() {
         return <AuditLog />;
       case 'executive-summary':
         return <ExecutiveView />;
+      case 'network':
+        return <Network />;
       case 'public-route-check':
         return <PublicRouteCheck />;
       case 'public-alerts':

@@ -3,8 +3,8 @@ import { persist } from 'zustand/middleware';
 import { hotspots, initialSensors, crews, type Hotspot, type Sensor, type RiskScore, type ActionItem, type AuditLogEntry, type Crew, type WaterlogReport } from '../data/mockData';
 import type { Lang } from '../i18n/translations';
 
-export type Role = 'ward_engineer' | 'control_room' | 'commissioner' | 'citizen';
-export type Screen = 'risk-map' | 'action-list' | 'sensor-health' | 'audit-log' | 'executive-summary' | 'ward-home' | 'control-room-home' | 'citizen-home' | 'public-route-check' | 'public-alerts' | 'public-report' | 'denied';
+export type Role = 'ward_engineer' | 'control_room' | 'commissioner' | 'ddma_officer' | 'citizen';
+export type Screen = 'risk-map' | 'action-list' | 'sensor-health' | 'audit-log' | 'executive-summary' | 'network' | 'ward-home' | 'control-room-home' | 'citizen-home' | 'public-route-check' | 'public-alerts' | 'public-report' | 'denied';
 
 export interface Session {
   email: string;
@@ -18,6 +18,7 @@ const DEMO_EMAIL_MAP: Record<string, Role> = {
   'ward.engineer@mcg.gov.in': 'ward_engineer',
   'control.room@mcg.gov.in': 'control_room',
   'commissioner@mcg.gov.in': 'commissioner',
+  'ddma.officer@gurugram.gov.in': 'ddma_officer',
 };
 
 export type RiskTier = 'high' | 'medium' | 'low' | 'unknown';
@@ -219,6 +220,7 @@ export const useStore = create<AppState>()(
           ward_engineer: 'ward-home',
           control_room: 'control-room-home',
           commissioner: 'executive-summary',
+          ddma_officer: 'network',
           citizen: 'citizen-home',
         };
         set({ session, currentScreen: screenMap[role] });

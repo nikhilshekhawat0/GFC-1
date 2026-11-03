@@ -13,6 +13,7 @@ export function Login() {
     { email: 'ward.engineer@mcg.gov.in', name: 'Rajesh Kumar', role: 'Ward Engineer' },
     { email: 'control.room@mcg.gov.in', name: 'Priya Sharma', role: 'Control Room' },
     { email: 'commissioner@mcg.gov.in', name: 'Amit Verma', role: 'Commissioner' },
+    { email: 'ddma.officer@gurugram.gov.in', name: 'Suresh Singh', role: 'DDMA Officer' },
   ];
 
   const handleGoogleSignIn = () => {

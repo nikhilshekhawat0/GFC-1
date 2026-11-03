@@ -3,7 +3,7 @@ import L from 'leaflet';
 import { useStore } from '../store/useStore';
 import { t } from '../i18n/translations';
 import { hotspots } from '../data/mockData';
-import { MapPin, AlertTriangle, ArrowUp, ArrowDown, Eye, Check, X } from 'lucide-react';
+import { MapPin, AlertTriangle, ArrowUp, ArrowDown, Eye, Check, X, Bell, Building2 } from 'lucide-react';
 
 function getRiskColor(riskPct: number): string {
   if (riskPct >= 70) return '#C62828';
@@ -29,7 +29,7 @@ function getTierColor(tier: 'high' | 'medium' | 'low' | 'unknown'): string {
 }
 
 export function RiskMap() {
-  const { lang, rainfallMm, setRainfallMm, filterType, setFilterType, getRiskScores, sensors, setCurrentScreen, activeRiskFilter, setActiveRiskFilter, addToast } = useStore();
+  const { lang, rainfallMm, setRainfallMm, filterType, setFilterType, getRiskScores, sensors, setCurrentScreen, activeRiskFilter, setActiveRiskFilter, addToast, addAuditEntry } = useStore();
   const mapRef = useRef<HTMLDivElement>(null);
   const mapInstanceRef = useRef<L.Map | null>(null);
   const markersRef = useRef<L.LayerGroup | null>(null);
@@ -404,7 +404,7 @@ export function RiskMap() {
               </button>
             </div>
 
-            <div className="flex items-center gap-3 mb-3">
+            <div className="flex items-center gap-2 mb-3 flex-wrap">
               <div className={`px-2 py-1 rounded text-xs font-bold text-white ${
                 getRiskTier(selectedData.score.risk_pct) === 'high' ? 'bg-risk-high' :
                 getRiskTier(selectedData.score.risk_pct) === 'medium' ? 'bg-risk-medium' :
@@ -418,6 +418,10 @@ export function RiskMap() {
                 'border-red-300 text-red-700 bg-red-50'
               }`}>
                 {t(`confidence.${selectedData.score.confidence}`, lang)}
+              </div>
+              <div className="px-2 py-1 rounded-full text-xs font-medium bg-primary/10 text-primary border border-primary/20 flex items-center gap-1">
+                <Building2 size={10} />
+                {lang === 'en' ? 'Owned by' : 'स्वामित्व'}: {selectedData.hotspot.owning_agency}
               </div>
             </div>
 
@@ -444,13 +448,43 @@ export function RiskMap() {
               </div>
             </div>
 
-            <button
-              onClick={() => { setCurrentScreen('action-list'); setSelectedHotspot(null); }}
-              className="mt-4 w-full py-2.5 bg-primary text-white rounded-lg text-sm font-medium hover:bg-primary-light transition-colors flex items-center justify-center gap-2"
-            >
-              <Eye size={16} />
-              {t('action_list.view_in_map', lang)}
-            </button>
+            <div className="mt-4 space-y-2">
+              <button
+                onClick={() => { setCurrentScreen('action-list'); setSelectedHotspot(null); }}
+                className="w-full py-2.5 bg-primary text-white rounded-lg text-sm font-medium hover:bg-primary-light transition-colors flex items-center justify-center gap-2"
+              >
+                <Eye size={16} />
+                {t('action_list.view_in_map', lang)}
+              </button>
+              {selectedData.hotspot && selectedData.hotspot.owning_agency !== 'MCG' && (
+                <button
+                  onClick={() => {
+                    if (!selectedData.hotspot) return;
+                    addAuditEntry({
+                      actor: 'Control Room',
+                      action: 'alert_issued',
+                      hotspot_id: selectedData.hotspot.id,
+                      original_rank: null,
+                      new_rank: null,
+                      reason: `Coordination request sent to ${selectedData.hotspot.owning_agency} for ${selectedData.hotspot.name}`,
+                    });
+                    addToast(
+                      lang === 'en'
+                        ? `Notified ${selectedData.hotspot.owning_agency}`
+                        : `${selectedData.hotspot.owning_agency} को सूचित किया गया`,
+                      'success'
+                    );
+                  }}
+                  className="w-full py-2.5 bg-amber-50 text-amber-700 border border-amber-200 rounded-lg text-sm font-medium hover:bg-amber-100 transition-colors flex items-center justify-center gap-2"
+                >
+                  <Bell size={16} />
+                  {selectedData.hotspot && (lang === 'en'
+                    ? `Notify ${selectedData.hotspot.owning_agency}`
+                    : `${selectedData.hotspot.owning_agency} को सूचित करें`
+                  )}
+                </button>
+              )}
+            </div>
           </div>
         )}
       </div>
