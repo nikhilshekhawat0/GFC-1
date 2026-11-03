@@ -17,6 +17,30 @@
   --color-focus-ring: #1A5C9E;
 }
 
+/* Dark mode theme variables */
+.dark {
+  --color-background: #0F172A;
+  --color-surface: #1E293B;
+  --color-text-primary: #F8FAFC;
+  --color-text-secondary: #94A3B8;
+  --color-risk-high: #EF4444;
+  --color-risk-medium: #F59E0B;
+  --color-risk-low: #10B981;
+  --color-border: #334155;
+}
+
+/* Smooth theme transitions */
+* {
+  transition: background-color 150ms ease-in-out,
+              border-color 150ms ease-in-out,
+              color 150ms ease-in-out;
+}
+
+/* Disable transitions on page load to prevent flash */
+.no-transitions * {
+  transition: none !important;
+}
+
 .leaflet-container {
   width: 100%;
   height: 100%;

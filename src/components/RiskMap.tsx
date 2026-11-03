@@ -6,10 +6,10 @@ import { hotspots, cctvFeeds } from '../data/mockData';
 import { MapPin, AlertTriangle, ArrowUp, ArrowDown, Eye, Check, X, Bell, Building2, Camera, GitBranch } from 'lucide-react';
 import { DataChip } from './ui/DataChip';
 
-function getRiskColor(riskPct: number): string {
-  if (riskPct >= 70) return '#C62828';
-  if (riskPct >= 50) return '#F9A825';
-  if (riskPct >= 30) return '#2E7D32';
+function getRiskColor(riskPct: number, isDark: boolean = false): string {
+  if (riskPct >= 70) return isDark ? '#EF4444' : '#C62828';
+  if (riskPct >= 50) return isDark ? '#F59E0B' : '#F9A825';
+  if (riskPct >= 30) return isDark ? '#10B981' : '#2E7D32';
   return '#757575';
 }
 
@@ -20,26 +20,30 @@ function getRiskTier(riskPct: number): 'high' | 'medium' | 'low' | 'unknown' {
   return 'unknown';
 }
 
-function getTierColor(tier: 'high' | 'medium' | 'low' | 'unknown'): string {
+function getTierColor(tier: 'high' | 'medium' | 'low' | 'unknown', isDark: boolean = false): string {
   switch (tier) {
-    case 'high': return '#C62828';
-    case 'medium': return '#F9A825';
-    case 'low': return '#2E7D32';
+    case 'high': return isDark ? '#EF4444' : '#C62828';
+    case 'medium': return isDark ? '#F59E0B' : '#F9A825';
+    case 'low': return isDark ? '#10B981' : '#2E7D32';
     case 'unknown': return '#757575';
   }
 }
 
 export function RiskMap() {
-  const { lang, rainfallMm, setRainfallMm, filterType, setFilterType, getRiskScores, sensors, setCurrentScreen, activeRiskFilter, setActiveRiskFilter, addToast, addAuditEntry } = useStore();
+  const { lang, rainfallMm, setRainfallMm, filterType, setFilterType, getRiskScores, sensors, setCurrentScreen, activeRiskFilter, setActiveRiskFilter, addToast, addAuditEntry, theme } = useStore();
   const mapRef = useRef<HTMLDivElement>(null);
   const mapInstanceRef = useRef<L.Map | null>(null);
   const markersRef = useRef<L.LayerGroup | null>(null);
   const polylinesRef = useRef<L.LayerGroup | null>(null);
   const cctvMarkersRef = useRef<L.LayerGroup | null>(null);
+  const tileLayerRef = useRef<L.TileLayer | null>(null);
   const [selectedHotspot, setSelectedHotspot] = useState<string | null>(null);
   const [announcement, setAnnouncement] = useState('');
   const [showCCTV, setShowCCTV] = useState(false);
   const [showTopology, setShowTopology] = useState(false);
+
+  // Determine if dark mode is active
+  const isDark = theme === 'dark' || (theme === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches);
 
   const riskScores = getRiskScores();
   const offlineSensors = sensors.filter(s => s.status === 'offline').length;
@@ -74,8 +78,12 @@ export function RiskMap() {
     if (!mapRef.current || mapInstanceRef.current) return;
 
     const map = L.map(mapRef.current).setView([28.435, 77.01], 12);
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      attribution: '© OpenStreetMap',
+    const tileUrl = isDark 
+      ? 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png'
+      : 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png';
+    
+    tileLayerRef.current = L.tileLayer(tileUrl, {
+      attribution: isDark ? '© CARTO © OpenStreetMap' : '© OpenStreetMap',
       maxZoom: 18,
     }).addTo(map);
 
@@ -101,6 +109,17 @@ export function RiskMap() {
     };
   }, []);
 
+  // Update tile layer when theme changes
+  useEffect(() => {
+    if (!mapInstanceRef.current || !tileLayerRef.current) return;
+
+    const tileUrl = isDark 
+      ? 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png'
+      : 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png';
+    
+    tileLayerRef.current.setUrl(tileUrl);
+  }, [isDark]);
+
   // Update markers and topology based on filter
   useEffect(() => {
     if (!markersRef.current || !polylinesRef.current || !mapInstanceRef.current) return;
@@ -115,7 +134,7 @@ export function RiskMap() {
       const score = riskScores.find(r => r.hotspot_id === hotspot.id);
       if (!score) return;
 
-      const color = getRiskColor(score.risk_pct);
+      const color = getRiskColor(score.risk_pct, isDark);
       const tier = getRiskTier(score.risk_pct);
       const isMatching = matchingHotspotIds ? matchingHotspotIds.has(hotspot.id) : true;
       const baseSize = Math.max(14, Math.min(28, hotspot.topology.leverage_score / 4));
@@ -128,11 +147,11 @@ export function RiskMap() {
         className: 'custom-marker',
         html: `
           <div style="position:relative;width:${size}px;height:${size}px;">
-            ${isMatching && activeRiskFilter ? `<div class="${pulseClass}" style="position:absolute;inset:-4px;border-radius:50%;border:2px solid ${getTierColor(tier)};opacity:0.3;"></div>` : ''}
+            ${isMatching && activeRiskFilter ? `<div class="${pulseClass}" style="position:absolute;inset:-4px;border-radius:50%;border:2px solid ${getTierColor(tier, isDark)};opacity:0.3;"></div>` : ''}
             <div style="width:${size}px;height:${size}px;background:${color};border:3px solid white;border-radius:50%;box-shadow:0 2px 6px rgba(0,0,0,0.3);display:flex;align-items:center;justify-content:center;opacity:${opacity};transition:opacity 200ms ease,transform 200ms ease;">
               <span style="color:white;font-size:${isMatching && activeRiskFilter ? '11px' : '9px'};font-weight:bold;">${score.risk_pct}</span>
             </div>
-            ${isMatching && activeRiskFilter ? `<div style="position:absolute;top:100%;left:50%;transform:translateX(-50%);margin-top:4px;white-space:nowrap;font-size:10px;font-weight:500;color:#1A1F2B;background:white;padding:2px 6px;border-radius:4px;box-shadow:0 1px 3px rgba(0,0,0,0.1);">${hotspot.name}</div>` : ''}
+            ${isMatching && activeRiskFilter ? `<div style="position:absolute;top:100%;left:50%;transform:translateX(-50%);margin-top:4px;white-space:nowrap;font-size:10px;font-weight:500;color:${isDark ? '#F8FAFC' : '#1A1F2B'};background:${isDark ? '#1E293B' : 'white'};padding:2px 6px;border-radius:4px;box-shadow:0 1px 3px rgba(0,0,0,0.1);">${hotspot.name}</div>` : ''}
           </div>
         `,
         iconSize: [size, size + (isMatching && activeRiskFilter ? 20 : 0)],
@@ -166,7 +185,7 @@ export function RiskMap() {
           
           const connectedTier = getRiskTier(connectedScore.risk_pct);
           const isEdgeMatching = matchingHotspotIds ? matchingHotspotIds.has(connectedId) : true;
-          const edgeColor = isEdgeMatching ? getTierColor(connectedTier) : '#757575';
+          const edgeColor = isEdgeMatching ? getTierColor(connectedTier, isDark) : '#757575';
           const edgeOpacity = isEdgeMatching ? 0.8 : 0.1;
           
           const polyline = L.polyline(
@@ -235,7 +254,7 @@ export function RiskMap() {
       // Reset to citywide view
       map.setView([28.435, 77.01], 12, { animate: true });
     }
-  }, [filteredHotspots, riskScores, filterType, activeRiskFilter, matchingHotspotIds, showCCTV, showTopology]);
+  }, [filteredHotspots, riskScores, filterType, activeRiskFilter, matchingHotspotIds, showCCTV, showTopology, isDark]);
 
   // Handle filter change with toast for empty tiers
   const handleFilterChange = (tier: 'high' | 'medium' | 'low' | 'unknown' | null) => {

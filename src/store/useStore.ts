@@ -22,6 +22,7 @@ const DEMO_EMAIL_MAP: Record<string, Role> = {
 };
 
 export type RiskTier = 'high' | 'medium' | 'low' | 'unknown';
+export type Theme = 'light' | 'dark' | 'system';
 
 interface AppState {
   // Auth
@@ -35,6 +36,7 @@ interface AppState {
   filterType: string;
   citizenSector: string;
   activeRiskFilter: RiskTier | null;
+  theme: Theme;
 
   // Data
   sensors: Sensor[];
@@ -68,6 +70,8 @@ interface AppState {
   getRankedActions: () => ActionItem[];
   resolveRole: (email: string) => Role;
   setActiveRiskFilter: (tier: RiskTier | null) => void;
+  setTheme: (theme: Theme) => void;
+  toggleTheme: () => void;
 }
 
 function computeRisk(hotspot: Hotspot, rainfallMm: number, sensors: Sensor[]): RiskScore {
@@ -200,6 +204,7 @@ export const useStore = create<AppState>()(
       filterType: 'all',
       citizenSector: '',
       activeRiskFilter: null,
+      theme: (localStorage.getItem('gfc-theme') as Theme) || 'system',
       sensors: initialSensors,
       auditLog: [
         { id: 'AL-001', timestamp: '2026-11-04T05:00:00+05:30', actor: 'System', action: 'system_ranking', hotspot_id: 'HSP-005', original_rank: null, new_rank: 1, reason: 'Highest leverage score + rainfall forecast' },
@@ -394,6 +399,32 @@ export const useStore = create<AppState>()(
         merged.sort((a, b) => a.rank - b.rank);
         return merged.map((a, i) => ({ ...a, rank: i + 1 }));
       },
+
+      setTheme: (theme) => {
+        localStorage.setItem('gfc-theme', theme);
+        set({ theme });
+        
+        // Apply theme to document
+        const root = document.documentElement;
+        if (theme === 'dark') {
+          root.classList.add('dark');
+        } else if (theme === 'light') {
+          root.classList.remove('dark');
+        } else {
+          // System preference
+          if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+            root.classList.add('dark');
+          } else {
+            root.classList.remove('dark');
+          }
+        }
+      },
+
+      toggleTheme: () => {
+        const { theme } = get();
+        const newTheme: Theme = theme === 'light' ? 'dark' : theme === 'dark' ? 'system' : 'light';
+        get().setTheme(newTheme);
+      },
     }),
     {
       name: 'gfc-store',
@@ -405,6 +436,7 @@ export const useStore = create<AppState>()(
         actionItems: state.actionItems,
         waterlogReports: state.waterlogReports,
         citizenSector: state.citizenSector,
+        theme: state.theme,
       }),
     }
   )
