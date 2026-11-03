@@ -169,33 +169,57 @@ export function Sidebar({ role, currentScreen, onNavigate, collapsed, onCollapse
   const SidebarContent = ({ isMobile = false }: { isMobile?: boolean }) => (
     <nav 
       aria-label="Primary"
-      className={`flex flex-col h-full ${isMobile ? 'p-4' : 'p-2'}`}
+      className="flex flex-col h-full overflow-hidden"
     >
-      {/* Workspace Header */}
-      {collapsed && !isMobile ? (
-        <div 
-          className="flex justify-center items-center h-14 mb-2 border-b border-[#EAECEF]"
-        >
-          <div className="w-6 h-6 flex items-center justify-center">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path d="M12 2C12 2 8 6 8 10C8 12.21 9.79 14 12 14C14.21 14 16 12.21 16 10C16 6 12 2 12 2Z" fill="#0B3D6B"/>
-              <path d="M12 16C12 16 9 18 9 20C9 21.1 9.9 22 11 22H13C14.1 22 15 21.1 15 20C15 18 12 16 12 16Z" fill="#0B3D6B"/>
-            </svg>
+      {/* Zone 1: Top Header - Fixed */}
+      <div className="flex-shrink-0 px-3 py-4 border-b border-[#EAECEF]">
+        {collapsed && !isMobile ? (
+          // Collapsed: Just logo mark centered
+          <div className="flex justify-center items-center">
+            <div className="w-6 h-6 flex items-center justify-center">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M12 2C12 2 8 6 8 10C8 12.21 9.79 14 12 14C14.21 14 16 12.21 16 10C16 6 12 2 12 2Z" fill="#0B3D6B"/>
+                <path d="M12 16C12 16 9 18 9 20C9 21.1 9.9 22 11 22H13C14.1 22 15 21.1 15 20C15 18 12 16 12 16Z" fill="#0B3D6B"/>
+              </svg>
+            </div>
           </div>
-        </div>
-      ) : (
-        <div className={`${isMobile ? 'mb-6' : 'px-2.5 pb-3 pt-2'}`}>
-          <h2 className="text-[13px] font-semibold text-text-primary">
-            {t('app.name', lang)}
-          </h2>
-          <p className="text-[11px] text-[#8A93A0] mt-0.5">
-            {getRoleLabel()}
-          </p>
-        </div>
-      )}
+        ) : (
+          // Expanded: Workspace name + Help/Settings icons
+          <div className="flex items-start justify-between">
+            <div className="flex-1 min-w-0">
+              <h2 className="text-[13px] font-semibold text-text-primary truncate">
+                {t('app.name', lang)}
+              </h2>
+              <p className="text-[11px] text-[#8A93A0] mt-0.5 truncate">
+                {getRoleLabel()}
+              </p>
+            </div>
+            {!isMobile && (
+              <div className="flex items-center gap-1 ml-2 flex-shrink-0">
+                <Tooltip content={lang === 'en' ? 'Help' : 'सहायता'}>
+                  <button 
+                    className="w-8 h-8 flex justify-center items-center rounded-lg text-[#6B7280] hover:bg-[#F0F2F5] hover:text-[#1A1F2B] transition-colors"
+                    aria-label={lang === 'en' ? 'Help' : 'सहायता'}
+                  >
+                    <HelpCircle size={18} strokeWidth={1.75} />
+                  </button>
+                </Tooltip>
+                <Tooltip content={lang === 'en' ? 'Settings' : 'सेटिंग्स'}>
+                  <button 
+                    className="w-8 h-8 flex justify-center items-center rounded-lg text-[#6B7280] hover:bg-[#F0F2F5] hover:text-[#1A1F2B] transition-colors"
+                    aria-label={lang === 'en' ? 'Settings' : 'सेटिंग्स'}
+                  >
+                    <Settings size={18} strokeWidth={1.75} />
+                  </button>
+                </Tooltip>
+              </div>
+            )}
+          </div>
+        )}
+      </div>
 
-      {/* Sections */}
-      <div className="flex-1 overflow-y-auto">
+      {/* Zone 2: Scrollable Navigation - Middle */}
+      <div className="flex-1 overflow-y-auto overflow-x-hidden px-2 py-3">
         {collapsed && !isMobile ? (
           // Collapsed mode: just icons with 48x48 hit areas
           <div className="flex flex-col items-center gap-1 py-2">
@@ -313,26 +337,10 @@ export function Sidebar({ role, currentScreen, onNavigate, collapsed, onCollapse
         )}
       </div>
 
-      {/* Footer */}
-      {collapsed && !isMobile ? (
-        // Collapsed footer: stacked icons with expand button at bottom
-        <div className="mt-auto flex flex-col items-center gap-1 pb-4 pt-3 border-t border-[#EAECEF]">
-          <Tooltip content={lang === 'en' ? 'Help' : 'सहायता'}>
-            <button 
-              className="w-12 h-12 flex justify-center items-center rounded-lg text-[#6B7280] hover:bg-[#F0F2F5] hover:text-[#1A1F2B] transition-colors"
-              aria-label={lang === 'en' ? 'Help' : 'सहायता'}
-            >
-              <HelpCircle size={20} strokeWidth={1.75} />
-            </button>
-          </Tooltip>
-          <Tooltip content={lang === 'en' ? 'Settings' : 'सेटिंग्स'}>
-            <button 
-              className="w-12 h-12 flex justify-center items-center rounded-lg text-[#6B7280] hover:bg-[#F0F2F5] hover:text-[#1A1F2B] transition-colors"
-              aria-label={lang === 'en' ? 'Settings' : 'सेटिंग्स'}
-            >
-              <Settings size={20} strokeWidth={1.75} />
-            </button>
-          </Tooltip>
+      {/* Zone 3: Bottom Footer - Fixed */}
+      <div className="flex-shrink-0 px-2 py-3 border-t border-[#EAECEF] flex justify-center">
+        {collapsed && !isMobile ? (
+          // Collapsed: Just expand button
           <Tooltip content="Expand sidebar">
             <button
               onClick={() => setCollapsed(!collapsed)}
@@ -343,39 +351,21 @@ export function Sidebar({ role, currentScreen, onNavigate, collapsed, onCollapse
               <ChevronRight size={20} strokeWidth={1.75} />
             </button>
           </Tooltip>
-        </div>
-      ) : (
-        // Expanded footer: labels with collapse button
-        <div className={`${isMobile ? 'mt-6 pt-6 border-t border-[#EAECEF]' : 'mt-2 pt-2 border-t border-[#EAECEF]'}`}>
-          <ul className="space-y-0.5">
-            <li>
-              <button className="w-full flex items-center gap-2.5 h-9 rounded-lg text-[13.5px] font-medium text-[#3F4754] hover:bg-[#F0F2F5] hover:text-text-primary transition-colors px-2.5">
-                <HelpCircle size={16} className="text-[#6B7280]" />
-                <span>{lang === 'en' ? 'Help' : 'सहायता'}</span>
-              </button>
-            </li>
-            <li>
-              <button className="w-full flex items-center gap-2.5 h-9 rounded-lg text-[13.5px] font-medium text-[#3F4754] hover:bg-[#F0F2F5] hover:text-text-primary transition-colors px-2.5">
-                <Settings size={16} className="text-[#6B7280]" />
-                <span>{lang === 'en' ? 'Settings' : 'सेटिंग्स'}</span>
-              </button>
-            </li>
-            {!isMobile && (
-              <li>
-                <button
-                  onClick={() => setCollapsed(!collapsed)}
-                  className="w-full flex items-center gap-2.5 h-9 rounded-lg text-[13.5px] font-medium text-[#3F4754] hover:bg-[#F0F2F5] hover:text-text-primary transition-colors px-2.5"
-                  aria-label="Collapse sidebar"
-                  aria-expanded={true}
-                >
-                  <ChevronLeft size={16} className="text-[#6B7280]" />
-                  <span>{lang === 'en' ? 'Collapse' : 'संक्षिप्त करें'}</span>
-                </button>
-              </li>
-            )}
-          </ul>
-        </div>
-      )}
+        ) : (
+          // Expanded: Collapse button with label
+          !isMobile && (
+            <button
+              onClick={() => setCollapsed(!collapsed)}
+              className="w-full flex items-center gap-2.5 h-9 rounded-lg text-[13.5px] font-medium text-[#3F4754] hover:bg-[#F0F2F5] hover:text-text-primary transition-colors px-2.5"
+              aria-label="Collapse sidebar"
+              aria-expanded={true}
+            >
+              <ChevronLeft size={16} className="text-[#6B7280]" />
+              <span>{lang === 'en' ? 'Collapse' : 'संक्षिप्त करें'}</span>
+            </button>
+          )
+        )}
+      </div>
     </nav>
   );
 
