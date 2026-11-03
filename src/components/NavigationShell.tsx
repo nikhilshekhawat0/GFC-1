@@ -61,6 +61,7 @@ function getScreenLabel(screen: Screen, lang: 'en' | 'hi'): string {
     'public-report': lang === 'en' ? 'Report' : 'रिपोर्ट',
     'ward-home': lang === 'en' ? 'Dashboard' : 'डैशबोर्ड',
     'control-room-home': lang === 'en' ? 'Dashboard' : 'डैशबोर्ड',
+    'help': lang === 'en' ? 'Help' : 'सहायता',
     'denied': lang === 'en' ? 'Access Denied' : 'पहुँच अस्वीकृत',
   };
   return labels[screen] || screen;

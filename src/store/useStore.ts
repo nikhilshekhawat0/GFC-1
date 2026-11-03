@@ -4,7 +4,7 @@ import { hotspots, initialSensors, crews, type Hotspot, type Sensor, type RiskSc
 import type { Lang } from '../i18n/translations';
 
 export type Role = 'ward_engineer' | 'control_room' | 'commissioner' | 'ddma_officer' | 'citizen';
-export type Screen = 'risk-map' | 'action-list' | 'sensor-health' | 'audit-log' | 'executive-summary' | 'network' | 'ward-home' | 'control-room-home' | 'citizen-home' | 'public-route-check' | 'public-alerts' | 'public-report' | 'denied';
+export type Screen = 'risk-map' | 'action-list' | 'sensor-health' | 'audit-log' | 'executive-summary' | 'network' | 'ward-home' | 'control-room-home' | 'citizen-home' | 'public-route-check' | 'public-alerts' | 'public-report' | 'help' | 'denied';
 
 export interface Session {
   email: string;

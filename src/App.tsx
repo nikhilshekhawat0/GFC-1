@@ -6,6 +6,7 @@ import { SensorHealth } from './components/SensorHealth';
 import { AuditLog } from './components/AuditLog';
 import { ExecutiveView } from './components/ExecutiveView';
 import { Network } from './components/Network';
+import { Help } from './components/Help';
 import { PublicRouteCheck, PublicAlerts, PublicReport } from './components/PublicScreens';
 import { Toasts } from './components/Toasts';
 import { Login } from './pages/Login';
@@ -56,6 +57,8 @@ function App() {
         return <ExecutiveView />;
       case 'network':
         return <Network />;
+      case 'help':
+        return <Help />;
       case 'public-route-check':
         return <PublicRouteCheck />;
       case 'public-alerts':

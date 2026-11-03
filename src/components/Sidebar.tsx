@@ -198,6 +198,7 @@ export function Sidebar({ role, currentScreen, onNavigate, collapsed, onCollapse
               <div className="flex items-center gap-1 ml-2 flex-shrink-0">
                 <Tooltip content={lang === 'en' ? 'Help' : 'सहायता'}>
                   <button 
+                    onClick={() => onNavigate('help')}
                     className="w-8 h-8 flex justify-center items-center rounded-lg text-[#6B7280] hover:bg-[#F0F2F5] hover:text-[#1A1F2B] transition-colors"
                     aria-label={lang === 'en' ? 'Help' : 'सहायता'}
                   >
