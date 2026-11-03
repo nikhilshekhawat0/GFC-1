@@ -26,12 +26,12 @@ interface SidebarProps {
   onNavigate: (screen: Screen) => void;
 }
 
-export function Sidebar({ role, currentScreen, onNavigate }: SidebarProps) {
+export function Sidebar({ role, currentScreen, onNavigate, collapsed, onCollapsedChange }: SidebarProps & { collapsed: boolean; onCollapsedChange: (collapsed: boolean) => void }) {
   const { lang, activeRiskFilter } = useStore();
-  const [collapsed, setCollapsed] = useState(() => {
-    const saved = localStorage.getItem('gfc_sidebar_collapsed');
-    return saved === 'true';
-  });
+  
+  const setCollapsed = (value: boolean) => {
+    onCollapsedChange(value);
+  };
   const [collapsedSections, setCollapsedSections] = useState<Record<string, boolean>>(() => {
     const saved = localStorage.getItem('gfc_sidebar_sections');
     return saved ? JSON.parse(saved) : {};
@@ -124,6 +124,7 @@ export function Sidebar({ role, currentScreen, onNavigate }: SidebarProps) {
   // Persist collapsed state
   useEffect(() => {
     localStorage.setItem('gfc_sidebar_collapsed', String(collapsed));
+    onCollapsedChange(collapsed);
   }, [collapsed]);
 
   // Persist section collapse state
@@ -170,34 +171,81 @@ export function Sidebar({ role, currentScreen, onNavigate }: SidebarProps) {
       className={`flex flex-col h-full ${isMobile ? 'p-4' : 'p-2'}`}
     >
       {/* Workspace Header */}
-      <div className={`${isMobile ? 'mb-6' : 'px-2.5 pb-3 pt-2'}`}>
-        {collapsed && !isMobile ? (
-          <div className="flex items-center justify-center h-10">
-            <div className="w-6 h-6 bg-primary rounded flex items-center justify-center">
-              <span className="text-white text-[10px] font-bold">GFC</span>
-            </div>
+      {collapsed && !isMobile ? (
+        <div 
+          className="flex justify-center items-center h-14 mb-2 border-b border-[#EAECEF]"
+        >
+          <div className="w-6 h-6 flex items-center justify-center">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M12 2C12 2 8 6 8 10C8 12.21 9.79 14 12 14C14.21 14 16 12.21 16 10C16 6 12 2 12 2Z" fill="#0B3D6B"/>
+              <path d="M12 16C12 16 9 18 9 20C9 21.1 9.9 22 11 22H13C14.1 22 15 21.1 15 20C15 18 12 16 12 16Z" fill="#0B3D6B"/>
+            </svg>
           </div>
-        ) : (
-          <>
-            <h2 className="text-[13px] font-semibold text-text-primary">
-              {t('app.name', lang)}
-            </h2>
-            <p className="text-[11px] text-[#8A93A0] mt-0.5">
-              {getRoleLabel()}
-            </p>
-          </>
-        )}
-      </div>
+        </div>
+      ) : (
+        <div className={`${isMobile ? 'mb-6' : 'px-2.5 pb-3 pt-2'}`}>
+          <h2 className="text-[13px] font-semibold text-text-primary">
+            {t('app.name', lang)}
+          </h2>
+          <p className="text-[11px] text-[#8A93A0] mt-0.5">
+            {getRoleLabel()}
+          </p>
+        </div>
+      )}
 
       {/* Sections */}
       <div className="flex-1 overflow-y-auto">
-        {visibleSections.map((section, idx) => {
-          const isCollapsed = collapsedSections[section.header];
-          
-          return (
-            <div key={idx} className="mb-2">
-              {/* Section Header */}
-              {!collapsed && (
+        {collapsed && !isMobile ? (
+          // Collapsed mode: just icons with 48x48 hit areas
+          <div className="flex flex-col items-center gap-1 py-2">
+            {visibleSections.map((section, idx) => (
+              <React.Fragment key={idx}>
+                {idx > 0 && <div className="h-4" />} {/* 16px spacer between sections */}
+                {section.items.map((item, itemIdx) => {
+                  const isActive = currentScreen === item.screen;
+                  const Icon = item.icon;
+                  
+                  return (
+                    <button
+                      key={itemIdx}
+                      onClick={() => onNavigate(item.screen)}
+                      className={`
+                        relative w-12 h-12 flex justify-center items-center rounded-lg
+                        transition-colors
+                        ${isActive 
+                          ? 'bg-[#EEF2F7] text-[#0B3D6B]' 
+                          : 'text-[#6B7280] hover:bg-[#F0F2F5] hover:text-[#1A1F2B]'
+                        }
+                      `}
+                      aria-current={isActive ? 'page' : undefined}
+                      title={item.label}
+                    >
+                      <Icon size={20} strokeWidth={1.75} />
+                      
+                      {/* Badge dot anchored to top-right of button */}
+                      {item.badge && (
+                        <div 
+                          className={`absolute top-2.5 right-2.5 w-2 h-2 rounded-full border-2 border-[#FAFBFC] ${
+                            item.badgeTone === 'warning' ? 'bg-[#F59E0B]' :
+                            item.badgeTone === 'danger' ? 'bg-[#EF4444]' :
+                            'bg-[#6B7280]'
+                          }`}
+                        />
+                      )}
+                    </button>
+                  );
+                })}
+              </React.Fragment>
+            ))}
+          </div>
+        ) : (
+          // Expanded mode: full labels and badges
+          visibleSections.map((section, idx) => {
+            const isCollapsed = collapsedSections[section.header];
+            
+            return (
+              <div key={idx} className="mb-2">
+                {/* Section Header */}
                 <button
                   onClick={() => toggleSection(section.header)}
                   className="w-full flex items-center justify-between px-2.5 py-1.5 text-[11px] font-semibold tracking-[0.06em] uppercase text-[#8A93A0] hover:text-text-primary transition-colors"
@@ -209,104 +257,117 @@ export function Sidebar({ role, currentScreen, onNavigate }: SidebarProps) {
                     className={`transition-transform ${isCollapsed ? '-rotate-90' : ''}`} 
                   />
                 </button>
-              )}
 
-              {/* Section Items */}
-              {!isCollapsed && (
-                <ul className="space-y-0.5">
-                  {section.items.map((item, itemIdx) => {
-                    const isActive = currentScreen === item.screen;
-                    const Icon = item.icon;
-                    
-                    return (
-                      <li key={itemIdx}>
-                        <button
-                          onClick={() => onNavigate(item.screen)}
-                          className={`
-                            w-full flex items-center gap-2.5 h-9 rounded-lg text-[13.5px] font-medium transition-colors relative
-                            ${collapsed && !isMobile ? 'justify-center px-0' : 'px-2.5'}
-                            ${isActive 
-                              ? 'bg-[#EEF2F7] text-primary font-semibold' 
-                              : 'text-[#3F4754] hover:bg-[#F0F2F5] hover:text-text-primary'
-                            }
-                          `}
-                          aria-current={isActive ? 'page' : undefined}
-                          title={collapsed && !isMobile ? item.label : undefined}
-                        >
-                          {/* Active indicator bar */}
-                          {isActive && (
-                            <div className="absolute left-0 top-1 bottom-1 w-0.5 bg-primary rounded-r" />
-                          )}
-                          
-                          <Icon 
-                            size={16} 
-                            className={`flex-shrink-0 ${isActive ? 'text-primary' : 'text-[#6B7280]'}`}
-                          />
-                          
-                          {(!collapsed || isMobile) && (
-                            <>
-                              <span className="flex-1 text-left truncate">{item.label}</span>
-                              {item.badge && (
-                                <span className={`
-                                  flex-shrink-0 h-[18px] min-w-[20px] px-1.5 rounded-md flex items-center justify-center
-                                  text-[11px] font-semibold tabular-nums
-                                  ${getBadgeStyle(item.badgeTone)}
-                                `}>
-                                  {item.badge}
-                                </span>
-                              )}
-                            </>
-                          )}
-                          
-                          {/* Collapsed badge dot */}
-                          {collapsed && !isMobile && item.badge && (
-                            <div className="absolute top-1 right-1 w-1 h-1 rounded-full bg-primary" />
-                          )}
-                        </button>
-                      </li>
-                    );
-                  })}
-                </ul>
-              )}
-            </div>
-          );
-        })}
+                {/* Section Items */}
+                {!isCollapsed && (
+                  <ul className="space-y-0.5">
+                    {section.items.map((item, itemIdx) => {
+                      const isActive = currentScreen === item.screen;
+                      const Icon = item.icon;
+                      
+                      return (
+                        <li key={itemIdx}>
+                          <button
+                            onClick={() => onNavigate(item.screen)}
+                            className={`
+                              w-full flex items-center gap-2.5 h-9 rounded-lg text-[13.5px] font-medium transition-colors relative
+                              px-2.5
+                              ${isActive 
+                                ? 'bg-[#EEF2F7] text-primary font-semibold' 
+                                : 'text-[#3F4754] hover:bg-[#F0F2F5] hover:text-text-primary'
+                              }
+                            `}
+                            aria-current={isActive ? 'page' : undefined}
+                          >
+                            {/* Active indicator bar */}
+                            {isActive && (
+                              <div className="absolute left-0 top-1 bottom-1 w-0.5 bg-primary rounded-r" />
+                            )}
+                            
+                            <Icon 
+                              size={16} 
+                              className={`flex-shrink-0 ${isActive ? 'text-primary' : 'text-[#6B7280]'}`}
+                            />
+                            
+                            <span className="flex-1 text-left truncate">{item.label}</span>
+                            {item.badge && (
+                              <span className={`
+                                flex-shrink-0 h-[18px] min-w-[20px] px-1.5 rounded-md flex items-center justify-center
+                                text-[11px] font-semibold tabular-nums
+                                ${getBadgeStyle(item.badgeTone)}
+                              `}>
+                                {item.badge}
+                              </span>
+                            )}
+                          </button>
+                        </li>
+                      );
+                    })}
+                  </ul>
+                )}
+              </div>
+            );
+          })
+        )}
       </div>
 
       {/* Footer */}
-      <div className={`${isMobile ? 'mt-6 pt-6 border-t border-[#EAECEF]' : 'mt-2 pt-2 border-t border-[#EAECEF]'}`}>
-        <ul className="space-y-0.5">
-          <li>
-            <button className={`
-              w-full flex items-center gap-2.5 h-9 rounded-lg text-[13.5px] font-medium text-[#3F4754] hover:bg-[#F0F2F5] hover:text-text-primary transition-colors
-              ${collapsed && !isMobile ? 'justify-center px-0' : 'px-2.5'}
-            `}>
-              <HelpCircle size={16} className="text-[#6B7280]" />
-              {(!collapsed || isMobile) && <span>{lang === 'en' ? 'Help' : 'सहायता'}</span>}
-            </button>
-          </li>
-          <li>
-            <button className={`
-              w-full flex items-center gap-2.5 h-9 rounded-lg text-[13.5px] font-medium text-[#3F4754] hover:bg-[#F0F2F5] hover:text-text-primary transition-colors
-              ${collapsed && !isMobile ? 'justify-center px-0' : 'px-2.5'}
-            `}>
-              <Settings size={16} className="text-[#6B7280]" />
-              {(!collapsed || isMobile) && <span>{lang === 'en' ? 'Settings' : 'सेटिंग्स'}</span>}
-            </button>
-          </li>
-        </ul>
-      </div>
-
-      {/* Collapse Button (desktop only) */}
-      {!isMobile && (
-        <button
-          onClick={() => setCollapsed(!collapsed)}
-          className="absolute bottom-4 right-2 w-12 h-8 flex items-center justify-center rounded-lg hover:bg-[#F0F2F5] transition-colors"
-          aria-label={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
-          aria-expanded={!collapsed}
-        >
-          {collapsed ? <ChevronRight size={16} /> : <ChevronLeft size={16} />}
-        </button>
+      {collapsed && !isMobile ? (
+        // Collapsed footer: stacked icons with expand button at bottom
+        <div className="mt-auto flex flex-col items-center gap-1 pb-4 pt-3 border-t border-[#EAECEF]">
+          <button 
+            className="w-12 h-12 flex justify-center items-center rounded-lg text-[#6B7280] hover:bg-[#F0F2F5] hover:text-[#1A1F2B] transition-colors"
+            title={lang === 'en' ? 'Help' : 'सहायता'}
+          >
+            <HelpCircle size={20} strokeWidth={1.75} />
+          </button>
+          <button 
+            className="w-12 h-12 flex justify-center items-center rounded-lg text-[#6B7280] hover:bg-[#F0F2F5] hover:text-[#1A1F2B] transition-colors"
+            title={lang === 'en' ? 'Settings' : 'सेटिंग्स'}
+          >
+            <Settings size={20} strokeWidth={1.75} />
+          </button>
+          <button
+            onClick={() => setCollapsed(!collapsed)}
+            className="w-12 h-12 flex justify-center items-center rounded-lg text-[#8A93A0] hover:bg-[#F0F2F5] hover:text-[#1A1F2B] transition-colors"
+            aria-label="Expand sidebar"
+            aria-expanded={false}
+            title="Expand sidebar"
+          >
+            <ChevronRight size={20} strokeWidth={1.75} />
+          </button>
+        </div>
+      ) : (
+        // Expanded footer: labels with collapse button
+        <div className={`${isMobile ? 'mt-6 pt-6 border-t border-[#EAECEF]' : 'mt-2 pt-2 border-t border-[#EAECEF]'}`}>
+          <ul className="space-y-0.5">
+            <li>
+              <button className="w-full flex items-center gap-2.5 h-9 rounded-lg text-[13.5px] font-medium text-[#3F4754] hover:bg-[#F0F2F5] hover:text-text-primary transition-colors px-2.5">
+                <HelpCircle size={16} className="text-[#6B7280]" />
+                <span>{lang === 'en' ? 'Help' : 'सहायता'}</span>
+              </button>
+            </li>
+            <li>
+              <button className="w-full flex items-center gap-2.5 h-9 rounded-lg text-[13.5px] font-medium text-[#3F4754] hover:bg-[#F0F2F5] hover:text-text-primary transition-colors px-2.5">
+                <Settings size={16} className="text-[#6B7280]" />
+                <span>{lang === 'en' ? 'Settings' : 'सेटिंग्स'}</span>
+              </button>
+            </li>
+            {!isMobile && (
+              <li>
+                <button
+                  onClick={() => setCollapsed(!collapsed)}
+                  className="w-full flex items-center gap-2.5 h-9 rounded-lg text-[13.5px] font-medium text-[#3F4754] hover:bg-[#F0F2F5] hover:text-text-primary transition-colors px-2.5"
+                  aria-label="Collapse sidebar"
+                  aria-expanded={true}
+                >
+                  <ChevronLeft size={16} className="text-[#6B7280]" />
+                  <span>{lang === 'en' ? 'Collapse' : 'संक्षिप्त करें'}</span>
+                </button>
+              </li>
+            )}
+          </ul>
+        </div>
       )}
     </nav>
   );
@@ -318,7 +379,7 @@ export function Sidebar({ role, currentScreen, onNavigate }: SidebarProps) {
         className={`
           hidden md:flex fixed left-0 top-12 bottom-0 bg-[#FAFBFC] border-r border-[#EAECEF] z-30
           transition-[width] duration-[180ms] ease-in-out
-          ${collapsed ? 'w-14' : 'w-60'}
+          ${collapsed ? 'w-16' : 'w-60'}
         `}
         style={{ willChange: 'width' }}
       >

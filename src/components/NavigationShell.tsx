@@ -76,6 +76,10 @@ export function NavigationShell({ children }: NavigationShellProps) {
   const [transitionDirection, setTransitionDirection] = useState<'forward' | 'backward' | null>(null);
   const [isTransitioning, setIsTransitioning] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(() => {
+    const saved = localStorage.getItem('gfc_sidebar_collapsed');
+    return saved === 'true';
+  });
   const mainRef = useRef<HTMLElement>(null);
   const swipeStartRef = useRef<{ x: number; y: number; time: number } | null>(null);
   
@@ -403,7 +407,9 @@ export function NavigationShell({ children }: NavigationShellProps) {
         <Sidebar 
           role={session.role} 
           currentScreen={currentScreen} 
-          onNavigate={(screen) => navigateTo(screen, 'forward')} 
+          onNavigate={(screen) => navigateTo(screen, 'forward')}
+          collapsed={sidebarCollapsed}
+          onCollapsedChange={setSidebarCollapsed}
         />
       )}
 
@@ -414,8 +420,8 @@ export function NavigationShell({ children }: NavigationShellProps) {
         className="flex-1 overflow-auto focus:outline-none"
         style={{ 
           marginTop: '48px',
-          marginLeft: isOfficial ? '14rem' : '0', // 240px = 15rem, but collapsed is 56px = 3.5rem
-          transition: isTransitioning ? 'opacity 180ms ease-out, transform 180ms ease-out, margin-left 180ms ease-in-out' : 'margin-left 180ms ease-in-out',
+          marginLeft: isOfficial ? (sidebarCollapsed ? '4rem' : '15rem') : '0', // 64px collapsed, 240px expanded
+          transition: 'margin-left 180ms ease-in-out, opacity 180ms ease-out, transform 180ms ease-out',
           opacity: isTransitioning ? 0 : 1,
           transform: isTransitioning 
             ? transitionDirection === 'forward' 
