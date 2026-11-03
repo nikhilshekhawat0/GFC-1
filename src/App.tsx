@@ -1,5 +1,5 @@
 import { useStore } from './store/useStore';
-import { Layout } from './components/Layout';
+import { NavigationShell } from './components/NavigationShell';
 import { RiskMap } from './components/RiskMap';
 import { ActionList } from './components/ActionList';
 import { SensorHealth } from './components/SensorHealth';
@@ -94,11 +94,11 @@ function App() {
   };
 
   return (
-    <Layout>
+    <NavigationShell>
       {renderScreen()}
       <Toasts />
       <CitizenToast />
-    </Layout>
+    </NavigationShell>
   );
 }
 
