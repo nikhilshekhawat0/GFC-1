@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useRef, useCallback } from 'react';
 import * as DropdownMenu from '@radix-ui/react-dropdown-menu';
 import { useStore, type Screen, type Role } from '../store/useStore';
-import { Menu, ChevronLeft, ChevronRight, ChevronDown, Droplets, Search, Settings, Sun, Moon } from 'lucide-react';
+import { Menu, ChevronLeft, ChevronRight, ChevronDown, Droplets, Search, Settings } from 'lucide-react';
 import { AvatarDropdown } from './ui/Dropdown';
 import { Sidebar } from './Sidebar';
 import { t } from '../i18n/translations';
@@ -72,7 +72,7 @@ interface NavigationShellProps {
 }
 
 export function NavigationShell({ children }: NavigationShellProps) {
-  const { lang, setLang, session, logout, currentScreen, setCurrentScreen, rainfallMm, getRiskScores, activeRiskFilter, setActiveRiskFilter, theme, setTheme, toggleTheme } = useStore();
+  const { lang, setLang, session, logout, currentScreen, setCurrentScreen, rainfallMm, getRiskScores, activeRiskFilter, setActiveRiskFilter } = useStore();
   const [showNavHint, setShowNavHint] = useState(false);
   const [transitionDirection, setTransitionDirection] = useState<'forward' | 'backward' | null>(null);
   const [isTransitioning, setIsTransitioning] = useState(false);
@@ -107,11 +107,6 @@ export function NavigationShell({ children }: NavigationShellProps) {
     };
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
-
-  // Initialize theme on mount
-  useEffect(() => {
-    setTheme(theme);
   }, []);
 
   // Keyboard navigation
@@ -264,10 +259,13 @@ export function NavigationShell({ children }: NavigationShellProps) {
 
       {/* Menu Bar - Flat, Assistant Style */}
       <header 
-        className={`fixed top-0 left-0 right-0 bg-white dark:bg-slate-900 border-b border-border dark:border-slate-700 z-50 transition-shadow duration-200 ${
-          isScrolled ? 'shadow-[0_1px_2px_rgba(0,0,0,0.04)] dark:shadow-[0_1px_2px_rgba(0,0,0,0.4)]' : ''
+        className={`fixed top-0 left-0 right-0 bg-white z-50 transition-shadow duration-200 ${
+          isScrolled ? 'shadow-[0_1px_2px_rgba(0,0,0,0.04)]' : ''
         }`}
-        style={{ height: '48px' }}
+        style={{ 
+          height: '48px',
+          borderBottom: '1px solid #EAECEF'
+        }}
         role="banner"
       >
         <div className="h-full flex items-center justify-between px-4">
@@ -369,26 +367,6 @@ export function NavigationShell({ children }: NavigationShellProps) {
                 )}
               </div>
             )}
-
-            {/* Theme Toggle */}
-            <button
-              onClick={(e) => {
-                if (e.shiftKey) {
-                  setTheme('system');
-                } else {
-                  toggleTheme();
-                }
-              }}
-              className="p-1.5 rounded-lg hover:bg-[#F4F6F8] dark:hover:bg-slate-800 transition-colors"
-              aria-label={theme === 'dark' ? 'Switch to light mode' : theme === 'light' ? 'Switch to dark mode' : 'Switch theme'}
-              title={theme === 'dark' ? 'Light mode' : theme === 'light' ? 'Dark mode' : 'System theme'}
-            >
-              {theme === 'dark' ? (
-                <Sun size={16} className="text-text-secondary" />
-              ) : (
-                <Moon size={16} className="text-text-secondary" />
-              )}
-            </button>
 
             {/* Language Toggle */}
             <button

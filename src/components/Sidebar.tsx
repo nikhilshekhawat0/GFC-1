@@ -375,7 +375,7 @@ export function Sidebar({ role, currentScreen, onNavigate, collapsed, onCollapse
       {/* Desktop Sidebar */}
       <aside
         className={`
-          hidden md:flex fixed left-0 top-12 bottom-0 bg-[#FAFBFC] dark:bg-[#0B1120] border-r border-[#EAECEF] dark:border-slate-700 z-30
+          hidden md:flex fixed left-0 top-12 bottom-0 bg-[#FAFBFC] border-r border-[#EAECEF] z-30
           transition-[width] duration-[180ms] ease-in-out
           ${collapsed ? 'w-16' : 'w-60'}
         `}
@@ -391,7 +391,7 @@ export function Sidebar({ role, currentScreen, onNavigate, collapsed, onCollapse
             className="fixed inset-0 bg-[rgba(15,23,42,0.35)] z-40 md:hidden animate-[fadeIn_150ms_ease-out]"
             onClick={() => setMobileOpen(false)}
           />
-          <aside className="fixed top-12 left-0 bottom-0 w-[280px] bg-white dark:bg-slate-900 z-50 md:hidden shadow-[0_8px_24px_rgba(0,0,0,0.08)] dark:shadow-[0_8px_24px_rgba(0,0,0,0.4)] animate-[slideInLeft_220ms_ease-out] overflow-y-auto">
+          <aside className="fixed top-12 left-0 bottom-0 w-[280px] bg-white z-50 md:hidden shadow-[0_8px_24px_rgba(0,0,0,0.08)] animate-[slideInLeft_220ms_ease-out] overflow-y-auto">
             <SidebarContent isMobile />
           </aside>
         </>
@@ -400,10 +400,10 @@ export function Sidebar({ role, currentScreen, onNavigate, collapsed, onCollapse
       {/* Mobile Hamburger Button */}
       <button
         onClick={() => setMobileOpen(true)}
-        className="md:hidden fixed top-3 left-3 z-30 p-2 rounded-lg bg-white dark:bg-slate-800 border border-[#EAECEF] dark:border-slate-700 shadow-sm hover:bg-[#F4F6F8] dark:hover:bg-slate-700 transition-colors"
+        className="md:hidden fixed top-3 left-3 z-30 p-2 rounded-lg bg-white border border-[#EAECEF] shadow-sm hover:bg-[#F4F6F8] transition-colors"
         aria-label="Open menu"
       >
-        <Menu size={20} className="text-text-primary dark:text-slate-200" />
+        <Menu size={20} />
       </button>
     </>
   );
