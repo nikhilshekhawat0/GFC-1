@@ -88,7 +88,7 @@ export function WardEngineerHome() {
                       <div className="flex items-start justify-between gap-2">
                         <div>
                           <h3 className="font-semibold text-text-primary">{hotspot.name}</h3>
-                          <p className="text-xs text-text-secondary">{hotspot.ward} · {hotspot.owning_agency}</p>
+                          <p className="text-xs text-text-secondary">{hotspot.zone || 'Unknown zone'} · {hotspot.owning_agency}</p>
                         </div>
                         <div className="flex items-center gap-2 flex-shrink-0">
                           {action.is_override && (

@@ -16,7 +16,7 @@ const mockAgencyData: AgencyFeed[] = [
   {
     agency: 'MCG',
     drains: 41,
-    covered: 12,
+    covered: 24,
     feed: 'live',
     last: '12 min ago',
     sensors: 14,
@@ -25,25 +25,25 @@ const mockAgencyData: AgencyFeed[] = [
   {
     agency: 'GMDA',
     drains: 33,
-    covered: 9,
+    covered: 8,
     feed: 'stale',
     last: '26h ago',
     sensors: 6,
-    modelImpact: 'GMDA data feed is stale — Golf Course Road and Sohna Road predictions are medium confidence.'
+    modelImpact: 'GMDA data feed is stale — 6 register hotspots affected, including Wazirabad Chowk and Sector 28.'
   },
   {
     agency: 'HSVP',
     drains: 18,
-    covered: 4,
+    covered: 1,
     feed: 'none',
     last: '—',
     sensors: 0,
-    modelImpact: 'No HSVP data feed — Sector 111 and other HSVP areas have low confidence predictions.'
+    modelImpact: 'No HSVP data feed — 1 register hotspot (Village Ghata Underpass) has low confidence predictions.'
   },
   {
     agency: 'Irrigation',
     drains: 22,
-    covered: 8,
+    covered: 0,
     feed: 'none',
     last: '—',
     sensors: 0,
@@ -52,25 +52,25 @@ const mockAgencyData: AgencyFeed[] = [
   {
     agency: 'NHAI',
     drains: 9,
-    covered: 5,
+    covered: 4,
     feed: 'live',
     last: '40 min ago',
     sensors: 8,
-    modelImpact: 'NHAI underpasses monitored — Subhash Chowk and Hero Honda predictions are high confidence.'
+    modelImpact: 'NHAI underpasses monitored — high confidence for critical points.'
   },
   {
     agency: 'PWD',
     drains: 14,
-    covered: 3,
+    covered: 1,
     feed: 'stale',
     last: '9h ago',
     sensors: 3,
-    modelImpact: 'PWD data feed is stale — Narsinghpur Crossing predictions are medium confidence.'
+    modelImpact: 'PWD data feed is stale — limited coverage for road drainage.'
   },
   {
     agency: 'PHED',
     drains: 6,
-    covered: 1,
+    covered: 0,
     feed: 'none',
     last: '—',
     sensors: 0,

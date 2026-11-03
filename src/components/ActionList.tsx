@@ -177,7 +177,7 @@ export function ActionList() {
                       <div className="flex items-start justify-between gap-2">
                         <div>
                           <h3 className="font-semibold text-text-primary text-sm">{hotspot.name}</h3>
-                          <p className="text-xs text-text-secondary">{hotspot.ward} · {hotspot.owning_agency}</p>
+                          <p className="text-xs text-text-secondary">{hotspot.zone || 'Unknown zone'} · {hotspot.owning_agency}</p>
                         </div>
                         <div className="flex items-center gap-1.5 flex-shrink-0">
                           {action.is_override && (

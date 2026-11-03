@@ -4,6 +4,7 @@ import { useStore } from '../store/useStore';
 import { t } from '../i18n/translations';
 import { hotspots } from '../data/mockData';
 import { MapPin, AlertTriangle, ArrowUp, ArrowDown, Eye, Check, X, Bell, Building2 } from 'lucide-react';
+import { DataChip } from './ui/DataChip';
 
 function getRiskColor(riskPct: number): string {
   if (riskPct >= 70) return '#C62828';
@@ -58,10 +59,10 @@ export function RiskMap() {
   const filteredHotspots = filterType === 'all'
     ? hotspots
     : hotspots.filter(h => {
-        if (filterType === 'underpass') return h.type === 'underpass';
-        if (filterType === 'drain-node') return h.type === 'drain-node';
-        if (filterType === 'road') return h.type === 'road';
-        if (filterType === 'residential-sector') return h.type === 'residential-sector';
+        if (filterType === 'underpass') return h.mcg_category === 'critical_point';
+        if (filterType === 'drain-node') return h.mcg_category === 'drainage_block';
+        if (filterType === 'road') return h.mcg_category === 'low_lying_area';
+        if (filterType === 'residential-sector') return h.mcg_category === 'no_sewer_line';
         return true;
       });
 
@@ -113,7 +114,7 @@ export function RiskMap() {
       const color = getRiskColor(score.risk_pct);
       const tier = getRiskTier(score.risk_pct);
       const isMatching = matchingHotspotIds ? matchingHotspotIds.has(hotspot.id) : true;
-      const baseSize = Math.max(14, Math.min(28, hotspot.leverage_score / 4));
+      const baseSize = Math.max(14, Math.min(28, hotspot.topology.leverage_score / 4));
       const size = isMatching && activeRiskFilter ? baseSize * 1.5 : baseSize;
       const opacity = isMatching ? 1 : 0.2;
 
@@ -154,8 +155,8 @@ export function RiskMap() {
         if (!matchingHotspotIds.has(hotspot.id)) return;
         
         // Draw edges to upstream/downstream
-        const connections = [...hotspot.upstream_of, ...hotspot.downstream_of];
-        connections.forEach(connectedId => {
+        const connections = [...hotspot.topology.upstream_of, ...hotspot.topology.downstream_of];
+        connections.forEach((connectedId: string) => {
           const connectedHotspot = hotspots.find(h => h.id === connectedId);
           if (!connectedHotspot) return;
           
@@ -397,7 +398,7 @@ export function RiskMap() {
             <div className="flex items-start justify-between mb-3">
               <div>
                 <h3 className="font-semibold text-text-primary">{selectedData.hotspot.name}</h3>
-                <p className="text-xs text-text-secondary">{selectedData.hotspot.ward} · {selectedData.hotspot.owning_agency}</p>
+                <p className="text-xs text-text-secondary">{selectedData.hotspot.zone || 'Unknown zone'} · {selectedData.hotspot.owning_agency}</p>
               </div>
               <button onClick={() => setSelectedHotspot(null)} className="p-1 hover:bg-background rounded">
                 <span className="text-lg">×</span>
@@ -428,24 +429,51 @@ export function RiskMap() {
             <div className="space-y-2 text-sm">
               <div className="flex items-center gap-2 text-text-secondary">
                 <MapPin size={14} />
-                <span>{t('risk_map.filter_all', lang)}: {selectedData.hotspot.type}</span>
+                <span className="flex items-center gap-1.5">
+                  {selectedData.hotspot.mcg_category.replace(/_/g, ' ')}
+                  <DataChip type="register" />
+                </span>
               </div>
-              {selectedData.hotspot.downstream_of.length > 0 && (
-                <div className="flex items-center gap-2 text-text-secondary">
-                  <ArrowDown size={14} />
-                  <span>Downstream: {selectedData.hotspot.downstream_of.map(id => hotspots.find(h => h.id === id)?.name).join(', ')}</span>
+              {selectedData.hotspot.cause_note && (
+                <div className="flex items-start gap-2 text-text-secondary">
+                  <AlertTriangle size={14} className="flex-shrink-0 mt-0.5" />
+                  <span className="flex items-start gap-1.5">
+                    <span>Cause: {selectedData.hotspot.cause_note}</span>
+                    <DataChip type="register" />
+                  </span>
                 </div>
               )}
-              {selectedData.hotspot.upstream_of.length > 0 && (
+              {selectedData.hotspot.topology.downstream_of.length > 0 && (
+                <div className="flex items-center gap-2 text-text-secondary">
+                  <ArrowDown size={14} />
+                  <span className="flex items-center gap-1.5">
+                    Downstream: {selectedData.hotspot.topology.downstream_of.map((id: string) => hotspots.find(h => h.id === id)?.name).join(', ')}
+                    <DataChip type="modelled" />
+                  </span>
+                </div>
+              )}
+              {selectedData.hotspot.topology.upstream_of.length > 0 && (
                 <div className="flex items-center gap-2 text-text-secondary">
                   <ArrowUp size={14} />
-                  <span>Upstream: {selectedData.hotspot.upstream_of.map(id => hotspots.find(h => h.id === id)?.name).join(', ')}</span>
+                  <span className="flex items-center gap-1.5">
+                    Upstream: {selectedData.hotspot.topology.upstream_of.map((id: string) => hotspots.find(h => h.id === id)?.name).join(', ')}
+                    <DataChip type="modelled" />
+                  </span>
                 </div>
               )}
               <div className="flex items-center gap-2 text-text-secondary">
                 <AlertTriangle size={14} />
-                <span>Population exposure: {selectedData.hotspot.population_exposure.toLocaleString()}</span>
+                <span className="flex items-center gap-1.5">
+                  Population exposure: {selectedData.hotspot.population_exposure.toLocaleString()}
+                  <DataChip type="modelled" />
+                </span>
               </div>
+              {selectedData.hotspot.je && (
+                <div className="pt-2 border-t border-border text-xs">
+                  <p className="font-medium text-text-primary">Junior Engineer:</p>
+                  <p className="text-text-secondary">{selectedData.hotspot.je.name} · {selectedData.hotspot.je.phone}</p>
+                </div>
+              )}
             </div>
 
             <div className="mt-4 space-y-2">

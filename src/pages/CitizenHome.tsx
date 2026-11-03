@@ -27,7 +27,7 @@ export function CitizenHome() {
   const sectorAlerts = citizenSector
     ? riskScores.filter(r => {
         const h = hotspots.find(h => h.id === r.hotspot_id);
-        return h?.ward === citizenSector && r.risk_pct >= 50;
+        return h?.zone === citizenSector && r.risk_pct >= 50;
       }).slice(0, 3)
     : [];
 
@@ -38,7 +38,7 @@ export function CitizenHome() {
     { icon: Camera, label: t('public.report_waterlogging', lang), desc: lang === 'en' ? 'Help us check predictions' : 'हमारी भविष्यवाणियों की जाँच में मदद करें', route: 'public-report' as const, color: 'text-risk-high bg-red-50' },
   ];
 
-  const wards = [...new Set(hotspots.map(h => h.ward))];
+  const wards = [...new Set(hotspots.map(h => h.zone).filter(Boolean))] as string[];
 
   return (
     <div className="h-full overflow-auto bg-background">

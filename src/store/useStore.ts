@@ -75,12 +75,12 @@ function computeRisk(hotspot: Hotspot, rainfallMm: number, sensors: Sensor[]): R
   const popNormalized = (hotspot.population_exposure / maxPop) * 100;
   const riskPct = Math.min(100, Math.max(0,
     (rainfallMm / 150) * 60 +
-    (hotspot.leverage_score / 100) * 25 +
+    (hotspot.topology.leverage_score / 100) * 25 +
     (popNormalized / 100) * 15
   ));
 
   const hotspotSensors = sensors.filter(s => s.hotspot_id === hotspot.id);
-  const upstreamIds = [...hotspot.downstream_of, ...hotspot.upstream_of];
+  const upstreamIds = [...hotspot.topology.downstream_of, ...hotspot.topology.upstream_of];
   const upstreamSensors = sensors.filter(s => upstreamIds.includes(s.hotspot_id));
   const allRelevantSensors = [...hotspotSensors, ...upstreamSensors];
   const offlineCount = allRelevantSensors.filter(s => s.status === 'offline').length;
@@ -94,8 +94,8 @@ function computeRisk(hotspot: Hotspot, rainfallMm: number, sensors: Sensor[]): R
 
   const inputsUsed: string[] = [];
   if (rainfallMm > 0) inputsUsed.push(`Rainfall forecast: ${rainfallMm}mm`);
-  inputsUsed.push(`Leverage score: ${hotspot.leverage_score}`);
-  inputsUsed.push(`Population exposure: ${hotspot.population_exposure.toLocaleString()}`);
+  inputsUsed.push(`Leverage score: ${hotspot.topology.leverage_score} (modelled)`);
+  inputsUsed.push(`Population exposure: ${hotspot.population_exposure.toLocaleString()} (modelled)`);
   if (offlineCount > 0) inputsUsed.push(`${offlineCount} upstream sensor(s) offline`);
 
   return {
@@ -117,7 +117,7 @@ function generateActions(riskScores: RiskScore[], rainfallMm: number): ActionIte
     const hotspot = hotspots.find(h => h.id === score.hotspot_id)!;
     const riskPct = score.risk_pct;
 
-    if (riskPct >= 70 && hotspot.type === 'underpass') {
+    if (riskPct >= 70 && hotspot.mcg_category === 'critical_point') {
       actions.push({
         id: `ACT-${score.hotspot_id}-pump`,
         rank: 0,
@@ -131,7 +131,7 @@ function generateActions(riskScores: RiskScore[], rainfallMm: number): ActionIte
       });
     }
 
-    if (riskPct >= 60 && hotspot.downstream_of.length > 0) {
+    if (riskPct >= 60 && hotspot.topology.downstream_of.length > 0) {
       actions.push({
         id: `ACT-${score.hotspot_id}-desilt`,
         rank: 0,
@@ -181,12 +181,12 @@ function generateActions(riskScores: RiskScore[], rainfallMm: number): ActionIte
     const crew = crews.find(c => c.id === action.assigned_crew_id);
     const travelTime = crew?.travel_minutes_to[action.hotspot_id] || 30;
     const travelInverse = Math.max(0, 100 - travelTime);
-    const priority = score.risk_pct * 0.6 + hotspot.leverage_score * 0.3 + travelInverse * 0.1;
+    const priority = score.risk_pct * 0.6 + hotspot.topology.leverage_score * 0.3 + travelInverse * 0.1;
     return { ...action, _priority: priority };
   });
 
   ranked.sort((a, b) => b._priority - a._priority);
-  return ranked.map((a, i) => ({ ...a, rank: i + 1 } as ActionItem));
+  return ranked.map((a, i) => ({ ...a, rank: i + 1 } as ActionItem & { _priority?: number }));
 }
 
 export const useStore = create<AppState>()(

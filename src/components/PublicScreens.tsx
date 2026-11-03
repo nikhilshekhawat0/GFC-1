@@ -94,7 +94,7 @@ export function PublicRouteCheck() {
                   <div className="flex items-start justify-between">
                     <div>
                       <h3 className="font-semibold text-text-primary text-sm">{hotspot.name}</h3>
-                      <p className="text-xs text-text-secondary mt-0.5">{hotspot.ward}</p>
+                      <p className="text-xs text-text-secondary mt-0.5">{hotspot.zone || 'Unknown zone'}</p>
                     </div>
                     <span className={`px-2 py-1 rounded text-xs font-bold text-white ${getRiskColor(score.risk_pct)}`}>
                       {t(`risk.${tier}`, lang)}
@@ -177,7 +177,7 @@ export function PublicAlerts() {
                 className="w-full px-3 py-2.5 border border-border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-focus-ring"
               >
                 <option value="">Select sector</option>
-                {hotspots.map(h => <option key={h.id} value={h.ward}>{h.ward} — {h.name}</option>)}
+                {hotspots.map(h => <option key={h.id} value={h.zone || ''}>{h.zone || 'Unknown'} — {h.name}</option>)}
               </select>
             </div>
 
