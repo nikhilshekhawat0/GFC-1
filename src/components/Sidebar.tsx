@@ -6,6 +6,7 @@ import {
   type LucideIcon
 } from 'lucide-react';
 import { t } from '../i18n/translations';
+import { Tooltip } from './ui/Tooltip';
 
 interface SidebarItem {
   label: string;
@@ -206,33 +207,34 @@ export function Sidebar({ role, currentScreen, onNavigate, collapsed, onCollapse
                   const Icon = item.icon;
                   
                   return (
-                    <button
-                      key={itemIdx}
-                      onClick={() => onNavigate(item.screen)}
-                      className={`
-                        relative w-12 h-12 flex justify-center items-center rounded-lg
-                        transition-colors
-                        ${isActive 
-                          ? 'bg-[#EEF2F7] text-[#0B3D6B]' 
-                          : 'text-[#6B7280] hover:bg-[#F0F2F5] hover:text-[#1A1F2B]'
-                        }
-                      `}
-                      aria-current={isActive ? 'page' : undefined}
-                      title={item.label}
-                    >
-                      <Icon size={20} strokeWidth={1.75} />
-                      
-                      {/* Badge dot anchored to top-right of button */}
-                      {item.badge && (
-                        <div 
-                          className={`absolute top-2.5 right-2.5 w-2 h-2 rounded-full border-2 border-[#FAFBFC] ${
-                            item.badgeTone === 'warning' ? 'bg-[#F59E0B]' :
-                            item.badgeTone === 'danger' ? 'bg-[#EF4444]' :
-                            'bg-[#6B7280]'
-                          }`}
-                        />
-                      )}
-                    </button>
+                    <Tooltip key={itemIdx} content={item.label}>
+                      <button
+                        onClick={() => onNavigate(item.screen)}
+                        className={`
+                          relative w-12 h-12 flex justify-center items-center rounded-lg
+                          transition-colors
+                          ${isActive 
+                            ? 'bg-[#EEF2F7] text-[#0B3D6B]' 
+                            : 'text-[#6B7280] hover:bg-[#F0F2F5] hover:text-[#1A1F2B]'
+                          }
+                        `}
+                        aria-current={isActive ? 'page' : undefined}
+                        aria-label={item.label}
+                      >
+                        <Icon size={20} strokeWidth={1.75} />
+                        
+                        {/* Badge dot anchored to top-right of button */}
+                        {item.badge && (
+                          <div 
+                            className={`absolute top-2.5 right-2.5 w-2 h-2 rounded-full border-2 border-[#FAFBFC] ${
+                              item.badgeTone === 'warning' ? 'bg-[#F59E0B]' :
+                              item.badgeTone === 'danger' ? 'bg-[#EF4444]' :
+                              'bg-[#6B7280]'
+                            }`}
+                          />
+                        )}
+                      </button>
+                    </Tooltip>
                   );
                 })}
               </React.Fragment>
@@ -315,27 +317,32 @@ export function Sidebar({ role, currentScreen, onNavigate, collapsed, onCollapse
       {collapsed && !isMobile ? (
         // Collapsed footer: stacked icons with expand button at bottom
         <div className="mt-auto flex flex-col items-center gap-1 pb-4 pt-3 border-t border-[#EAECEF]">
-          <button 
-            className="w-12 h-12 flex justify-center items-center rounded-lg text-[#6B7280] hover:bg-[#F0F2F5] hover:text-[#1A1F2B] transition-colors"
-            title={lang === 'en' ? 'Help' : 'सहायता'}
-          >
-            <HelpCircle size={20} strokeWidth={1.75} />
-          </button>
-          <button 
-            className="w-12 h-12 flex justify-center items-center rounded-lg text-[#6B7280] hover:bg-[#F0F2F5] hover:text-[#1A1F2B] transition-colors"
-            title={lang === 'en' ? 'Settings' : 'सेटिंग्स'}
-          >
-            <Settings size={20} strokeWidth={1.75} />
-          </button>
-          <button
-            onClick={() => setCollapsed(!collapsed)}
-            className="w-12 h-12 flex justify-center items-center rounded-lg text-[#8A93A0] hover:bg-[#F0F2F5] hover:text-[#1A1F2B] transition-colors"
-            aria-label="Expand sidebar"
-            aria-expanded={false}
-            title="Expand sidebar"
-          >
-            <ChevronRight size={20} strokeWidth={1.75} />
-          </button>
+          <Tooltip content={lang === 'en' ? 'Help' : 'सहायता'}>
+            <button 
+              className="w-12 h-12 flex justify-center items-center rounded-lg text-[#6B7280] hover:bg-[#F0F2F5] hover:text-[#1A1F2B] transition-colors"
+              aria-label={lang === 'en' ? 'Help' : 'सहायता'}
+            >
+              <HelpCircle size={20} strokeWidth={1.75} />
+            </button>
+          </Tooltip>
+          <Tooltip content={lang === 'en' ? 'Settings' : 'सेटिंग्स'}>
+            <button 
+              className="w-12 h-12 flex justify-center items-center rounded-lg text-[#6B7280] hover:bg-[#F0F2F5] hover:text-[#1A1F2B] transition-colors"
+              aria-label={lang === 'en' ? 'Settings' : 'सेटिंग्स'}
+            >
+              <Settings size={20} strokeWidth={1.75} />
+            </button>
+          </Tooltip>
+          <Tooltip content="Expand sidebar">
+            <button
+              onClick={() => setCollapsed(!collapsed)}
+              className="w-12 h-12 flex justify-center items-center rounded-lg text-[#8A93A0] hover:bg-[#F0F2F5] hover:text-[#1A1F2B] transition-colors"
+              aria-label="Expand sidebar"
+              aria-expanded={false}
+            >
+              <ChevronRight size={20} strokeWidth={1.75} />
+            </button>
+          </Tooltip>
         </div>
       ) : (
         // Expanded footer: labels with collapse button
