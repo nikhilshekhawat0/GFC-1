@@ -2,8 +2,8 @@ import { useEffect, useRef, useState, useMemo } from 'react';
 import L from 'leaflet';
 import { useStore } from '../store/useStore';
 import { t } from '../i18n/translations';
-import { hotspots } from '../data/mockData';
-import { MapPin, AlertTriangle, ArrowUp, ArrowDown, Eye, Check, X, Bell, Building2 } from 'lucide-react';
+import { hotspots, cctvFeeds } from '../data/mockData';
+import { MapPin, AlertTriangle, ArrowUp, ArrowDown, Eye, Check, X, Bell, Building2, Camera, GitBranch } from 'lucide-react';
 import { DataChip } from './ui/DataChip';
 
 function getRiskColor(riskPct: number): string {
@@ -35,8 +35,11 @@ export function RiskMap() {
   const mapInstanceRef = useRef<L.Map | null>(null);
   const markersRef = useRef<L.LayerGroup | null>(null);
   const polylinesRef = useRef<L.LayerGroup | null>(null);
+  const cctvMarkersRef = useRef<L.LayerGroup | null>(null);
   const [selectedHotspot, setSelectedHotspot] = useState<string | null>(null);
   const [announcement, setAnnouncement] = useState('');
+  const [showCCTV, setShowCCTV] = useState(false);
+  const [showTopology, setShowTopology] = useState(false);
 
   const riskScores = getRiskScores();
   const offlineSensors = sensors.filter(s => s.status === 'offline').length;
@@ -79,6 +82,7 @@ export function RiskMap() {
     mapInstanceRef.current = map;
     markersRef.current = L.layerGroup().addTo(map);
     polylinesRef.current = L.layerGroup().addTo(map);
+    cctvMarkersRef.current = L.layerGroup().addTo(map);
 
     setTimeout(() => map.invalidateSize(), 100);
 
@@ -149,12 +153,9 @@ export function RiskMap() {
       }
     });
 
-    // Draw topology edges for matching hotspots
-    if (matchingHotspotIds && matchingHotspotIds.size > 0) {
+    // Draw topology edges
+    if (showTopology) {
       filteredHotspots.forEach(hotspot => {
-        if (!matchingHotspotIds.has(hotspot.id)) return;
-        
-        // Draw edges to upstream/downstream
         const connections = [...hotspot.topology.upstream_of, ...hotspot.topology.downstream_of];
         connections.forEach((connectedId: string) => {
           const connectedHotspot = hotspots.find(h => h.id === connectedId);
@@ -164,7 +165,7 @@ export function RiskMap() {
           if (!connectedScore) return;
           
           const connectedTier = getRiskTier(connectedScore.risk_pct);
-          const isEdgeMatching = matchingHotspotIds.has(connectedId);
+          const isEdgeMatching = matchingHotspotIds ? matchingHotspotIds.has(connectedId) : true;
           const edgeColor = isEdgeMatching ? getTierColor(connectedTier) : '#757575';
           const edgeOpacity = isEdgeMatching ? 0.8 : 0.1;
           
@@ -182,6 +183,43 @@ export function RiskMap() {
       });
     }
 
+    // Draw CCTV markers
+    if (showCCTV && cctvMarkersRef.current) {
+      cctvMarkersRef.current.clearLayers();
+      cctvFeeds.forEach(feed => {
+        const hotspot = hotspots.find(h => h.id === feed.hotspot_id);
+        if (!hotspot) return;
+        
+        const isOnline = feed.status === 'online';
+        const icon = L.divIcon({
+          className: 'cctv-marker',
+          html: `
+            <div style="position:relative;width:24px;height:24px;">
+              <div style="width:24px;height:24px;background:${isOnline ? '#0B3D6B' : '#757575'};border:2px solid white;border-radius:4px;box-shadow:0 2px 4px rgba(0,0,0,0.2);display:flex;align-items:center;justify-content:center;">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
+                  <path d="M23 7l-7 5 7 5V7z"/>
+                  <rect x="1" y="5" width="15" height="14" rx="2" ry="2"/>
+                </svg>
+              </div>
+              ${isOnline ? '<div style="position:absolute;top:-2px;right:-2px;width:6px;height:6px;background:#2E7D32;border:1px solid white;border-radius:50%;"></div>' : ''}
+            </div>
+          `,
+          iconSize: [24, 24],
+          iconAnchor: [12, 12],
+        });
+        
+        const marker = L.marker([hotspot.lat, hotspot.lng], { icon })
+          .bindTooltip(`<strong>CCTV ${feed.id}</strong><br/>${feed.last_reading}<br/>Confidence: ${feed.confidence}`, {
+            direction: 'top',
+            offset: [0, -12]
+          });
+        
+        cctvMarkersRef.current!.addLayer(marker);
+      });
+    } else if (cctvMarkersRef.current) {
+      cctvMarkersRef.current.clearLayers();
+    }
+
     // Auto-zoom to matching markers
     if (matchingBounds && matchingHotspotIds && matchingHotspotIds.size > 0) {
       if (matchingHotspotIds.size === 1) {
@@ -197,7 +235,7 @@ export function RiskMap() {
       // Reset to citywide view
       map.setView([28.435, 77.01], 12, { animate: true });
     }
-  }, [filteredHotspots, riskScores, filterType, activeRiskFilter, matchingHotspotIds]);
+  }, [filteredHotspots, riskScores, filterType, activeRiskFilter, matchingHotspotIds, showCCTV, showTopology]);
 
   // Handle filter change with toast for empty tiers
   const handleFilterChange = (tier: 'high' | 'medium' | 'low' | 'unknown' | null) => {
@@ -347,6 +385,34 @@ export function RiskMap() {
               </button>
             </div>
           )}
+
+          {/* Map Controls - CCTV and Topology Toggles */}
+          <div className="absolute top-4 right-4 z-[1000] flex flex-col gap-2">
+            <button
+              onClick={() => setShowCCTV(!showCCTV)}
+              className={`px-3 py-2 rounded-lg shadow-md flex items-center gap-2 text-xs font-medium transition-all ${
+                showCCTV 
+                  ? 'bg-primary text-white' 
+                  : 'bg-white text-text-primary hover:bg-background border border-border'
+              }`}
+              aria-pressed={showCCTV}
+            >
+              <Camera size={14} />
+              {lang === 'en' ? 'GMDA CCTVs' : 'GMDA CCTV'}
+            </button>
+            <button
+              onClick={() => setShowTopology(!showTopology)}
+              className={`px-3 py-2 rounded-lg shadow-md flex items-center gap-2 text-xs font-medium transition-all ${
+                showTopology 
+                  ? 'bg-primary text-white' 
+                  : 'bg-white text-text-primary hover:bg-background border border-border'
+              }`}
+              aria-pressed={showTopology}
+            >
+              <GitBranch size={14} />
+              {lang === 'en' ? 'Topology' : 'टोपोलॉजी'}
+            </button>
+          </div>
         </div>
 
         {/* Summary Cards (right panel on desktop, bottom on mobile) */}

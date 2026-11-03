@@ -18,6 +18,21 @@ export interface Hotspot {
     leverage_score: number;
   };
   population_exposure: number;
+  // New v2.0 fields
+  status_2026?: string;
+  monitoring_type?: 'CCTV' | 'IoT' | 'Hybrid' | 'CCTV + Pump Telemetry';
+  risk_pct?: number;
+  confidence?: 'high' | 'medium' | 'low';
+}
+
+export interface CCTVFeed {
+  id: string;
+  hotspot_id: string;
+  type: string;
+  status: 'online' | 'offline' | 'degraded';
+  last_reading: string;
+  feed_url: string;
+  confidence: 'high' | 'medium' | 'low';
 }
 
 export interface Sensor {
@@ -644,3 +659,64 @@ export const sensorOfflineHistory = [
   { day: "Sat", offline: 2 },
   { day: "Sun", offline: 1 },
 ];
+
+// CCTV Network Data (v2.0)
+export const cctvFeeds: CCTVFeed[] = [
+  {
+    id: "CAM-01",
+    hotspot_id: "HSP-001",
+    type: "CCTV_GMDA",
+    status: "online",
+    last_reading: "12cm depth (AI estimated)",
+    feed_url: "mock://cctv/HSP-001",
+    confidence: "high"
+  },
+  {
+    id: "CAM-02",
+    hotspot_id: "HSP-002",
+    type: "CCTV_GMDA",
+    status: "online",
+    last_reading: "8cm depth (AI estimated)",
+    feed_url: "mock://cctv/HSP-002",
+    confidence: "high"
+  },
+  {
+    id: "CAM-03",
+    hotspot_id: "HSP-003",
+    type: "CCTV_GMDA",
+    status: "online",
+    last_reading: "15cm depth (AI estimated)",
+    feed_url: "mock://cctv/HSP-003",
+    confidence: "medium"
+  },
+  {
+    id: "CAM-04",
+    hotspot_id: "HSP-005",
+    type: "CCTV_GMDA",
+    status: "online",
+    last_reading: "10cm depth (AI estimated)",
+    feed_url: "mock://cctv/HSP-005",
+    confidence: "medium"
+  },
+  {
+    id: "CAM-05",
+    hotspot_id: "HSP-006",
+    type: "CCTV_GMDA",
+    status: "offline",
+    last_reading: "No signal",
+    feed_url: "mock://cctv/HSP-006",
+    confidence: "low"
+  }
+];
+
+export const cctvNetworkStats = {
+  total_cameras_planned_2026: 4287,
+  current_cameras: 1200,
+  agency: "GMDA Smart City",
+  status: "Live Video Feed"
+};
+
+export const gmdaFleet = {
+  submersible_pumps: 34,
+  gully_inlets: 1500
+};
