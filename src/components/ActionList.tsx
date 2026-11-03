@@ -2,7 +2,8 @@ import { useState } from 'react';
 import { useStore } from '../store/useStore';
 import { t } from '../i18n/translations';
 import { hotspots, crews } from '../data/mockData';
-import { Printer, Download, CheckCircle, AlertTriangle, ArrowUpDown, Clock, Shield, X } from 'lucide-react';
+import { Printer, Download, CheckCircle, AlertTriangle, ArrowUpDown, Clock, Shield, X, Users } from 'lucide-react';
+import { Dropdown } from './ui/Dropdown';
 
 function getRiskColor(riskPct: number): string {
   if (riskPct >= 70) return 'border-l-risk-high';
@@ -29,7 +30,7 @@ function getTimeRemaining(deadline: string): string {
 }
 
 export function ActionList() {
-  const { lang, getRankedActions, getRiskScores, markActionDone, flagAction, overrideAction, addToast } = useStore();
+  const { lang, getRankedActions, getRiskScores, markActionDone, flagAction, overrideAction, assignCrew, addToast } = useStore();
   const [overrideModal, setOverrideModal] = useState<{ actionId: string; currentRank: number } | null>(null);
   const [newRank, setNewRank] = useState('');
   const [reason, setReason] = useState('');
@@ -137,10 +138,21 @@ export function ActionList() {
                           <Clock size={12} />
                           {getTimeRemaining(action.deadline)}
                         </span>
-                        <span className="flex items-center gap-1">
-                          <Shield size={12} />
-                          {crew?.name || 'Unassigned'}
-                        </span>
+                        <Dropdown
+                          trigger={
+                            <button className="flex items-center gap-1 px-2 py-1 rounded-md bg-background border border-border hover:bg-border/50 transition-colors">
+                              <Shield size={11} />
+                              <span>{crew?.name || 'Assign crew'}</span>
+                            </button>
+                          }
+                          options={crews.map(c => ({
+                            value: c.id,
+                            label: c.name,
+                            group: c.available ? 'Available' : 'On duty',
+                          }))}
+                          value={action.assigned_crew_id || undefined}
+                          onChange={(crewId) => assignCrew(action.id, crewId)}
+                        />
                         <span className={`px-1.5 py-0.5 rounded font-medium ${
                           action.status === 'done' ? 'bg-green-100 text-green-700' :
                           action.status === 'flagged' ? 'bg-red-100 text-red-700' :
