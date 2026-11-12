@@ -3,16 +3,38 @@ import { persist } from 'zustand/middleware';
 import { hotspots, initialSensors, crews, type Hotspot, type Sensor, type RiskScore, type ActionItem, type AuditLogEntry, type Crew, type WaterlogReport } from '../data/mockData';
 import type { Lang } from '../i18n/translations';
 
-type Role = 'ward_engineer' | 'control_room' | 'citizen' | 'executive';
-type Screen = 'risk-map' | 'action-list' | 'sensor-health' | 'audit-log' | 'executive-summary' | 'public-home' | 'public-route-check' | 'public-alerts' | 'public-calibration' | 'public-report';
+export type Role = 'ward_engineer' | 'control_room' | 'commissioner' | 'ddma_officer' | 'citizen';
+export type Screen = 'risk-map' | 'action-list' | 'sensor-health' | 'audit-log' | 'executive-summary' | 'network' | 'ward-home' | 'control-room-home' | 'citizen-home' | 'public-route-check' | 'public-alerts' | 'public-report' | 'help' | 'denied';
+
+export interface Session {
+  email: string;
+  name: string;
+  picture: string;
+  role: Role;
+  signed_in_at: string;
+}
+
+const DEMO_EMAIL_MAP: Record<string, Role> = {
+  'ward.engineer@mcg.gov.in': 'ward_engineer',
+  'control.room@mcg.gov.in': 'control_room',
+  'commissioner@mcg.gov.in': 'commissioner',
+  'ddma.officer@gurugram.gov.in': 'ddma_officer',
+};
+
+export type RiskTier = 'high' | 'medium' | 'low' | 'unknown';
 
 interface AppState {
+  // Auth
+  session: Session | null;
+  showCitizenToast: boolean;
+
   // UI state
   lang: Lang;
-  role: Role;
   currentScreen: Screen;
   rainfallMm: number;
   filterType: string;
+  citizenSector: string;
+  activeRiskFilter: RiskTier | null;
 
   // Data
   sensors: Sensor[];
@@ -21,22 +43,31 @@ interface AppState {
   waterlogReports: WaterlogReport[];
   toasts: { id: string; message: string; type: 'success' | 'info' | 'warning' }[];
 
-  // Actions
+  // Auth Actions
+  login: (email: string, name: string, picture: string) => void;
+  loginAsCitizen: () => void;
+  logout: () => void;
+  dismissCitizenToast: () => void;
+
+  // UI Actions
   setLang: (lang: Lang) => void;
-  setRole: (role: Role) => void;
   setCurrentScreen: (screen: Screen) => void;
   setRainfallMm: (mm: number) => void;
   setFilterType: (type: string) => void;
+  setCitizenSector: (sector: string) => void;
   setSensorStatus: (sensorId: string, status: Sensor['status']) => void;
   markActionDone: (actionId: string) => void;
   flagAction: (actionId: string) => void;
   overrideAction: (actionId: string, newRank: number, reason: string) => void;
+  assignCrew: (actionId: string, crewId: string) => void;
   addAuditEntry: (entry: Omit<AuditLogEntry, 'id' | 'timestamp'>) => void;
   addWaterlogReport: (report: Omit<WaterlogReport, 'id' | 'timestamp'>) => void;
   addToast: (message: string, type?: 'success' | 'info' | 'warning') => void;
   removeToast: (id: string) => void;
   getRiskScores: () => RiskScore[];
   getRankedActions: () => ActionItem[];
+  resolveRole: (email: string) => Role;
+  setActiveRiskFilter: (tier: RiskTier | null) => void;
 }
 
 function computeRisk(hotspot: Hotspot, rainfallMm: number, sensors: Sensor[]): RiskScore {
@@ -44,13 +75,12 @@ function computeRisk(hotspot: Hotspot, rainfallMm: number, sensors: Sensor[]): R
   const popNormalized = (hotspot.population_exposure / maxPop) * 100;
   const riskPct = Math.min(100, Math.max(0,
     (rainfallMm / 150) * 60 +
-    (hotspot.leverage_score / 100) * 25 +
+    (hotspot.topology.leverage_score / 100) * 25 +
     (popNormalized / 100) * 15
   ));
 
-  // Determine confidence based on sensor status
   const hotspotSensors = sensors.filter(s => s.hotspot_id === hotspot.id);
-  const upstreamIds = [...hotspot.downstream_of, ...hotspot.upstream_of];
+  const upstreamIds = [...hotspot.topology.downstream_of, ...hotspot.topology.upstream_of];
   const upstreamSensors = sensors.filter(s => upstreamIds.includes(s.hotspot_id));
   const allRelevantSensors = [...hotspotSensors, ...upstreamSensors];
   const offlineCount = allRelevantSensors.filter(s => s.status === 'offline').length;
@@ -64,8 +94,8 @@ function computeRisk(hotspot: Hotspot, rainfallMm: number, sensors: Sensor[]): R
 
   const inputsUsed: string[] = [];
   if (rainfallMm > 0) inputsUsed.push(`Rainfall forecast: ${rainfallMm}mm`);
-  inputsUsed.push(`Leverage score: ${hotspot.leverage_score}`);
-  inputsUsed.push(`Population exposure: ${hotspot.population_exposure.toLocaleString()}`);
+  inputsUsed.push(`Leverage score: ${hotspot.topology.leverage_score} (modelled)`);
+  inputsUsed.push(`Population exposure: ${hotspot.population_exposure.toLocaleString()} (modelled)`);
   if (offlineCount > 0) inputsUsed.push(`${offlineCount} upstream sensor(s) offline`);
 
   return {
@@ -87,7 +117,7 @@ function generateActions(riskScores: RiskScore[], rainfallMm: number): ActionIte
     const hotspot = hotspots.find(h => h.id === score.hotspot_id)!;
     const riskPct = score.risk_pct;
 
-    if (riskPct >= 70 && hotspot.type === 'underpass') {
+    if (riskPct >= 70 && hotspot.mcg_category === 'critical_point') {
       actions.push({
         id: `ACT-${score.hotspot_id}-pump`,
         rank: 0,
@@ -101,7 +131,7 @@ function generateActions(riskScores: RiskScore[], rainfallMm: number): ActionIte
       });
     }
 
-    if (riskPct >= 60 && hotspot.downstream_of.length > 0) {
+    if (riskPct >= 60 && hotspot.topology.downstream_of.length > 0) {
       actions.push({
         id: `ACT-${score.hotspot_id}-desilt`,
         rank: 0,
@@ -145,14 +175,13 @@ function generateActions(riskScores: RiskScore[], rainfallMm: number): ActionIte
     }
   });
 
-  // Rank by priority formula
   const ranked = actions.map(action => {
     const score = riskScores.find(s => s.hotspot_id === action.hotspot_id)!;
     const hotspot = hotspots.find(h => h.id === action.hotspot_id)!;
     const crew = crews.find(c => c.id === action.assigned_crew_id);
     const travelTime = crew?.travel_minutes_to[action.hotspot_id] || 30;
     const travelInverse = Math.max(0, 100 - travelTime);
-    const priority = score.risk_pct * 0.6 + hotspot.leverage_score * 0.3 + travelInverse * 0.1;
+    const priority = score.risk_pct * 0.6 + hotspot.topology.leverage_score * 0.3 + travelInverse * 0.1;
     return { ...action, _priority: priority };
   });
 
@@ -163,11 +192,14 @@ function generateActions(riskScores: RiskScore[], rainfallMm: number): ActionIte
 export const useStore = create<AppState>()(
   persist(
     (set, get) => ({
+      session: null,
+      showCitizenToast: false,
       lang: (localStorage.getItem('gfc-lang') as Lang) || 'en',
-      role: 'ward_engineer',
-      currentScreen: 'risk-map',
+      currentScreen: 'citizen-home',
       rainfallMm: 85,
       filterType: 'all',
+      citizenSector: '',
+      activeRiskFilter: null,
       sensors: initialSensors,
       auditLog: [
         { id: 'AL-001', timestamp: '2026-11-04T05:00:00+05:30', actor: 'System', action: 'system_ranking', hotspot_id: 'HSP-005', original_rank: null, new_rank: 1, reason: 'Highest leverage score + rainfall forecast' },
@@ -177,22 +209,56 @@ export const useStore = create<AppState>()(
       waterlogReports: [],
       toasts: [],
 
+      resolveRole: (email) => {
+        return DEMO_EMAIL_MAP[email] || 'citizen';
+      },
+
+      login: (email, name, picture) => {
+        const role = get().resolveRole(email);
+        const session: Session = { email, name, picture, role, signed_in_at: new Date().toISOString() };
+        const screenMap: Record<Role, Screen> = {
+          ward_engineer: 'ward-home',
+          control_room: 'control-room-home',
+          commissioner: 'executive-summary',
+          ddma_officer: 'network',
+          citizen: 'citizen-home',
+        };
+        set({ session, currentScreen: screenMap[role] });
+        if (role === 'citizen') {
+          set({ showCitizenToast: true });
+        }
+      },
+
+      loginAsCitizen: () => {
+        const session: Session = {
+          email: 'citizen@guest.local',
+          name: 'Guest Citizen',
+          picture: '',
+          role: 'citizen',
+          signed_in_at: new Date().toISOString(),
+        };
+        set({ session, currentScreen: 'citizen-home' });
+      },
+
+      logout: () => {
+        set({ session: null, currentScreen: 'citizen-home' });
+      },
+
+      dismissCitizenToast: () => set({ showCitizenToast: false }),
+
       setLang: (lang) => {
         localStorage.setItem('gfc-lang', lang);
         set({ lang });
       },
-      setRole: (role) => {
-        const screenMap: Record<Role, Screen> = {
-          ward_engineer: 'risk-map',
-          control_room: 'risk-map',
-          citizen: 'public-home',
-          executive: 'executive-summary',
-        };
-        set({ role, currentScreen: screenMap[role] });
-      },
       setCurrentScreen: (screen) => set({ currentScreen: screen }),
       setRainfallMm: (mm) => set({ rainfallMm: mm }),
       setFilterType: (type) => set({ filterType: type }),
+      setCitizenSector: (sector) => set({ citizenSector: sector }),
+      setActiveRiskFilter: (tier: RiskTier | null) => {
+        const current = get().activeRiskFilter;
+        // Toggle behavior: clicking same tier clears it
+        set({ activeRiskFilter: current === tier ? null : tier });
+      },
 
       setSensorStatus: (sensorId, status) => {
         set(state => ({
@@ -246,9 +312,7 @@ export const useStore = create<AppState>()(
             }
             return a;
           });
-          // Re-sort
           updated.sort((a, b) => a.rank - b.rank);
-          // Re-number
           const renumbered = updated.map((a, i) => ({ ...a, rank: i + 1 }));
           return { actionItems: renumbered };
         });
@@ -264,6 +328,12 @@ export const useStore = create<AppState>()(
           });
           get().addToast('Override logged', 'warning');
         }
+      },
+
+      assignCrew: (actionId, crewId) => {
+        set(state => ({
+          actionItems: state.actionItems.map(a => a.id === actionId ? { ...a, assigned_crew_id: crewId } : a),
+        }));
       },
 
       addAuditEntry: (entry) => {
@@ -305,7 +375,6 @@ export const useStore = create<AppState>()(
         const riskScores = hotspots.map(h => computeRisk(h, rainfallMm, sensors));
         const freshActions = generateActions(riskScores, rainfallMm);
 
-        // Merge with stored overrides/status changes
         const merged = freshActions.map(action => {
           const storedAction = stored.find(s => s.id === action.id);
           if (storedAction) {
@@ -316,14 +385,13 @@ export const useStore = create<AppState>()(
               override_reason: storedAction.override_reason,
               original_rank: storedAction.original_rank,
               rank: storedAction.is_override ? storedAction.rank : action.rank,
+              assigned_crew_id: storedAction.assigned_crew_id || action.assigned_crew_id,
             };
           }
           return action;
         });
 
-        // Sort by rank (overrides may have changed ranks)
         merged.sort((a, b) => a.rank - b.rank);
-        // Re-number sequentially
         return merged.map((a, i) => ({ ...a, rank: i + 1 }));
       },
     }),
@@ -331,10 +399,12 @@ export const useStore = create<AppState>()(
       name: 'gfc-store',
       partialize: (state) => ({
         lang: state.lang,
+        session: state.session,
         sensors: state.sensors,
         auditLog: state.auditLog,
         actionItems: state.actionItems,
         waterlogReports: state.waterlogReports,
+        citizenSector: state.citizenSector,
       }),
     }
   )

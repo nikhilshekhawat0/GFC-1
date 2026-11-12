@@ -2,7 +2,8 @@ import { useState } from 'react';
 import { useStore } from '../store/useStore';
 import { t } from '../i18n/translations';
 import { hotspots, crews } from '../data/mockData';
-import { Printer, Download, CheckCircle, AlertTriangle, ArrowUpDown, Clock, Shield, X } from 'lucide-react';
+import { Printer, Download, CheckCircle, AlertTriangle, ArrowUpDown, Clock, Shield, X, Users } from 'lucide-react';
+import { Dropdown } from './ui/Dropdown';
 
 function getRiskColor(riskPct: number): string {
   if (riskPct >= 70) return 'border-l-risk-high';
@@ -28,15 +29,39 @@ function getTimeRemaining(deadline: string): string {
   return `${t('common.in', 'en')} ${hours}${t('common.hours', 'en')} ${minutes}${t('common.minutes', 'en')}`;
 }
 
+function getRiskTier(riskPct: number): 'high' | 'medium' | 'low' | 'unknown' {
+  if (riskPct >= 70) return 'high';
+  if (riskPct >= 50) return 'medium';
+  if (riskPct >= 30) return 'low';
+  return 'unknown';
+}
+
+function getTierColor(tier: 'high' | 'medium' | 'low' | 'unknown'): string {
+  switch (tier) {
+    case 'high': return '#C62828';
+    case 'medium': return '#F9A825';
+    case 'low': return '#2E7D32';
+    case 'unknown': return '#757575';
+  }
+}
+
 export function ActionList() {
-  const { lang, getRankedActions, getRiskScores, markActionDone, flagAction, overrideAction, addToast } = useStore();
+  const { lang, getRankedActions, getRiskScores, markActionDone, flagAction, overrideAction, assignCrew, addToast, activeRiskFilter, setActiveRiskFilter } = useStore();
   const [overrideModal, setOverrideModal] = useState<{ actionId: string; currentRank: number } | null>(null);
   const [newRank, setNewRank] = useState('');
   const [reason, setReason] = useState('');
   const [understandChecked, setUnderstandChecked] = useState(false);
 
-  const actions = getRankedActions();
+  const allActions = getRankedActions();
   const riskScores = getRiskScores();
+
+  // Filter actions based on activeRiskFilter
+  const actions = activeRiskFilter
+    ? allActions.filter(action => {
+        const score = riskScores.find(r => r.hotspot_id === action.hotspot_id);
+        return score && getRiskTier(score.risk_pct) === activeRiskFilter;
+      })
+    : allActions;
 
   const handleOverride = () => {
     if (!overrideModal || !newRank || !reason || !understandChecked) return;
@@ -80,10 +105,48 @@ export function ActionList() {
         </div>
       </div>
 
+      {/* Filter Banner */}
+      {activeRiskFilter && (
+        <div
+          className="px-4 py-2 flex items-center justify-between text-sm font-medium text-white"
+          style={{ backgroundColor: getTierColor(activeRiskFilter) }}
+        >
+          <span>
+            {lang === 'en'
+              ? `Filtered to ${t(`risk.${activeRiskFilter}`, lang).toUpperCase()} (${actions.length} of ${allActions.length} actions)`
+              : `${t(`risk.${activeRiskFilter}`, lang).toUpperCase()} पर फ़िल्टर किया गया (${allActions.length} में से ${actions.length} कार्रवाइयाँ)`
+            }
+          </span>
+          <button
+            onClick={() => setActiveRiskFilter(null)}
+            className="flex items-center gap-1 hover:bg-white/20 rounded px-2 py-0.5 transition-colors"
+          >
+            {lang === 'en' ? 'Clear filter' : 'फ़िल्टर साफ़ करें'}
+            <X size={12} />
+          </button>
+        </div>
+      )}
+
       {/* Action List */}
       <div className="flex-1 overflow-auto p-4">
         <div className="space-y-2 max-w-5xl mx-auto">
-          {actions.map((action) => {
+          {actions.length === 0 && activeRiskFilter ? (
+            <div className="text-center py-12">
+              <p className="text-text-secondary mb-2">
+                {lang === 'en'
+                  ? `No ${t(`risk.${activeRiskFilter}`, lang).toUpperCase()} actions right now`
+                  : `अभी कोई ${t(`risk.${activeRiskFilter}`, lang).toUpperCase()} कार्रवाई नहीं`
+                }
+              </p>
+              <button
+                onClick={() => setActiveRiskFilter(null)}
+                className="text-primary hover:underline text-sm font-medium"
+              >
+                {lang === 'en' ? 'Clear filter' : 'फ़िल्टर साफ़ करें'}
+              </button>
+            </div>
+          ) : (
+          actions.map((action) => {
             const hotspot = hotspots.find(h => h.id === action.hotspot_id);
             const score = riskScores.find(r => r.hotspot_id === action.hotspot_id);
             const crew = crews.find(c => c.id === action.assigned_crew_id);
@@ -91,11 +154,12 @@ export function ActionList() {
 
             const riskColor = getRiskColor(score.risk_pct);
             const riskBg = getRiskBg(score.risk_pct);
+            const borderWidth = activeRiskFilter ? 'border-l-6' : 'border-l-4';
 
             return (
               <div
                 key={action.id}
-                className={`bg-white rounded-xl border border-border border-l-4 ${riskColor} shadow-sm hover:shadow-md transition-shadow`}
+                className={`bg-white rounded-xl border border-border ${borderWidth} ${riskColor} shadow-sm hover:shadow-md transition-shadow`}
               >
                 <div className="p-4">
                   <div className="flex flex-col sm:flex-row sm:items-start gap-3">
@@ -113,7 +177,7 @@ export function ActionList() {
                       <div className="flex items-start justify-between gap-2">
                         <div>
                           <h3 className="font-semibold text-text-primary text-sm">{hotspot.name}</h3>
-                          <p className="text-xs text-text-secondary">{hotspot.ward} · {hotspot.owning_agency}</p>
+                          <p className="text-xs text-text-secondary">{hotspot.zone || 'Unknown zone'} · {hotspot.owning_agency}</p>
                         </div>
                         <div className="flex items-center gap-1.5 flex-shrink-0">
                           {action.is_override && (
@@ -137,10 +201,21 @@ export function ActionList() {
                           <Clock size={12} />
                           {getTimeRemaining(action.deadline)}
                         </span>
-                        <span className="flex items-center gap-1">
-                          <Shield size={12} />
-                          {crew?.name || 'Unassigned'}
-                        </span>
+                        <Dropdown
+                          trigger={
+                            <button className="flex items-center gap-1 px-2 py-1 rounded-md bg-background border border-border hover:bg-border/50 transition-colors">
+                              <Shield size={11} />
+                              <span>{crew?.name || 'Assign crew'}</span>
+                            </button>
+                          }
+                          options={crews.map(c => ({
+                            value: c.id,
+                            label: c.name,
+                            group: c.available ? 'Available' : 'On duty',
+                          }))}
+                          value={action.assigned_crew_id || undefined}
+                          onChange={(crewId) => assignCrew(action.id, crewId)}
+                        />
                         <span className={`px-1.5 py-0.5 rounded font-medium ${
                           action.status === 'done' ? 'bg-green-100 text-green-700' :
                           action.status === 'flagged' ? 'bg-red-100 text-red-700' :
@@ -184,7 +259,8 @@ export function ActionList() {
                 </div>
               </div>
             );
-          })}
+          })
+          )}
         </div>
       </div>
 

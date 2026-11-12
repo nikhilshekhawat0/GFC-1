@@ -2,14 +2,40 @@ import { useStore } from '../store/useStore';
 import { t } from '../i18n/translations';
 import { hotspots, sensorOfflineHistory } from '../data/mockData';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell } from 'recharts';
-import { Wifi, WifiOff, Battery, Clock, AlertCircle } from 'lucide-react';
+import { Wifi, WifiOff, Battery, Clock, AlertCircle, X } from 'lucide-react';
+
+function getRiskTier(riskPct: number): 'high' | 'medium' | 'low' | 'unknown' {
+  if (riskPct >= 70) return 'high';
+  if (riskPct >= 50) return 'medium';
+  if (riskPct >= 30) return 'low';
+  return 'unknown';
+}
+
+function getTierColor(tier: 'high' | 'medium' | 'low' | 'unknown'): string {
+  switch (tier) {
+    case 'high': return '#C62828';
+    case 'medium': return '#F9A825';
+    case 'low': return '#2E7D32';
+    case 'unknown': return '#757575';
+  }
+}
 
 export function SensorHealth() {
-  const { lang, sensors, setSensorStatus } = useStore();
+  const { lang, sensors, setSensorStatus, activeRiskFilter, setActiveRiskFilter, getRiskScores } = useStore();
 
-  const onlineCount = sensors.filter(s => s.status === 'online').length;
-  const offlineCount = sensors.filter(s => s.status === 'offline').length;
-  const uptime = Math.round((onlineCount / sensors.length) * 100);
+  const riskScores = getRiskScores();
+
+  // Filter sensors based on activeRiskFilter
+  const filteredSensors = activeRiskFilter
+    ? sensors.filter(sensor => {
+        const score = riskScores.find(r => r.hotspot_id === sensor.hotspot_id);
+        return score && getRiskTier(score.risk_pct) === activeRiskFilter;
+      })
+    : sensors;
+
+  const onlineCount = filteredSensors.filter(s => s.status === 'online').length;
+  const offlineCount = filteredSensors.filter(s => s.status === 'offline').length;
+  const uptime = filteredSensors.length > 0 ? Math.round((onlineCount / filteredSensors.length) * 100) : 0;
 
   const getStatusColor = (status: string) => {
     if (status === 'online') return 'bg-green-100 text-green-700 border-green-200';
@@ -39,6 +65,28 @@ export function SensorHealth() {
           </div>
         </div>
       </div>
+
+      {/* Filter Banner */}
+      {activeRiskFilter && (
+        <div
+          className="px-4 py-2 flex items-center justify-between text-sm font-medium text-white"
+          style={{ backgroundColor: getTierColor(activeRiskFilter) }}
+        >
+          <span>
+            {lang === 'en'
+              ? `Showing sensors for ${t(`risk.${activeRiskFilter}`, lang).toUpperCase()} hotspots only`
+              : `केवल ${t(`risk.${activeRiskFilter}`, lang).toUpperCase()} हॉटस्पॉट के लिए सेंसर दिखा रहे हैं`
+            }
+          </span>
+          <button
+            onClick={() => setActiveRiskFilter(null)}
+            className="flex items-center gap-1 hover:bg-white/20 rounded px-2 py-0.5 transition-colors"
+          >
+            {lang === 'en' ? 'Clear filter' : 'फ़िल्टर साफ़ करें'}
+            <X size={12} />
+          </button>
+        </div>
+      )}
 
       <div className="flex-1 overflow-auto p-4">
         <div className="max-w-5xl mx-auto space-y-6">
@@ -78,7 +126,14 @@ export function SensorHealth() {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-border">
-                  {sensors.map(sensor => {
+                  {filteredSensors.length === 0 ? (
+                    <tr>
+                      <td colSpan={8} className="px-4 py-8 text-center text-text-secondary">
+                        {lang === 'en' ? 'No sensors match the current filter' : 'वर्तमान फ़िल्टर से कोई सेंसर मेल नहीं खाता'}
+                      </td>
+                    </tr>
+                  ) : (
+                  filteredSensors.map(sensor => {
                     const hotspot = hotspots.find(h => h.id === sensor.hotspot_id);
                     const isOffline = sensor.status === 'offline';
                     const lastSeen = new Date(sensor.last_seen_at);
@@ -122,7 +177,8 @@ export function SensorHealth() {
                         </td>
                       </tr>
                     );
-                  })}
+                  })
+                  )}
                 </tbody>
               </table>
             </div>

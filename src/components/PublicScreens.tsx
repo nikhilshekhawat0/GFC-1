@@ -1,9 +1,8 @@
 import { useState } from 'react';
 import { useStore } from '../store/useStore';
 import { t } from '../i18n/translations';
-import { hotspots, calibrationData } from '../data/mockData';
-import { MapPin, Route, Bell, Target, AlertTriangle, ChevronDown, ChevronUp, CheckCircle, Phone, MessageSquare, PhoneCall } from 'lucide-react';
-import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
+import { hotspots } from '../data/mockData';
+import { MapPin, Route, Bell, AlertTriangle, ChevronDown, ChevronUp, CheckCircle, Phone, MessageSquare, PhoneCall } from 'lucide-react';
 
 function getRiskColor(riskPct: number): string {
   if (riskPct >= 70) return 'bg-risk-high';
@@ -17,90 +16,6 @@ function getRiskTier(riskPct: number): string {
   if (riskPct >= 50) return 'medium';
   if (riskPct >= 30) return 'low';
   return 'unknown';
-}
-
-// PUBLIC HOME
-export function PublicHome() {
-  const { lang, getRiskScores, setCurrentScreen } = useStore();
-  const riskScores = getRiskScores();
-  const highRisk = riskScores.filter(r => r.risk_pct >= 70).length;
-
-  return (
-    <div className="h-full overflow-auto">
-      <div className="p-4 sm:p-6 max-w-lg mx-auto">
-        {/* Status Card */}
-        <div className="bg-white rounded-2xl border border-border p-6 shadow-sm mb-6">
-          <p className="text-sm text-text-secondary mb-1">{t('public.next_24h', lang)}</p>
-          <p className="text-3xl font-bold text-text-primary">
-            {highRisk} <span className="text-risk-high">{t('public.areas_high_risk', lang)}</span>
-          </p>
-          <div className="mt-4 flex gap-2">
-            {riskScores.slice(0, 5).map(r => (
-              <div key={r.hotspot_id} className={`w-8 h-8 rounded-full ${getRiskColor(r.risk_pct)} flex items-center justify-center`}>
-                <span className="text-[9px] font-bold text-white">{r.risk_pct}</span>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        {/* Action Buttons */}
-        <div className="space-y-3">
-          <button
-            onClick={() => setCurrentScreen('public-route-check')}
-            className="w-full flex items-center gap-4 p-4 bg-primary text-white rounded-xl hover:bg-primary-light transition-colors"
-          >
-            <Route size={24} />
-            <div className="text-left">
-              <p className="font-semibold">{t('public.check_route', lang)}</p>
-              <p className="text-xs text-white/70">Check risk on your travel route</p>
-            </div>
-          </button>
-
-          <button
-            onClick={() => setCurrentScreen('risk-map')}
-            className="w-full flex items-center gap-4 p-4 bg-white border border-border rounded-xl hover:bg-background transition-colors"
-          >
-            <MapPin size={24} className="text-primary" />
-            <div className="text-left">
-              <p className="font-semibold text-text-primary">{t('public.see_risk_map', lang)}</p>
-              <p className="text-xs text-text-secondary">View all hotspots on map</p>
-            </div>
-          </button>
-
-          <button
-            onClick={() => setCurrentScreen('public-alerts')}
-            className="w-full flex items-center gap-4 p-4 bg-white border border-border rounded-xl hover:bg-background transition-colors"
-          >
-            <Bell size={24} className="text-amber-600" />
-            <div className="text-left">
-              <p className="font-semibold text-text-primary">{t('public.get_sms_alerts', lang)}</p>
-              <p className="text-xs text-text-secondary">Get notified before waterlogging</p>
-            </div>
-          </button>
-
-          <button
-            onClick={() => setCurrentScreen('public-report')}
-            className="w-full flex items-center gap-4 p-4 bg-white border border-border rounded-xl hover:bg-background transition-colors"
-          >
-            <AlertTriangle size={24} className="text-risk-high" />
-            <div className="text-left">
-              <p className="font-semibold text-text-primary">{t('public.report_waterlogging', lang)}</p>
-              <p className="text-xs text-text-secondary">Help us verify predictions</p>
-            </div>
-          </button>
-        </div>
-
-        {/* Calibration Link */}
-        <button
-          onClick={() => setCurrentScreen('public-calibration')}
-          className="mt-6 w-full flex items-center justify-center gap-2 p-3 text-sm text-text-secondary hover:text-primary transition-colors"
-        >
-          <Target size={16} />
-          {t('public.accuracy_title', lang)} — {calibrationData.accuracy_pct}% accuracy
-        </button>
-      </div>
-    </div>
-  );
 }
 
 // PUBLIC ROUTE CHECK
@@ -179,7 +94,7 @@ export function PublicRouteCheck() {
                   <div className="flex items-start justify-between">
                     <div>
                       <h3 className="font-semibold text-text-primary text-sm">{hotspot.name}</h3>
-                      <p className="text-xs text-text-secondary mt-0.5">{hotspot.ward}</p>
+                      <p className="text-xs text-text-secondary mt-0.5">{hotspot.zone || 'Unknown zone'}</p>
                     </div>
                     <span className={`px-2 py-1 rounded text-xs font-bold text-white ${getRiskColor(score.risk_pct)}`}>
                       {t(`risk.${tier}`, lang)}
@@ -262,7 +177,7 @@ export function PublicAlerts() {
                 className="w-full px-3 py-2.5 border border-border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-focus-ring"
               >
                 <option value="">Select sector</option>
-                {hotspots.map(h => <option key={h.id} value={h.ward}>{h.ward} — {h.name}</option>)}
+                {hotspots.map(h => <option key={h.id} value={h.zone || ''}>{h.zone || 'Unknown'} — {h.name}</option>)}
               </select>
             </div>
 
@@ -304,66 +219,6 @@ export function PublicAlerts() {
               <p className="text-sm text-text-primary">⚠️ GFC अलर्ट: कल सुबह 6 बजे से दोपहर 12 बजे तक सुभाष चौक अंडरपास में जलभराव का उच्च जोखिम। यदि संभव हो तो बचें। विश्वसनीयता: उच्च।</p>
             </div>
           </div>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-// PUBLIC CALIBRATION
-export function PublicCalibration() {
-  const { lang } = useStore();
-
-  return (
-    <div className="h-full overflow-auto">
-      <div className="p-4 sm:p-6 max-w-lg mx-auto">
-        <h2 className="text-xl font-bold text-text-primary mb-2">{t('public.accuracy_title', lang)}</h2>
-        <p className="text-sm text-text-secondary mb-6">{t('public.accuracy_note', lang)}</p>
-
-        {/* Scorecard */}
-        <div className="grid grid-cols-3 gap-3 mb-6">
-          <div className="bg-white rounded-xl border border-border p-4 text-center">
-            <p className="text-2xl font-bold text-primary">{calibrationData.alerts_issued}</p>
-            <p className="text-xs text-text-secondary mt-1">{t('public.alerts_issued', lang)}</p>
-          </div>
-          <div className="bg-white rounded-xl border border-border p-4 text-center">
-            <p className="text-2xl font-bold text-risk-low">{calibrationData.alerts_verified_correct}</p>
-            <p className="text-xs text-text-secondary mt-1">{t('public.verified_correct', lang)}</p>
-          </div>
-          <div className="bg-white rounded-xl border border-border p-4 text-center">
-            <p className="text-2xl font-bold text-primary">{calibrationData.accuracy_pct}%</p>
-            <p className="text-xs text-text-secondary mt-1">{t('public.accuracy', lang)}</p>
-          </div>
-        </div>
-
-        {/* Chart */}
-        <div className="bg-white rounded-xl border border-border p-4 mb-6">
-          <h3 className="text-sm font-semibold text-text-primary mb-3">{calibrationData.period}</h3>
-          <div className="h-48">
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={calibrationData.weekly_data}>
-                <XAxis dataKey="week" tick={{ fontSize: 11 }} />
-                <YAxis tick={{ fontSize: 11 }} allowDecimals={false} />
-                <Tooltip />
-                <Bar dataKey="alerts" fill="#0B3D6B" radius={[4, 4, 0, 0]} name="Alerts" />
-                <Bar dataKey="correct" fill="#2E7D32" radius={[4, 4, 0, 0]} name="Correct" />
-              </BarChart>
-            </ResponsiveContainer>
-          </div>
-          <div className="flex items-center gap-4 mt-2 text-xs text-text-secondary">
-            <span className="flex items-center gap-1"><span className="w-3 h-3 rounded bg-primary inline-block" /> Alerts</span>
-            <span className="flex items-center gap-1"><span className="w-3 h-3 rounded bg-risk-low inline-block" /> Verified</span>
-          </div>
-        </div>
-
-        {/* Note */}
-        <div className="bg-amber-50 rounded-xl border border-amber-200 p-4">
-          <p className="text-sm text-amber-800">
-            {lang === 'en'
-              ? 'We will sometimes be wrong. We publish our accuracy so you can judge each alert. If we are consistently wrong about your area, please report it — this helps us improve.'
-              : 'हम कभी-कभी गलत हो सकते हैं। हम अपनी सटीकता प्रकाशित करते हैं ताकि आप प्रत्येक अलर्ट का मूल्यांकन कर सकें। यदि हम आपके क्षेत्र के बारे में लगातार गलत हैं, तो कृपया रिपोर्ट करें — यह हमें सुधार करने में मदद करता है।'
-            }
-          </p>
         </div>
       </div>
     </div>
