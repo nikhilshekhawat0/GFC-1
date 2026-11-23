@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import {
   Route,
   Camera,
@@ -7,10 +7,13 @@ import {
   ArrowRight,
   PanelRightClose,
   PanelRightOpen,
+  LocateFixed,
+  Loader2,
 } from 'lucide-react';
 import { mcgHotspots, MCG_OFFICIAL_CHANNELS } from '../data/mcgHotspots';
 import { computeHotspotTelemetry, useStore } from '../store/useStore';
 import { t } from '../i18n/translations';
+import { fetchRealtimePosition } from '../lib/geolocation';
 
 export function CitizenOverviewCard() {
   const {
@@ -28,7 +31,31 @@ export function CitizenOverviewCard() {
     floodReports,
     dispatchRecords,
     setSelectedHotspotId,
+    setUserLocation,
+    addToast,
   } = useStore();
+
+  const [locating, setLocating] = useState(false);
+
+  const handleFetchMyLocation = async () => {
+    if (locating) return;
+    setLocating(true);
+    try {
+      const fix = await fetchRealtimePosition();
+      setUserLocation(fix, true);
+      addToast(
+        `Showing your real-time location (${fix.lat.toFixed(5)}, ${fix.lng.toFixed(5)})`,
+        'success'
+      );
+    } catch (err) {
+      addToast(
+        err instanceof Error ? err.message : 'Unable to fetch your real-time location',
+        'warning'
+      );
+    } finally {
+      setLocating(false);
+    }
+  };
 
   const stats = useMemo(() => {
     let critical = 0;
@@ -107,6 +134,17 @@ export function CitizenOverviewCard() {
           className="w-9 h-9 rounded-lg flex items-center justify-center text-amber-600 hover:bg-slate-100 dark:hover:bg-slate-800"
         >
           <Bell size={16} />
+        </button>
+
+        <button
+          type="button"
+          onClick={handleFetchMyLocation}
+          disabled={locating}
+          title="Fetch My Location"
+          aria-label="Fetch My Location"
+          className="w-9 h-9 rounded-lg flex items-center justify-center text-blue-600 hover:bg-slate-100 dark:hover:bg-slate-800"
+        >
+          {locating ? <Loader2 size={16} className="animate-spin" /> : <LocateFixed size={16} />}
         </button>
       </aside>
     );
@@ -196,6 +234,29 @@ export function CitizenOverviewCard() {
             <span className="flex items-center gap-2">
               <Bell size={15} className="text-amber-600" />
               {t('citizen.subscribe_alerts', lang)}
+            </span>
+            <ArrowRight size={14} />
+          </button>
+
+          <button
+            type="button"
+            onClick={handleFetchMyLocation}
+            disabled={locating}
+            className="w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl border border-blue-200 dark:border-blue-800 bg-blue-50/80 dark:bg-blue-950/40 text-[#0B3D6B] dark:text-blue-200 text-xs font-semibold hover:bg-blue-100/80 dark:hover:bg-blue-900/50 transition-colors disabled:opacity-60"
+          >
+            <span className="flex items-center gap-2">
+              {locating ? (
+                <Loader2 size={15} className="animate-spin text-blue-600" />
+              ) : (
+                <LocateFixed size={15} className="text-blue-600 dark:text-blue-400" />
+              )}
+              {locating
+                ? lang === 'hi'
+                  ? 'स्थान प्राप्त हो रहा है...'
+                  : 'Fetching Location...'
+                : lang === 'hi'
+                  ? 'मेरा रीयल-टाइम स्थान दिखाएँ'
+                  : 'Fetch My Location'}
             </span>
             <ArrowRight size={14} />
           </button>

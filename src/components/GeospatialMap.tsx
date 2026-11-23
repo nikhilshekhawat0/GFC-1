@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import {
   APIProvider,
   Map as GoogleMap,
@@ -10,9 +10,15 @@ import {
   useApiLoadingStatus,
   APILoadingStatus,
 } from '@vis.gl/react-google-maps';
-import { Play, Pause, RotateCcw, Droplets, Shield, AlertCircle } from 'lucide-react';
+import { Play, Pause, RotateCcw, Droplets, Shield, AlertCircle, LocateFixed, Loader2 } from 'lucide-react';
 import { mcgHotspots, type McgHotspot } from '../data/mcgHotspots';
-import { computeHotspotTelemetry, useStore, type HotspotTelemetry } from '../store/useStore';
+import {
+  computeHotspotTelemetry,
+  useStore,
+  type HotspotTelemetry,
+  type UserLocation,
+} from '../store/useStore';
+import { fetchRealtimePosition, watchRealtimePosition } from '../lib/geolocation';
 import type { FloodReportRecord } from '../lib/supabase';
 
 const GOOGLE_MAPS_API_KEY = import.meta.env.VITE_GOOGLE_MAPS_API_KEY || '';
@@ -52,8 +58,27 @@ export function getFilteredHotspots(
   });
 }
 
-function MapCameraController({ selectedHotspotId }: { selectedHotspotId: string | null }) {
+function MapCameraController({
+  selectedHotspotId,
+  userLocation,
+}: {
+  selectedHotspotId: string | null;
+  userLocation: UserLocation | null;
+}) {
   const map = useMap();
+  const lastFocusNonceRef = useRef<number>(0);
+
+  useEffect(() => {
+    if (!map || !userLocation) return;
+    if (userLocation.focusNonce > 0 && userLocation.focusNonce !== lastFocusNonceRef.current) {
+      lastFocusNonceRef.current = userLocation.focusNonce;
+      map.panTo({ lat: userLocation.lat, lng: userLocation.lng });
+      const currentZoom = map.getZoom() ?? 12;
+      if (currentZoom < 16) {
+        map.setZoom(16);
+      }
+    }
+  }, [map, userLocation]);
 
   useEffect(() => {
     if (!map || !selectedHotspotId) return;
@@ -67,6 +92,127 @@ function MapCameraController({ selectedHotspotId }: { selectedHotspotId: string 
   }, [map, selectedHotspotId]);
 
   return null;
+}
+
+function UserLocationMarker({
+  userLocation,
+  lang,
+  onReportHere,
+}: {
+  userLocation: UserLocation;
+  lang: 'en' | 'hi';
+  onReportHere: () => void;
+}) {
+  const [markerRef, marker] = useAdvancedMarkerRef();
+  const [open, setOpen] = useState(false);
+  const map = useMap();
+  const mapsLib = useMapsLibrary('maps');
+
+  useEffect(() => {
+    if (!map || !mapsLib) return;
+    const radius = Math.min(450, Math.max(18, userLocation.accuracyMeters || 30));
+    const circle = new mapsLib.Circle({
+      map,
+      center: { lat: userLocation.lat, lng: userLocation.lng },
+      radius,
+      fillColor: '#1A73E8',
+      fillOpacity: 0.14,
+      strokeColor: '#1A73E8',
+      strokeOpacity: 0.4,
+      strokeWeight: 1,
+      clickable: false,
+    });
+
+    return () => {
+      circle.setMap(null);
+    };
+  }, [map, mapsLib, userLocation.lat, userLocation.lng, userLocation.accuracyMeters]);
+
+  return (
+    <>
+      <AdvancedMarker
+        ref={markerRef}
+        position={{ lat: userLocation.lat, lng: userLocation.lng }}
+        title={lang === 'hi' ? 'आपका रीयल-टाइम स्थान' : 'Your Real-Time Location'}
+        zIndex={60}
+        onClick={() => setOpen((prev) => !prev)}
+      >
+        <div
+          style={{
+            position: 'relative',
+            width: '22px',
+            height: '22px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            cursor: 'pointer',
+          }}
+        >
+          {typeof userLocation.heading === 'number' && (
+            <div
+              style={{
+                position: 'absolute',
+                width: '38px',
+                height: '38px',
+                transform: `rotate(${userLocation.heading}deg)`,
+                background:
+                  'conic-gradient(from -32deg at 50% 50%, rgba(26,115,232,0.38) 0deg, rgba(26,115,232,0.38) 64deg, transparent 65deg)',
+                borderRadius: '9999px',
+                pointerEvents: 'none',
+              }}
+            />
+          )}
+          <span
+            className="gfc-critical-ring"
+            style={{
+              position: 'absolute',
+              inset: '-7px',
+              borderRadius: '9999px',
+              border: '1.5px solid #1A73E8',
+              background: 'rgba(26, 115, 232, 0.2)',
+              pointerEvents: 'none',
+            }}
+          />
+          <div
+            style={{
+              width: '16px',
+              height: '16px',
+              borderRadius: '9999px',
+              background: '#1A73E8',
+              border: '3px solid #ffffff',
+              boxShadow: '0 2px 8px rgba(26,115,232,0.55)',
+              position: 'relative',
+              zIndex: 1,
+            }}
+          />
+        </div>
+      </AdvancedMarker>
+
+      {open && marker && (
+        <InfoWindow anchor={marker} maxWidth={250} onCloseClick={() => setOpen(false)}>
+          <div className="p-1 text-slate-900 text-xs leading-snug space-y-1.5">
+            <div className="flex items-center gap-1.5">
+              <span className="inline-block w-2 h-2 rounded-full bg-blue-600" />
+              <p className="font-bold text-slate-900">
+                {lang === 'hi' ? 'आपका रीयल-टाइम स्थान' : 'Your Real-Time Location'}
+              </p>
+            </div>
+            <p className="font-mono text-[11px] text-slate-600">
+              {userLocation.lat.toFixed(5)}, {userLocation.lng.toFixed(5)}
+              {userLocation.accuracyMeters ? ` (±${userLocation.accuracyMeters}m)` : ''}
+            </p>
+            <button
+              type="button"
+              onClick={onReportHere}
+              className="w-full py-1 px-2 rounded-md bg-[#0B3D6B] text-white text-[11px] font-semibold hover:bg-[#093055] transition-colors"
+            >
+              {lang === 'hi' ? 'यहाँ जलभराव की रिपोर्ट करें' : 'Report Flood at My Location'}
+            </button>
+          </div>
+        </InfoWindow>
+      )}
+    </>
+  );
 }
 
 function DrainageCascadePolylines({
@@ -341,10 +487,81 @@ export function GeospatialMap() {
     selectedHotspotId,
     setSelectedHotspotId,
     highlightedHotspotIds,
+    userLocation,
+    setUserLocation,
+    setActiveView,
+    addToast,
     sensors,
     floodReports,
     dispatchRecords,
   } = useStore();
+
+  const [locating, setLocating] = useState(false);
+  const [liveTracking, setLiveTracking] = useState(false);
+  const [locationDenied, setLocationDenied] = useState(false);
+  const watchCleanupRef = useRef<(() => void) | null>(null);
+  const hasInitialAutoFocusRef = useRef(false);
+
+  const startLiveLocationWatch = () => {
+    if (watchCleanupRef.current) return;
+    setLiveTracking(true);
+    setLocationDenied(false);
+    watchCleanupRef.current = watchRealtimePosition(
+      (liveFix) => {
+        setLocationDenied(false);
+        const shouldAutoFocus =
+          !hasInitialAutoFocusRef.current && !useStore.getState().selectedHotspotId;
+        hasInitialAutoFocusRef.current = true;
+        setUserLocation(liveFix, shouldAutoFocus);
+      },
+      (_msg, code) => {
+        if (code === 1) {
+          setLocationDenied(true);
+          setLiveTracking(false);
+          if (watchCleanupRef.current) {
+            watchCleanupRef.current();
+            watchCleanupRef.current = null;
+          }
+        }
+      }
+    );
+  };
+
+  // Automatically track & display user's real-time GPS blue dot whenever viewing the map
+  useEffect(() => {
+    startLiveLocationWatch();
+    return () => {
+      if (watchCleanupRef.current) {
+        watchCleanupRef.current();
+        watchCleanupRef.current = null;
+      }
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const handleFetchMyLocation = async () => {
+    if (locating) return;
+    setLocating(true);
+    try {
+      const fix = await fetchRealtimePosition();
+      hasInitialAutoFocusRef.current = true;
+      setLocationDenied(false);
+      setUserLocation(fix, true);
+      startLiveLocationWatch();
+      addToast(
+        `Centered on your real-time location (${fix.lat.toFixed(5)}, ${fix.lng.toFixed(5)})`,
+        'success'
+      );
+    } catch (err) {
+      setLocationDenied(true);
+      addToast(
+        err instanceof Error ? err.message : 'Unable to fetch your real-time location',
+        'warning'
+      );
+    } finally {
+      setLocating(false);
+    }
+  };
 
   const filteredHotspots = useMemo(
     () =>
@@ -429,6 +646,58 @@ export function GeospatialMap() {
             region="IN"
           >
             <MapStatusOverlay />
+            <div className="absolute top-3 right-3 z-10 flex items-center gap-1.5">
+              <button
+                type="button"
+                onClick={handleFetchMyLocation}
+                disabled={locating}
+                title={
+                  locationDenied
+                    ? 'Allow location access to show your real-time position'
+                    : 'Center map on my real-time location'
+                }
+                className="inline-flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-semibold border border-slate-200 dark:border-slate-700 bg-white dark:bg-[#0D131F] text-slate-900 dark:text-slate-100 shadow-sm hover:bg-slate-50 dark:hover:bg-slate-800 disabled:opacity-70 transition-colors"
+              >
+                {locating ? (
+                  <Loader2 size={14} className="animate-spin text-[#1A73E8]" />
+                ) : (
+                  <LocateFixed
+                    size={14}
+                    className={
+                      userLocation
+                        ? 'text-[#1A73E8] dark:text-blue-400'
+                        : locationDenied
+                          ? 'text-amber-600 dark:text-amber-400'
+                          : 'text-[#0B3D6B] dark:text-blue-400'
+                    }
+                  />
+                )}
+                <span>
+                  {locating
+                    ? lang === 'hi'
+                      ? 'स्थान प्राप्त हो रहा है...'
+                      : 'Locating...'
+                    : userLocation && liveTracking
+                      ? lang === 'hi'
+                        ? 'मेरा लाइव स्थान'
+                        : 'My Location'
+                      : locationDenied
+                        ? lang === 'hi'
+                          ? 'लोकेशन चालू करें'
+                          : 'Enable Location'
+                        : lang === 'hi'
+                          ? 'मेरा स्थान दिखाएँ'
+                          : 'Fetch My Location'}
+                </span>
+                {userLocation && liveTracking && (
+                  <span
+                    className="w-2 h-2 rounded-full bg-[#1A73E8]"
+                    aria-hidden="true"
+                  />
+                )}
+              </button>
+            </div>
+
             <GoogleMap
               defaultCenter={GURUGRAM_CENTER}
               defaultZoom={12}
@@ -442,7 +711,10 @@ export function GeospatialMap() {
               internalUsageAttributionIds={['gmp_mcp_codeassist_v1_aistudio']}
               style={{ width: '100%', height: '100%' }}
             >
-              <MapCameraController selectedHotspotId={selectedHotspotId} />
+              <MapCameraController
+                selectedHotspotId={selectedHotspotId}
+                userLocation={userLocation}
+              />
               <DrainageCascadePolylines
                 filteredHotspots={filteredHotspots}
                 telemetryById={telemetryById}
@@ -470,6 +742,14 @@ export function GeospatialMap() {
                   onSelectHotspot={setSelectedHotspotId}
                 />
               ))}
+
+              {userLocation && (
+                <UserLocationMarker
+                  userLocation={userLocation}
+                  lang={lang}
+                  onReportHere={() => setActiveView('report')}
+                />
+              )}
             </GoogleMap>
           </APIProvider>
         )}

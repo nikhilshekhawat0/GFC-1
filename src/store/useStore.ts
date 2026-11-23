@@ -101,6 +101,15 @@ export interface ToastItem {
   type: 'success' | 'info' | 'warning' | 'error';
 }
 
+export interface UserLocation {
+  lat: number;
+  lng: number;
+  accuracyMeters?: number;
+  heading?: number | null;
+  updatedAt: string;
+  focusNonce: number;
+}
+
 interface AppState {
   theme: ThemeMode;
   lang: Lang;
@@ -123,6 +132,7 @@ interface AppState {
   searchQuery: string;
   selectedHotspotId: string | null;
   highlightedHotspotIds: string[];
+  userLocation: UserLocation | null;
 
   // Operational Data
   sensors: Sensor[];
@@ -172,6 +182,10 @@ interface AppState {
   setSearchQuery: (q: string) => void;
   setSelectedHotspotId: (id: string | null) => void;
   setHighlightedHotspotIds: (ids: string[]) => void;
+  setUserLocation: (
+    loc: Omit<UserLocation, 'focusNonce'> | null,
+    focusMap?: boolean
+  ) => void;
 
   fetchLiveWeather: (syncRainfall?: boolean) => Promise<void>;
   initSupabaseAndRealtime: () => Promise<void>;
@@ -406,6 +420,7 @@ export const useStore = create<AppState>()(
       searchQuery: '',
       selectedHotspotId: null,
       highlightedHotspotIds: [],
+      userLocation: null,
 
       sensors: initialSensors,
       floodReports: INITIAL_REPORTS,
@@ -541,6 +556,17 @@ export const useStore = create<AppState>()(
           rightSidebarCollapsed: selectedHotspotId ? false : state.rightSidebarCollapsed,
         })),
       setHighlightedHotspotIds: (highlightedHotspotIds) => set({ highlightedHotspotIds }),
+      setUserLocation: (loc, focusMap = false) =>
+        set((state) => {
+          if (!loc) return { userLocation: null };
+          const nextNonce = focusMap
+            ? (state.userLocation?.focusNonce || 0) + 1
+            : state.userLocation?.focusNonce || 0;
+          return {
+            userLocation: { ...loc, focusNonce: nextNonce },
+            ...(focusMap ? { selectedHotspotId: null } : {}),
+          };
+        }),
 
       fetchLiveWeather: async (syncRainfall = false) => {
         set({ weatherLoading: true });

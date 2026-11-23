@@ -23,6 +23,7 @@ import {
 } from '../data/mcgHotspots';
 import { computeHotspotTelemetry, useStore } from '../store/useStore';
 import { t } from '../i18n/translations';
+import { fetchRealtimePosition } from '../lib/geolocation';
 import type { FloodReportRecord } from '../lib/supabase';
 
 function compressImageToBase64(file: File): Promise<{ dataUrl: string; mimeType: string }> {
@@ -318,6 +319,8 @@ export function AiFloodReportView() {
     lang,
     citizenUser,
     signInCitizen,
+    userLocation,
+    setUserLocation,
     floodReports,
     submitFloodReport,
     setActiveView,
@@ -327,10 +330,15 @@ export function AiFloodReportView() {
 
   const [selectedHotspotIdInput, setSelectedHotspotIdInput] = useState<string>(mcgHotspots[3].id);
   const [customLocation, setCustomLocation] = useState<string>('');
-  const [coords, setCoords] = useState<{ lat: number; lng: number }>({
-    lat: mcgHotspots[3].lat,
-    lng: mcgHotspots[3].lng,
-  });
+  const [locationMode, setLocationMode] = useState<'gps' | 'ward'>(userLocation ? 'gps' : 'ward');
+  const [gpsAccuracy, setGpsAccuracy] = useState<number | null>(
+    userLocation?.accuracyMeters ?? null
+  );
+  const [coords, setCoords] = useState<{ lat: number; lng: number }>(
+    userLocation
+      ? { lat: userLocation.lat, lng: userLocation.lng }
+      : { lat: mcgHotspots[3].lat, lng: mcgHotspots[3].lng }
+  );
   const [description, setDescription] = useState('');
   const [photoPreview, setPhotoPreview] = useState<string | null>(null);
   const [photoMime, setPhotoMime] = useState<string>('image/jpeg');
@@ -360,37 +368,41 @@ export function AiFloodReportView() {
     }
   };
 
-  const handleAutoGps = () => {
-    if (!navigator.geolocation) {
-      addToast('Location access is not supported in this browser', 'warning');
-      return;
-    }
+  const handleFetchMyLocation = async () => {
     setLocating(true);
-    navigator.geolocation.getCurrentPosition(
-      (pos) => {
-        const lat = pos.coords.latitude;
-        const lng = pos.coords.longitude;
-        setCoords({ lat, lng });
+    try {
+      const fix = await fetchRealtimePosition();
+      setCoords({ lat: fix.lat, lng: fix.lng });
+      setGpsAccuracy(fix.accuracyMeters);
+      setLocationMode('gps');
+      setUserLocation(fix, true);
 
-        let nearest = mcgHotspots[0];
-        let minDist = Infinity;
-        mcgHotspots.forEach((h) => {
-          const d = haversineKm(lat, lng, h.lat, h.lng);
-          if (d < minDist) {
-            minDist = d;
-            nearest = h;
-          }
-        });
-        setSelectedHotspotIdInput(nearest.id);
-        setLocating(false);
-        addToast(`Found your nearest spot: ${nearest.name}`, 'success');
-      },
-      () => {
-        setLocating(false);
-        addToast('Location permission denied — please choose your area from the list', 'warning');
-      },
-      { timeout: 6000 }
-    );
+      // Silently identify nearest MCG ward strictly for routing engineer alerts
+      let nearest = mcgHotspots[0];
+      let minDist = Infinity;
+      mcgHotspots.forEach((h) => {
+        const d = haversineKm(fix.lat, fix.lng, h.lat, h.lng);
+        if (d < minDist) {
+          minDist = d;
+          nearest = h;
+        }
+      });
+      setSelectedHotspotIdInput(nearest.id);
+
+      addToast(
+        `Real-time location captured (${fix.lat.toFixed(5)}, ${fix.lng.toFixed(5)})`,
+        'success'
+      );
+    } catch (err) {
+      addToast(
+        err instanceof Error
+          ? err.message
+          : 'Location permission denied — please choose your area from the list',
+        'warning'
+      );
+    } finally {
+      setLocating(false);
+    }
   };
 
   const handleSubmit = async () => {
@@ -429,7 +441,10 @@ export function AiFloodReportView() {
     }
 
     setSubmitting(true);
-    const locationLabel = customLocation.trim() || selectedHotspot?.name || 'Gurugram Street';
+    const gpsLabel = `Live GPS (${coords.lat.toFixed(4)}, ${coords.lng.toFixed(4)})`;
+    const locationLabel =
+      customLocation.trim() ||
+      (locationMode === 'gps' ? gpsLabel : selectedHotspot?.name || 'Gurugram Street');
 
     try {
       const res = await fetch('/api/ai/triage-report', {
@@ -479,13 +494,16 @@ export function AiFloodReportView() {
         addToast('Automatic photo check busy — report saved and routed to the Ward Engineer', 'info');
       }
 
+      const reportLat = locationMode === 'gps' ? coords.lat : selectedHotspot ? selectedHotspot.lat : coords.lat;
+      const reportLng = locationMode === 'gps' ? coords.lng : selectedHotspot ? selectedHotspot.lng : coords.lng;
+
       const record: FloodReportRecord = {
         id: `WR-${Date.now()}`,
         hotspot_id: selectedHotspot?.id || null,
         ward_no: selectedHotspot?.wardNo || null,
         location_name: locationLabel,
-        lat: selectedHotspot ? selectedHotspot.lat : coords.lat,
-        lng: selectedHotspot ? selectedHotspot.lng : coords.lng,
+        lat: reportLat,
+        lng: reportLng,
         description: `${description.trim() || 'Street waterlogging photo report'} — Reported by ${activeCitizen.name}`,
         photo_data_url: photoPreview || null,
         ai_severity: triage.severity,
@@ -532,12 +550,15 @@ export function AiFloodReportView() {
         <div className="flex flex-col sm:flex-row gap-3">
           <div className="flex-1">
             <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
-              Where is the flooding? (Nearest Sector / Road)
+              {locationMode === 'gps'
+                ? 'Routing Ward (Optional — Pin Uses Your Real-Time GPS)'
+                : 'Where is the flooding? (Select Sector / Road)'}
             </label>
             <select
               value={selectedHotspotIdInput}
               onChange={(e) => {
                 setSelectedHotspotIdInput(e.target.value);
+                setLocationMode('ward');
                 const h = mcgHotspots.find((x) => x.id === e.target.value);
                 if (h) setCoords({ lat: h.lat, lng: h.lng });
               }}
@@ -554,15 +575,55 @@ export function AiFloodReportView() {
           <div className="flex items-end">
             <button
               type="button"
-              onClick={handleAutoGps}
+              onClick={handleFetchMyLocation}
               disabled={locating}
-              className="w-full sm:w-auto inline-flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-xl text-xs font-semibold border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-800 dark:text-slate-200 hover:bg-slate-100"
+              className="w-full sm:w-auto inline-flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-xl text-xs font-semibold border border-blue-200 dark:border-blue-800 bg-blue-50 dark:bg-blue-950/50 text-[#0B3D6B] dark:text-blue-200 hover:bg-blue-100 dark:hover:bg-blue-900/50 transition-colors"
             >
               <Navigation size={13} className={locating ? 'animate-spin' : ''} />
-              {locating ? 'Finding location...' : 'Use My GPS'}
+              {locating ? 'Fetching location...' : 'Fetch My Location'}
             </button>
           </div>
         </div>
+
+        {locationMode === 'gps' && (
+          <div className="flex flex-wrap items-center justify-between gap-2 px-3.5 py-2.5 rounded-xl bg-blue-50/90 dark:bg-blue-950/35 border border-blue-200 dark:border-blue-800/80 text-xs">
+            <div className="flex items-center gap-2 min-w-0">
+              <MapPin size={14} className="text-blue-600 dark:text-blue-400 shrink-0" />
+              <div className="min-w-0">
+                <p className="font-semibold text-slate-900 dark:text-slate-100">
+                  Real-Time Location:{' '}
+                  <span className="font-mono text-[#0B3D6B] dark:text-blue-300">
+                    {coords.lat.toFixed(5)}, {coords.lng.toFixed(5)}
+                  </span>
+                  {gpsAccuracy ? (
+                    <span className="text-slate-500 dark:text-slate-400 font-normal">
+                      {' '}
+                      (±{gpsAccuracy}m)
+                    </span>
+                  ) : null}
+                </p>
+              </div>
+            </div>
+            <button
+              type="button"
+              onClick={() => {
+                setUserLocation(
+                  {
+                    lat: coords.lat,
+                    lng: coords.lng,
+                    accuracyMeters: gpsAccuracy ?? undefined,
+                    updatedAt: new Date().toISOString(),
+                  },
+                  true
+                );
+                setActiveView('map');
+              }}
+              className="text-xs font-semibold text-[#0B3D6B] dark:text-blue-300 hover:underline shrink-0"
+            >
+              Show on Map
+            </button>
+          </div>
+        )}
 
         <div>
           <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
