@@ -28,52 +28,52 @@ function FloodPhotoBackdrop() {
       className="pointer-events-none fixed inset-0 overflow-hidden select-none"
       aria-hidden="true"
     >
-      {/* Subtle full-bleed underpass & drainage photo base */}
-      <div className="absolute inset-0 bg-gradient-to-br from-slate-100 via-slate-50 to-blue-50/60 dark:from-[#070B12] dark:via-[#090F1A] dark:to-[#0B1628]" />
+      {/* Full-bleed underpass & drainage photo base at ~70% opacity */}
+      <div className="absolute inset-0 bg-slate-100 dark:bg-[#070B12]" />
       {!failed.underpass && (
         <img
           src={underpassDrainImg}
           alt="Urban road underpass and storm drain during monsoon rainfall"
           referrerPolicy="no-referrer"
           onError={() => markFailed('underpass')}
-          className="absolute inset-0 w-full h-full object-cover opacity-[0.12] dark:opacity-[0.11] grayscale-[25%]"
+          className="absolute inset-0 w-full h-full object-cover opacity-70 dark:opacity-65"
         />
       )}
 
-      {/* Left low-opacity flooded street frame */}
-      <div className="hidden md:block absolute top-16 bottom-12 left-4 lg:left-8 w-[34%] max-w-[440px] rounded-2xl overflow-hidden border border-slate-200/50 dark:border-slate-800/50">
+      {/* Left flooded street frame at ~80% opacity */}
+      <div className="hidden md:block absolute top-16 bottom-12 left-4 lg:left-8 w-[34%] max-w-[440px] rounded-2xl overflow-hidden border border-white/40 dark:border-slate-700/60 shadow-lg">
         {!failed.street ? (
           <img
             src={floodStreetImg}
             alt="Monsoon waterlogging along an arterial city road"
             referrerPolicy="no-referrer"
             onError={() => markFailed('street')}
-            className="w-full h-full object-cover opacity-[0.18] dark:opacity-[0.14] grayscale-[20%]"
+            className="w-full h-full object-cover opacity-80 dark:opacity-75"
           />
         ) : (
-          <div className="w-full h-full bg-gradient-to-b from-blue-900/10 to-slate-900/10" />
+          <div className="w-full h-full bg-gradient-to-b from-blue-900/20 to-slate-900/20" />
         )}
-        <div className="absolute inset-0 bg-gradient-to-r from-transparent via-slate-50/40 to-slate-50 dark:via-[#070B12]/50 dark:to-[#070B12]" />
+        <div className="absolute inset-0 bg-gradient-to-r from-transparent via-transparent to-slate-950/20 dark:to-[#070B12]/35" />
       </div>
 
-      {/* Right low-opacity storm drain grate frame */}
-      <div className="hidden md:block absolute top-16 bottom-12 right-4 lg:right-8 w-[34%] max-w-[440px] rounded-2xl overflow-hidden border border-slate-200/50 dark:border-slate-800/50">
+      {/* Right storm drain grate frame at ~80% opacity */}
+      <div className="hidden md:block absolute top-16 bottom-12 right-4 lg:right-8 w-[34%] max-w-[440px] rounded-2xl overflow-hidden border border-white/40 dark:border-slate-700/60 shadow-lg">
         {!failed.drain ? (
           <img
             src={stormDrainImg}
             alt="Roadside municipal storm drain grate carrying rainwater runoff"
             referrerPolicy="no-referrer"
             onError={() => markFailed('drain')}
-            className="w-full h-full object-cover opacity-[0.20] dark:opacity-[0.16] grayscale-[15%]"
+            className="w-full h-full object-cover opacity-80 dark:opacity-75"
           />
         ) : (
-          <div className="w-full h-full bg-gradient-to-b from-slate-800/10 to-blue-900/10" />
+          <div className="w-full h-full bg-gradient-to-b from-slate-800/20 to-blue-900/20" />
         )}
-        <div className="absolute inset-0 bg-gradient-to-l from-transparent via-slate-50/40 to-slate-50 dark:via-[#070B12]/50 dark:to-[#070B12]" />
+        <div className="absolute inset-0 bg-gradient-to-l from-transparent via-transparent to-slate-950/20 dark:to-[#070B12]/35" />
       </div>
 
-      {/* Soft center vignette so the login card stays crisp and high-contrast */}
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(248,250,252,0.88)_0%,rgba(248,250,252,0.52)_55%,rgba(248,250,252,0.75)_100%)] dark:bg-[radial-gradient(circle_at_center,rgba(7,11,18,0.85)_0%,rgba(7,11,18,0.58)_55%,rgba(7,11,18,0.8)_100%)]" />
+      {/* Light atmospheric contrast scrim so text stays readable while photos shine at 70-80% */}
+      <div className="absolute inset-0 bg-gradient-to-b from-slate-950/25 via-slate-950/15 to-slate-950/35 dark:from-[#070B12]/45 dark:via-[#070B12]/30 dark:to-[#070B12]/55" />
     </div>
   );
 }
@@ -201,7 +201,7 @@ export function DedicatedLoginPage({ initialPortal }: { initialPortal: 'citizen'
 
       {/* Top Bar matching App Theme */}
       <header className="relative z-10 w-full max-w-[1320px] mx-auto px-6 sm:px-10 pt-5 pb-3 flex items-start justify-between gap-4">
-        <div className="space-y-1.5">
+        <div className="space-y-1.5 rounded-xl bg-white/85 dark:bg-slate-900/85 backdrop-blur-md px-3.5 py-2.5 border border-slate-200/70 dark:border-slate-800/70 shadow-xs">
           <button
             type="button"
             onClick={handleBackToMap}
@@ -217,18 +217,18 @@ export function DedicatedLoginPage({ initialPortal }: { initialPortal: 'citizen'
           <div className="w-16 h-px bg-slate-300 dark:bg-slate-700" />
           <a
             href={`tel:${MCG_OFFICIAL_CHANNELS.helpline}`}
-            className="inline-flex items-center gap-1.5 text-[11px] font-medium text-slate-500 dark:text-slate-400 hover:text-[#0B3D6B] dark:hover:text-blue-300"
+            className="inline-flex items-center gap-1.5 text-[11px] font-medium text-slate-600 dark:text-slate-300 hover:text-[#0B3D6B] dark:hover:text-blue-300"
           >
             <span>MCG Helpline {MCG_OFFICIAL_CHANNELS.helpline}</span>
             <ArrowRight size={11} />
           </a>
         </div>
 
-        <div className="flex items-center gap-3 sm:gap-5 pt-1">
+        <div className="flex items-center gap-3 sm:gap-4 rounded-xl bg-white/85 dark:bg-slate-900/85 backdrop-blur-md px-3.5 py-2 border border-slate-200/70 dark:border-slate-800/70 shadow-xs">
           <button
             type="button"
             onClick={() => setLang(lang === 'en' ? 'hi' : 'en')}
-            className="inline-flex items-center gap-1 text-xs font-medium text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white transition-colors"
+            className="inline-flex items-center gap-1 text-xs font-medium text-slate-700 dark:text-slate-200 hover:text-slate-900 dark:hover:text-white transition-colors"
             title="Switch Language"
             aria-label="Switch Language"
           >
@@ -606,17 +606,19 @@ export function DedicatedLoginPage({ initialPortal }: { initialPortal: 'citizen'
         </div>
       </main>
 
-      {/* Quiet Footer */}
-      <footer className="relative z-10 py-5 text-center text-xs text-slate-500 dark:text-slate-400">
-        <span>Gurgaon Flood Help</span>
-        <span className="mx-2">|</span>
-        <button
-          type="button"
-          onClick={handleBackToMap}
-          className="hover:text-[#0B3D6B] dark:hover:text-blue-300 transition-colors"
-        >
-          Public Map (No Login Required)
-        </button>
+      {/* Footer with legible frosted pill */}
+      <footer className="relative z-10 py-4 flex justify-center px-4">
+        <div className="inline-flex items-center gap-2 rounded-lg bg-white/85 dark:bg-slate-900/85 backdrop-blur-md px-4 py-1.5 text-xs text-slate-600 dark:text-slate-300 border border-slate-200/70 dark:border-slate-800/70 shadow-xs">
+          <span>Gurgaon Flood Help</span>
+          <span className="text-slate-400">|</span>
+          <button
+            type="button"
+            onClick={handleBackToMap}
+            className="font-medium hover:text-[#0B3D6B] dark:hover:text-blue-300 transition-colors"
+          >
+            Public Map (No Login Required)
+          </button>
+        </div>
       </footer>
     </div>
   );
