@@ -1,0 +1,6 @@
+{
+  "name": "Gurgaon Flood Command",
+  "description": "Geospatial civic flood intelligence and MCG monsoon response platform covering all 153 official Gurugram hotspots with AI triage and live SLA escalation.",
+  "requestFramePermissions": ["geolocation"],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
