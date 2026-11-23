@@ -22,13 +22,13 @@ export function Toasts() {
         return (
           <div
             key={toast.id}
-            className="pointer-events-auto flex items-center gap-2.5 px-3.5 py-2.5 rounded-xl border border-slate-200/80 dark:border-slate-700/80 bg-white/95 dark:bg-[#0D131F]/95 backdrop-blur-xl shadow-xl text-xs font-medium text-slate-900 dark:text-slate-100"
+            className="pointer-events-auto flex items-center gap-2.5 px-3.5 py-2.5 rounded-2xl border border-[#EAECEF] dark:border-[#242832] bg-white/95 dark:bg-[#16191F]/95 backdrop-blur-xl shadow-xl text-xs font-medium text-[#111317] dark:text-[#F4F4F6]"
           >
             {icon}
             <span className="flex-1">{toast.message}</span>
             <button
               onClick={() => removeToast(toast.id)}
-              className="text-slate-400 hover:text-slate-700 dark:hover:text-slate-200"
+              className="text-[#9CA3AF] hover:text-[#111317] dark:hover:text-white"
               aria-label="Dismiss notification"
             >
               <X size={13} />

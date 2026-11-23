@@ -118,41 +118,41 @@ export function LegalModal({ open, initialTab, lang, onChangeTab, onClose }: Leg
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/60 backdrop-blur-xs"
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-[#111317]/60 backdrop-blur-xs"
       role="dialog"
       aria-modal="true"
       aria-label={copy.modalTitle}
       onClick={onClose}
     >
       <div
-        className="w-full max-w-lg max-h-[85vh] flex flex-col rounded-2xl bg-white dark:bg-[#0D131F] border border-slate-200 dark:border-slate-800 shadow-2xl overflow-hidden text-slate-900 dark:text-slate-100"
+        className="w-full max-w-lg max-h-[85vh] flex flex-col rounded-2xl bg-white dark:bg-[#16191F] border border-[#EAECEF] dark:border-[#242832] shadow-2xl overflow-hidden text-[#111317] dark:text-[#F4F4F6]"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
-        <div className="px-5 py-4 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between gap-3 shrink-0">
+        <div className="px-5 py-4 border-b border-[#EAECEF] dark:border-[#242832] flex items-center justify-between gap-3 shrink-0">
           <div>
             <h2 className="text-base font-bold">{copy.modalTitle}</h2>
-            <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">{copy.lastUpdated}</p>
+            <p className="text-[11px] text-[#6B7280] dark:text-slate-400 mt-0.5">{copy.lastUpdated}</p>
           </div>
           <button
             type="button"
             onClick={onClose}
             aria-label={copy.close}
-            className="p-1.5 rounded-lg text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+            className="p-1.5 rounded-full text-[#6B7280] hover:text-[#111317] dark:text-slate-400 dark:hover:text-white hover:bg-[#F3F4F6] dark:hover:bg-[#23262F] transition-colors"
           >
             <X size={18} />
           </button>
         </div>
 
         {/* Tab Bar */}
-        <div className="px-5 pt-3 pb-2 border-b border-slate-100 dark:border-slate-800/80 flex items-center gap-2 shrink-0">
+        <div className="px-5 pt-3 pb-2 border-b border-[#EAECEF] dark:border-[#242832] flex items-center gap-2 shrink-0">
           <button
             type="button"
             onClick={() => onChangeTab('privacy')}
-            className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors ${
+            className={`inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-semibold transition-colors ${
               initialTab === 'privacy'
-                ? 'bg-[#0B3D6B] text-white dark:bg-blue-600'
-                : 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700'
+                ? 'bg-[#111317] text-white dark:bg-[#F4F4F6] dark:text-[#111317]'
+                : 'bg-[#F3F4F6] dark:bg-[#23262F] text-[#6B7280] dark:text-slate-300 hover:bg-[#E5E7EB] dark:hover:bg-[#2E323D]'
             }`}
           >
             <Shield size={13} />
@@ -161,10 +161,10 @@ export function LegalModal({ open, initialTab, lang, onChangeTab, onClose }: Leg
           <button
             type="button"
             onClick={() => onChangeTab('terms')}
-            className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors ${
+            className={`inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-semibold transition-colors ${
               initialTab === 'terms'
-                ? 'bg-[#0B3D6B] text-white dark:bg-blue-600'
-                : 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700'
+                ? 'bg-[#111317] text-white dark:bg-[#F4F4F6] dark:text-[#111317]'
+                : 'bg-[#F3F4F6] dark:bg-[#23262F] text-[#6B7280] dark:text-slate-300 hover:bg-[#E5E7EB] dark:hover:bg-[#2E323D]'
             }`}
           >
             <FileText size={13} />
@@ -176,18 +176,18 @@ export function LegalModal({ open, initialTab, lang, onChangeTab, onClose }: Leg
         <div className="p-5 overflow-y-auto space-y-4">
           {sections.map((section) => (
             <div key={section.heading} className="space-y-1">
-              <h3 className="text-xs font-bold text-slate-900 dark:text-slate-100">{section.heading}</h3>
-              <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed">{section.body}</p>
+              <h3 className="text-xs font-bold text-[#111317] dark:text-[#F4F4F6]">{section.heading}</h3>
+              <p className="text-xs text-[#4B5563] dark:text-slate-300 leading-relaxed">{section.body}</p>
             </div>
           ))}
         </div>
 
         {/* Footer */}
-        <div className="px-5 py-3 border-t border-slate-200 dark:border-slate-800 flex justify-end shrink-0 bg-slate-50 dark:bg-slate-900/60">
+        <div className="px-5 py-3 border-t border-[#EAECEF] dark:border-[#242832] flex justify-end shrink-0 bg-[#FAFAFB] dark:bg-[#121418]">
           <button
             type="button"
             onClick={onClose}
-            className="px-4 py-1.5 rounded-lg bg-[#0B3D6B] hover:bg-[#093055] dark:bg-blue-600 dark:hover:bg-blue-500 text-white text-xs font-semibold transition-colors"
+            className="px-4 py-1.5 rounded-full bg-[#111317] hover:bg-[#23262F] dark:bg-[#F4F4F6] dark:hover:bg-white text-white dark:text-[#111317] text-xs font-semibold transition-colors"
           >
             {copy.close}
           </button>

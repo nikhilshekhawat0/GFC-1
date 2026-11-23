@@ -68,7 +68,7 @@ function App() {
 
   if (isAuthScreen) {
     return (
-      <div className="min-h-screen w-screen bg-slate-50 dark:bg-[#070B12] text-slate-900 dark:text-slate-100">
+      <div className="min-h-screen w-screen bg-[#EEEEF2] dark:bg-[#0B0C0F] text-[#111317] dark:text-[#F4F4F6]">
         {panelContent}
         <Toasts />
       </div>
@@ -76,22 +76,26 @@ function App() {
   }
 
   return (
-    <div className="h-screen w-screen flex flex-col overflow-hidden bg-slate-50 dark:bg-[#070B12] text-slate-900 dark:text-slate-100">
+    <div className="h-screen w-screen flex flex-col overflow-hidden bg-[#F3F4F6] dark:bg-[#0B0C0F] text-[#111317] dark:text-[#F4F4F6]">
       <TopBar />
 
-      <main className="relative flex-1 min-h-0 flex overflow-hidden bg-slate-50 dark:bg-[#070B12]">
+      <main className="relative flex-1 min-h-0 flex overflow-hidden bg-[#F3F4F6] dark:bg-[#0B0C0F]">
         {/* Docked Left Navigation & Filters Rail */}
         <LeftCommandRail />
 
         {/* Center Workspace: Either Map (+ Docked Bottom Timeline) OR Active Form / Command View */}
-        <div className="flex-1 min-w-0 h-full flex flex-col overflow-hidden">
+        <div className="flex-1 min-w-0 h-full flex flex-col overflow-hidden bg-[#FAFAFB] dark:bg-[#121418]">
           <div className={panelContent ? 'hidden' : 'flex-1 min-w-0 min-h-0 flex flex-col'}>
             <GeospatialMap />
           </div>
 
           {panelContent && (
-            <section className="flex-1 min-h-0 overflow-y-auto p-5 sm:p-6 bg-slate-50 dark:bg-[#070B12]">
-              <div className="max-w-5xl mx-auto">{panelContent}</div>
+            <section className="relative flex-1 min-h-0 overflow-y-auto p-5 sm:p-8 bg-[#FAFAFB] dark:bg-[#121418]">
+              <div
+                aria-hidden="true"
+                className="pointer-events-none absolute inset-x-0 top-0 h-72 studio-iridescent-glow"
+              />
+              <div className="relative z-10 max-w-5xl mx-auto">{panelContent}</div>
             </section>
           )}
         </div>

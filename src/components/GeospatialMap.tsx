@@ -213,7 +213,7 @@ function UserLocationMarker({
             <button
               type="button"
               onClick={onReportHere}
-              className="w-full py-1 px-2 rounded-md bg-[#0B3D6B] text-white text-[11px] font-semibold hover:bg-[#093055] transition-colors"
+              className="w-full py-1.5 px-2.5 rounded-full bg-[#111317] text-white text-[11px] font-semibold hover:bg-[#23262F] transition-colors"
             >
               {lang === 'hi' ? 'यहाँ जलभराव की रिपोर्ट करें' : 'Report Flood at My Location'}
             </button>
@@ -244,7 +244,7 @@ function DrainageCascadePolylines({
         const down = mcgHotspots.find((h) => h.id === downId);
         if (!down) return;
         const upTel = telemetryById[up.id];
-        const strokeColor = upTel?.tier === 'critical' ? '#dc2626' : '#0b3d6b';
+        const strokeColor = upTel?.tier === 'critical' ? '#dc2626' : '#181A1F';
 
         const polyline = new mapsLib.Polyline({
           map,
@@ -383,7 +383,7 @@ function HotspotAdvancedMarker({
               {formatWardLabel(hotspot.wardNo, lang)} · {formatZoneLabel(hotspot.zone, lang)} ·{' '}
               {hotspot.owningAgency}
             </p>
-            <p className="font-mono font-semibold text-[#0B3D6B]">
+            <p className="font-mono font-semibold text-[#111317]">
               {lang === 'hi'
                 ? `जलभराव संभावना ${tel.riskPct}% (~${tel.waterDepthCm} सेमी)`
                 : `Flood chance ${tel.riskPct}% (~${tel.waterDepthCm} cm)`}
@@ -686,7 +686,7 @@ export function GeospatialMap() {
                     ? 'Allow location access to show your real-time position'
                     : 'Center map on my real-time location'
                 }
-                className="inline-flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-semibold border border-slate-200 dark:border-slate-700 bg-white dark:bg-[#0D131F] text-slate-900 dark:text-slate-100 shadow-sm hover:bg-slate-50 dark:hover:bg-slate-800 disabled:opacity-70 transition-colors"
+                className="inline-flex items-center gap-2 px-3.5 py-2 rounded-full text-xs font-semibold border border-[#E6E7EC] dark:border-[#282C36] bg-white/95 dark:bg-[#16191F]/95 backdrop-blur-md text-[#111317] dark:text-[#F4F4F6] shadow-[0_4px_14px_rgba(17,19,23,0.1)] hover:bg-[#FAFAFB] dark:hover:bg-[#23262F] disabled:opacity-70 transition-colors"
               >
                 {locating ? (
                   <Loader2 size={14} className="animate-spin text-[#1A73E8]" />
@@ -698,7 +698,7 @@ export function GeospatialMap() {
                         ? 'text-[#1A73E8] dark:text-blue-400'
                         : locationDenied
                           ? 'text-amber-600 dark:text-amber-400'
-                          : 'text-[#0B3D6B] dark:text-blue-400'
+                          : 'text-[#111317] dark:text-[#F4F4F6]'
                     }
                   />
                 )}
@@ -788,14 +788,14 @@ export function GeospatialMap() {
       </div>
 
       {/* Docked Bottom Time Forecast & Pump Simulation Bar */}
-      <div className="shrink-0 border-t border-slate-200 dark:border-slate-800 bg-white dark:bg-[#0D131F] px-4 py-2.5">
+      <div className="shrink-0 border-t border-[#E6E7EC] dark:border-[#242832] bg-white dark:bg-[#111317] px-4 py-2.5">
         <div className="flex flex-wrap lg:flex-nowrap items-center gap-3">
           {/* Play / Reset + Status */}
           <div className="flex items-center gap-2 shrink-0">
             <button
               type="button"
               onClick={() => setIsPlayingTimeline(!isPlayingTimeline)}
-              className="w-8 h-8 rounded-lg bg-[#0B3D6B] text-white flex items-center justify-center hover:bg-[#093055] transition-colors"
+              className="w-8 h-8 rounded-full bg-[#111317] hover:bg-[#23262F] dark:bg-[#F4F4F6] dark:hover:bg-white text-white dark:text-[#111317] flex items-center justify-center transition-colors"
               aria-label={isPlayingTimeline ? 'Pause flood forecast playback' : 'Play flood forecast playback'}
             >
               {isPlayingTimeline ? <Pause size={14} /> : <Play size={14} className="ml-0.5" />}
@@ -806,13 +806,13 @@ export function GeospatialMap() {
                 setIsPlayingTimeline(false);
                 setTimelineHourOffset(0);
               }}
-              className="w-8 h-8 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-300 flex items-center justify-center hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
+              className="w-8 h-8 rounded-full border border-[#E6E7EC] dark:border-[#282C36] bg-white dark:bg-[#181B20] text-[#6B7280] dark:text-slate-300 flex items-center justify-center hover:bg-[#F3F4F6] dark:hover:bg-[#23262F] transition-colors"
               aria-label="Jump back to right now"
             >
               <RotateCcw size={13} />
             </button>
             <div className="leading-tight">
-              <p className="text-xs font-semibold text-slate-900 dark:text-slate-100 tabular-nums whitespace-nowrap">
+              <p className="text-xs font-semibold text-[#111317] dark:text-[#F4F4F6] tabular-nums whitespace-nowrap">
                 {timelineHourOffset === 0
                   ? lang === 'hi'
                     ? 'अभी'
@@ -825,7 +825,7 @@ export function GeospatialMap() {
                       ? `+${timelineHourOffset} घंटे बाद`
                       : `+${timelineHourOffset}h Ahead`}
               </p>
-              <p className="text-[11px] text-slate-500 dark:text-slate-400 tabular-nums whitespace-nowrap">
+              <p className="text-[11px] text-[#6B7280] dark:text-slate-400 tabular-nums whitespace-nowrap">
                 {lang === 'hi'
                   ? `${criticalActiveCount} गंभीर · ${filteredHotspots.length} स्थान`
                   : `${criticalActiveCount} severe · ${filteredHotspots.length} spots`}
@@ -835,7 +835,7 @@ export function GeospatialMap() {
 
           {/* Scrubber Slider */}
           <div className="flex-1 min-w-[180px] flex items-center gap-2.5">
-            <span className="text-[11px] font-medium tabular-nums text-slate-500 dark:text-slate-400 whitespace-nowrap">
+            <span className="text-[11px] font-medium tabular-nums text-[#6B7280] dark:text-slate-400 whitespace-nowrap">
               -6h
             </span>
             <input
@@ -845,10 +845,10 @@ export function GeospatialMap() {
               step={1}
               value={timelineHourOffset}
               onChange={(e) => setTimelineHourOffset(Number(e.target.value))}
-              className="flex-1 h-1.5 accent-[#0B3D6B] cursor-pointer"
+              className="flex-1 h-1.5 accent-[#111317] dark:accent-[#F4F4F6] cursor-pointer"
               aria-label="Slide to preview flooding over time"
             />
-            <span className="text-[11px] font-medium tabular-nums text-slate-500 dark:text-slate-400 whitespace-nowrap">
+            <span className="text-[11px] font-medium tabular-nums text-[#6B7280] dark:text-slate-400 whitespace-nowrap">
               +12h
             </span>
           </div>
@@ -858,10 +858,10 @@ export function GeospatialMap() {
             <button
               type="button"
               onClick={togglePumpMitigation}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold border transition-colors whitespace-nowrap ${
+              className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-semibold border transition-colors whitespace-nowrap ${
                 pumpMitigationActive
                   ? 'bg-emerald-600 border-emerald-600 text-white'
-                  : 'bg-slate-50 dark:bg-slate-800/80 border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700'
+                  : 'bg-[#FAFAFB] dark:bg-[#1B1E25] border-[#E6E7EC] dark:border-[#282C36] text-[#111317] dark:text-[#F4F4F6] hover:bg-[#F3F4F6] dark:hover:bg-[#23262F]'
               }`}
             >
               <Shield size={13} />
@@ -871,7 +871,7 @@ export function GeospatialMap() {
                   : `Pumps: ${pumpMitigationActive ? 'ON' : 'OFF'}`}
               </span>
             </button>
-            <div className="hidden sm:flex items-center gap-1 text-xs font-semibold tabular-nums text-[#0B3D6B] dark:text-cyan-400 px-2.5 py-1.5 rounded-lg bg-blue-50 dark:bg-cyan-950/50 border border-blue-200/80 dark:border-cyan-800/40 whitespace-nowrap">
+            <div className="hidden sm:flex items-center gap-1 text-xs font-semibold tabular-nums text-[#111317] dark:text-[#F4F4F6] px-3 py-1.5 rounded-full bg-[#F3F4F6] dark:bg-[#1B1E25] border border-[#E6E7EC] dark:border-[#282C36] whitespace-nowrap">
               <Droplets size={12} />
               <span>{rainfallMm} mm</span>
             </div>

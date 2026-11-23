@@ -158,34 +158,39 @@ export function DispatchSlaView() {
   };
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-5">
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <div>
-          <h2 className="text-xl font-bold text-slate-900 dark:text-slate-100">
-            Ward SLA & Pump Dispatch Queue
-          </h2>
-          <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-            {rankedList.length} MCG hotspots ranked by live flood risk, drain leverage & citizen reports
-          </p>
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-[#F4DFD3] via-[#E8DDF7] to-[#D8E7FA] dark:from-[#2C2538] dark:to-[#1F2430] border border-[#E6E7EC] dark:border-[#2D313D] flex items-center justify-center shrink-0">
+            <Truck size={18} className="text-[#111317] dark:text-[#F4F4F6]" />
+          </div>
+          <div>
+            <h2 className="text-xl font-bold tracking-tight text-[#111317] dark:text-[#F4F4F6]">
+              Ward SLA & Pump Dispatch Queue
+            </h2>
+            <p className="text-xs text-[#6B7280] dark:text-slate-400 mt-0.5">
+              {rankedList.length} MCG hotspots ranked by live flood risk, drain leverage & citizen reports
+            </p>
+          </div>
         </div>
         <div className="flex items-center gap-2">
           <button
             onClick={handleExportCsv}
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800"
+            className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-full text-xs font-semibold border border-[#E6E7EC] dark:border-[#282C36] bg-white dark:bg-[#181B20] text-[#111317] dark:text-[#F4F4F6] hover:bg-[#F3F4F6] dark:hover:bg-[#23262F] transition-colors"
           >
             <Download size={13} />
             CSV
           </button>
           <button
             onClick={() => window.print()}
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800"
+            className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-full text-xs font-semibold border border-[#E6E7EC] dark:border-[#282C36] bg-white dark:bg-[#181B20] text-[#111317] dark:text-[#F4F4F6] hover:bg-[#F3F4F6] dark:hover:bg-[#23262F] transition-colors"
           >
             <Printer size={13} />
             Print
           </button>
           <button
             onClick={() => setActiveView('map')}
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-[#0B3D6B] dark:bg-blue-600 text-white"
+            className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full text-xs font-semibold bg-[#111317] hover:bg-[#23262F] dark:bg-[#F4F4F6] dark:hover:bg-white text-white dark:text-[#111317] transition-colors"
           >
             <ArrowLeft size={13} />
             Map
@@ -205,14 +210,14 @@ export function DispatchSlaView() {
           return (
             <div
               key={hotspot.id}
-              className="p-4 rounded-xl border border-slate-200/80 dark:border-slate-800 bg-white/85 dark:bg-slate-900/65 flex flex-col lg:flex-row lg:items-center justify-between gap-3"
+              className="p-4 rounded-2xl border border-[#EAECEF] dark:border-[#242832] bg-white dark:bg-[#16191F] shadow-[0_2px_10px_rgba(17,19,23,0.03)] flex flex-col lg:flex-row lg:items-center justify-between gap-3"
             >
               <div className="flex items-start gap-3 min-w-0">
-                <div className="w-9 h-9 rounded-lg bg-slate-100 dark:bg-slate-800 flex items-center justify-center font-mono text-xs font-bold tabular-nums text-slate-800 dark:text-slate-200 shrink-0">
+                <div className="w-9 h-9 rounded-xl bg-[#F3F4F6] dark:bg-[#23262F] flex items-center justify-center font-mono text-xs font-bold tabular-nums text-[#111317] dark:text-[#F4F4F6] shrink-0">
                   #{rank}
                 </div>
                 <div className="min-w-0">
-                  <div className="flex flex-wrap items-center gap-2 text-[11px] font-mono text-slate-500 dark:text-slate-400">
+                  <div className="flex flex-wrap items-center gap-2 text-[11px] font-mono text-[#6B7280] dark:text-slate-400">
                     <span>{formatWardLabel(hotspot.wardNo, lang)}</span>
                     <span>·</span>
                     <span>{formatZoneLabel(hotspot.zone, lang)}</span>
@@ -234,11 +239,11 @@ export function DispatchSlaView() {
                       setSelectedHotspotId(hotspot.id);
                       setActiveView('map');
                     }}
-                    className="text-sm font-semibold text-slate-900 dark:text-slate-100 hover:underline text-left mt-0.5"
+                    className="text-sm font-semibold text-[#111317] dark:text-[#F4F4F6] hover:underline text-left mt-0.5"
                   >
                     {getHotspotDisplayName(hotspot, lang)}
                   </button>
-                  <p className="text-xs text-slate-600 dark:text-slate-400 mt-0.5">
+                  <p className="text-xs text-[#6B7280] dark:text-slate-400 mt-0.5">
                     {getCauseAnalysis(hotspot.causeAnalysis, lang)} · JE: {hotspot.contacts.je.name} ({crew.name})
                   </p>
                 </div>
@@ -247,7 +252,7 @@ export function DispatchSlaView() {
               <div className="flex flex-wrap items-center gap-1.5 shrink-0">
                 <a
                   href={`tel:${hotspot.contacts.je.phone}`}
-                  className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-medium border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 whitespace-nowrap"
+                  className="inline-flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-medium border border-[#E6E7EC] dark:border-[#282C36] text-[#111317] dark:text-[#F4F4F6] hover:bg-[#F3F4F6] dark:hover:bg-[#23262F] whitespace-nowrap"
                 >
                   <Phone size={12} />
                   Call JE
@@ -258,7 +263,7 @@ export function DispatchSlaView() {
                   )}`}
                   target="_blank"
                   rel="noreferrer"
-                  className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-medium bg-emerald-600 text-white hover:bg-emerald-700 whitespace-nowrap"
+                  className="inline-flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-medium bg-emerald-600 text-white hover:bg-emerald-700 whitespace-nowrap"
                 >
                   <MessageCircle size={12} />
                   WA
@@ -267,21 +272,21 @@ export function DispatchSlaView() {
                   <>
                     <button
                       onClick={() => deployPumpToHotspot(hotspot.id)}
-                      className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-medium bg-[#0B3D6B] dark:bg-blue-600 text-white whitespace-nowrap"
+                      className="inline-flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-semibold bg-[#111317] hover:bg-[#23262F] dark:bg-[#F4F4F6] dark:hover:bg-white text-white dark:text-[#111317] whitespace-nowrap"
                     >
                       <Truck size={12} />
                       {t('cmd.deploy_pump', lang)}
                     </button>
                     <button
                       onClick={() => markHotspotCleared(hotspot.id)}
-                      className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-medium border border-emerald-300 dark:border-emerald-700 text-emerald-700 dark:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-950/30 whitespace-nowrap"
+                      className="inline-flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-medium border border-emerald-300 dark:border-emerald-700 text-emerald-700 dark:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-950/30 whitespace-nowrap"
                     >
                       <CheckCircle2 size={12} />
                       Clear
                     </button>
                     <button
                       onClick={() => escalateHotspotSla(hotspot.id)}
-                      className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-medium border border-amber-300 dark:border-amber-700/70 text-amber-700 dark:text-amber-400 hover:bg-amber-50 dark:hover:bg-amber-950/30 whitespace-nowrap"
+                      className="inline-flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-medium border border-amber-300 dark:border-amber-700/70 text-amber-700 dark:text-amber-400 hover:bg-amber-50 dark:hover:bg-amber-950/30 whitespace-nowrap"
                     >
                       <Clock size={12} />
                       Escalate
@@ -295,7 +300,7 @@ export function DispatchSlaView() {
                     setOverrideReason('');
                     setConfirmChecked(false);
                   }}
-                  className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-medium border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 whitespace-nowrap"
+                  className="inline-flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-medium border border-[#E6E7EC] dark:border-[#282C36] text-[#6B7280] dark:text-slate-300 hover:bg-[#F3F4F6] dark:hover:bg-[#23262F] whitespace-nowrap"
                 >
                   <ArrowUpDown size={12} />
                   {t('cmd.override_rank', lang)}
@@ -308,21 +313,21 @@ export function DispatchSlaView() {
 
       {/* Override Justification Modal */}
       {overrideTarget && (
-        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="w-full max-w-md rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-[#0D131F] p-5 shadow-2xl space-y-4">
+        <div className="fixed inset-0 z-50 bg-[#111317]/60 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="w-full max-w-md rounded-2xl border border-[#EAECEF] dark:border-[#242832] bg-white dark:bg-[#16191F] p-5 shadow-2xl space-y-4">
             <div className="flex items-center justify-between">
-              <h3 className="text-base font-bold text-slate-900 dark:text-slate-100">
+              <h3 className="text-base font-bold text-[#111317] dark:text-[#F4F4F6]">
                 Override Priority — {overrideTarget.name}
               </h3>
               <button
                 onClick={() => setOverrideTarget(null)}
-                className="p-1 rounded-lg text-slate-400 hover:text-slate-700 dark:hover:text-slate-200"
+                className="p-1.5 rounded-full text-[#6B7280] hover:text-[#111317] dark:hover:text-white hover:bg-[#F3F4F6] dark:hover:bg-[#23262F]"
               >
                 <X size={16} />
               </button>
             </div>
             <div>
-              <label className="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1">
+              <label className="block text-xs font-medium text-[#6B7280] dark:text-slate-400 mb-1">
                 New Rank (Current #{overrideTarget.currentRank})
               </label>
               <input
@@ -331,11 +336,11 @@ export function DispatchSlaView() {
                 max={153}
                 value={newRankInput}
                 onChange={(e) => setNewRankInput(e.target.value)}
-                className="w-full px-3 py-2 rounded-lg text-sm border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-950 text-slate-900 dark:text-slate-100 font-mono"
+                className="w-full px-3.5 py-2 rounded-xl text-sm border border-[#EAECEF] dark:border-[#282C36] bg-[#FAFAFB] dark:bg-[#111317] text-[#111317] dark:text-[#F4F4F6] font-mono"
               />
             </div>
             <div>
-              <label className="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1">
+              <label className="block text-xs font-medium text-[#6B7280] dark:text-slate-400 mb-1">
                 Mandatory Audit Reason
               </label>
               <textarea
@@ -343,29 +348,29 @@ export function DispatchSlaView() {
                 value={overrideReason}
                 onChange={(e) => setOverrideReason(e.target.value)}
                 placeholder="e.g. Hospital ambulance route blocked; Commissioner field directive..."
-                className="w-full px-3 py-2 rounded-lg text-sm border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-950 text-slate-900 dark:text-slate-100 resize-none"
+                className="w-full px-3.5 py-2 rounded-xl text-sm border border-[#EAECEF] dark:border-[#282C36] bg-[#FAFAFB] dark:bg-[#111317] text-[#111317] dark:text-[#F4F4F6] resize-none"
               />
             </div>
-            <label className="flex items-center gap-2 text-xs text-slate-600 dark:text-slate-300 cursor-pointer">
+            <label className="flex items-center gap-2 text-xs text-[#4B5563] dark:text-slate-300 cursor-pointer">
               <input
                 type="checkbox"
                 checked={confirmChecked}
                 onChange={(e) => setConfirmChecked(e.target.checked)}
-                className="accent-blue-600"
+                className="accent-[#111317] dark:accent-[#F4F4F6]"
               />
               <span>I acknowledge this override is permanently logged in the Audit Trail</span>
             </label>
             <div className="flex gap-2">
               <button
                 onClick={() => setOverrideTarget(null)}
-                className="flex-1 py-2 rounded-xl border border-slate-200 dark:border-slate-700 text-xs font-semibold text-slate-700 dark:text-slate-300"
+                className="flex-1 py-2.5 rounded-full border border-[#E6E7EC] dark:border-[#282C36] text-xs font-semibold text-[#111317] dark:text-[#F4F4F6] hover:bg-[#F3F4F6] dark:hover:bg-[#23262F]"
               >
                 Cancel
               </button>
               <button
                 onClick={handleConfirmOverride}
                 disabled={!overrideReason.trim() || !confirmChecked}
-                className="flex-1 py-2 rounded-xl bg-amber-600 text-white text-xs font-semibold disabled:opacity-50"
+                className="flex-1 py-2.5 rounded-full bg-amber-600 text-white text-xs font-semibold disabled:opacity-50"
               >
                 Log Override
               </button>
@@ -386,25 +391,30 @@ export function SensorHealthView() {
   return (
     <div className="space-y-5">
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <div>
-          <h2 className="text-xl font-bold text-slate-900 dark:text-slate-100">
-            Drain & Rain Sensor Telemetry Health
-          </h2>
-          <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5 font-mono tabular-nums">
-            Network Uptime: {uptime}% · {offlineCount} of {sensors.length} nodes offline
-          </p>
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-[#F4DFD3] via-[#E8DDF7] to-[#D8E7FA] dark:from-[#2C2538] dark:to-[#1F2430] border border-[#E6E7EC] dark:border-[#2D313D] flex items-center justify-center shrink-0">
+            <Wifi size={18} className="text-[#111317] dark:text-[#F4F4F6]" />
+          </div>
+          <div>
+            <h2 className="text-xl font-bold tracking-tight text-[#111317] dark:text-[#F4F4F6]">
+              Drain & Rain Sensor Telemetry Health
+            </h2>
+            <p className="text-xs text-[#6B7280] dark:text-slate-400 mt-0.5 font-mono tabular-nums">
+              Network Uptime: {uptime}% · {offlineCount} of {sensors.length} nodes offline
+            </p>
+          </div>
         </div>
         <button
           onClick={() => setActiveView('map')}
-          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-[#0B3D6B] dark:bg-blue-600 text-white"
+          className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full text-xs font-semibold bg-[#111317] hover:bg-[#23262F] dark:bg-[#F4F4F6] dark:hover:bg-white text-white dark:text-[#111317] transition-colors"
         >
           <ArrowLeft size={13} />
           Map
         </button>
       </div>
 
-      <div className="p-4 rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-white/85 dark:bg-slate-900/70">
-        <p className="text-xs font-semibold text-slate-700 dark:text-slate-300 mb-3">
+      <div className="p-5 rounded-2xl border border-[#EAECEF] dark:border-[#242832] bg-white dark:bg-[#16191F] shadow-[0_2px_10px_rgba(17,19,23,0.03)]">
+        <p className="text-xs font-semibold text-[#111317] dark:text-[#F4F4F6] mb-3">
           Offline Sensor Incidents (Last 7 Days)
         </p>
         <div className="h-40">
@@ -426,10 +436,10 @@ export function SensorHealthView() {
         </div>
       </div>
 
-      <div className="rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-white/85 dark:bg-slate-900/70 overflow-hidden">
+      <div className="rounded-2xl border border-[#EAECEF] dark:border-[#242832] bg-white dark:bg-[#16191F] shadow-[0_2px_10px_rgba(17,19,23,0.03)] overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-xs">
-            <thead className="border-b border-slate-200/80 dark:border-slate-800 text-slate-500 dark:text-slate-400">
+            <thead className="border-b border-[#EAECEF] dark:border-[#242832] text-[#6B7280] dark:text-slate-400 bg-[#FAFAFB] dark:bg-[#121418]">
               <tr>
                 <th className="text-left px-4 py-3 font-semibold">Node</th>
                 <th className="text-left px-4 py-3 font-semibold">MCG Hotspot</th>
@@ -440,18 +450,18 @@ export function SensorHealthView() {
                 <th className="text-right px-4 py-3 font-semibold">Action</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-200/70 dark:divide-slate-800/70">
+            <tbody className="divide-y divide-[#EAECEF] dark:divide-[#242832]">
               {sensors.map((sensor) => {
                 const h = mcgHotspots.find((x) => x.id === sensor.hotspot_id);
                 return (
-                  <tr key={sensor.id} className="hover:bg-slate-50/70 dark:hover:bg-slate-800/40">
-                    <td className="px-4 py-3 font-mono font-semibold text-slate-900 dark:text-slate-100">
+                  <tr key={sensor.id} className="hover:bg-[#FAFAFB] dark:hover:bg-[#1B1E25]">
+                    <td className="px-4 py-3 font-mono font-semibold text-[#111317] dark:text-[#F4F4F6]">
                       {sensor.id}
                     </td>
-                    <td className="px-4 py-3 text-slate-700 dark:text-slate-300">
+                    <td className="px-4 py-3 text-[#4B5563] dark:text-slate-300">
                       {h?.name || sensor.hotspot_id}
                     </td>
-                    <td className="px-4 py-3 text-slate-500 dark:text-slate-400 capitalize">
+                    <td className="px-4 py-3 text-[#6B7280] dark:text-slate-400 capitalize">
                       {sensor.type.replace('_', ' ')}
                     </td>
                     <td className="px-4 py-3">
@@ -474,10 +484,10 @@ export function SensorHealthView() {
                         {sensor.status}
                       </span>
                     </td>
-                    <td className="px-4 py-3 text-right font-mono tabular-nums text-slate-700 dark:text-slate-300">
+                    <td className="px-4 py-3 text-right font-mono tabular-nums text-[#4B5563] dark:text-slate-300">
                       {sensor.last_reading !== null ? `${sensor.last_reading} cm` : '—'}
                     </td>
-                    <td className="px-4 py-3 text-right font-mono tabular-nums text-slate-700 dark:text-slate-300">
+                    <td className="px-4 py-3 text-right font-mono tabular-nums text-[#4B5563] dark:text-slate-300">
                       {sensor.battery_pct}%
                     </td>
                     <td className="px-4 py-3 text-right">
@@ -529,27 +539,32 @@ export function AuditLogView() {
   };
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-5">
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <div>
-          <h2 className="text-xl font-bold text-slate-900 dark:text-slate-100">
-            Governance & Override Audit Stream
-          </h2>
-          <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-            {t('cmd.audit_banner', lang)}
-          </p>
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-[#F4DFD3] via-[#E8DDF7] to-[#D8E7FA] dark:from-[#2C2538] dark:to-[#1F2430] border border-[#E6E7EC] dark:border-[#2D313D] flex items-center justify-center shrink-0">
+            <FileText size={18} className="text-[#111317] dark:text-[#F4F4F6]" />
+          </div>
+          <div>
+            <h2 className="text-xl font-bold tracking-tight text-[#111317] dark:text-[#F4F4F6]">
+              Governance & Override Audit Stream
+            </h2>
+            <p className="text-xs text-[#6B7280] dark:text-slate-400 mt-0.5">
+              {t('cmd.audit_banner', lang)}
+            </p>
+          </div>
         </div>
         <div className="flex items-center gap-2">
           <button
             onClick={handleExport}
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-200"
+            className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-full text-xs font-semibold border border-[#E6E7EC] dark:border-[#282C36] bg-white dark:bg-[#181B20] text-[#111317] dark:text-[#F4F4F6] hover:bg-[#F3F4F6] dark:hover:bg-[#23262F] transition-colors"
           >
             <Download size={13} />
             Export CSV
           </button>
           <button
             onClick={() => setActiveView('map')}
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-[#0B3D6B] dark:bg-blue-600 text-white"
+            className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full text-xs font-semibold bg-[#111317] hover:bg-[#23262F] dark:bg-[#F4F4F6] dark:hover:bg-white text-white dark:text-[#111317] transition-colors"
           >
             <ArrowLeft size={13} />
             Map
@@ -569,10 +584,10 @@ export function AuditLogView() {
           <button
             key={tab.id}
             onClick={() => setFilter(tab.id)}
-            className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors ${
+            className={`px-3.5 py-1.5 rounded-full text-xs font-semibold transition-colors ${
               filter === tab.id
-                ? 'bg-[#0B3D6B] dark:bg-blue-600 text-white'
-                : 'border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900/60 text-slate-600 dark:text-slate-300'
+                ? 'bg-[#111317] dark:bg-[#F4F4F6] text-white dark:text-[#111317]'
+                : 'border border-[#EAECEF] dark:border-[#282C36] bg-white dark:bg-[#16191F] text-[#6B7280] dark:text-slate-300 hover:bg-[#F3F4F6] dark:hover:bg-[#23262F]'
             }`}
           >
             {tab.label}
@@ -580,17 +595,17 @@ export function AuditLogView() {
         ))}
       </div>
 
-      <div className="space-y-2">
+      <div className="space-y-2.5">
         {filtered.map((entry) => {
           const h = mcgHotspots.find((x) => x.id === entry.hotspot_id);
           return (
             <div
               key={entry.id}
-              className="p-3.5 rounded-xl border border-slate-200/80 dark:border-slate-800 bg-white/85 dark:bg-slate-900/65 flex items-start justify-between gap-3"
+              className="p-4 rounded-2xl border border-[#EAECEF] dark:border-[#242832] bg-white dark:bg-[#16191F] shadow-[0_2px_10px_rgba(17,19,23,0.03)] flex items-start justify-between gap-3"
             >
               <div className="space-y-0.5 min-w-0">
-                <div className="flex flex-wrap items-center gap-2 text-[11px] font-mono text-slate-500 dark:text-slate-400">
-                  <span className="font-semibold text-slate-800 dark:text-slate-200 uppercase">
+                <div className="flex flex-wrap items-center gap-2 text-[11px] font-mono text-[#6B7280] dark:text-slate-400">
+                  <span className="font-semibold text-[#111317] dark:text-[#F4F4F6] uppercase">
                     {entry.action.replace(/_/g, ' ')}
                   </span>
                   <span>·</span>
@@ -604,16 +619,16 @@ export function AuditLogView() {
                     </>
                   )}
                 </div>
-                <p className="text-sm font-semibold text-slate-900 dark:text-slate-100">
+                <p className="text-sm font-semibold text-[#111317] dark:text-[#F4F4F6]">
                   {h
                     ? `${getHotspotDisplayName(h, lang)} (${formatWardLabel(h.wardNo, lang)})`
                     : localizeLocationName(entry.hotspot_id, lang)}
                 </p>
                 {entry.reason && (
-                  <p className="text-xs text-slate-600 dark:text-slate-300">{entry.reason}</p>
+                  <p className="text-xs text-[#4B5563] dark:text-slate-300">{entry.reason}</p>
                 )}
               </div>
-              <span className="text-[11px] font-mono tabular-nums text-slate-400 shrink-0">
+              <span className="text-[11px] font-mono tabular-nums text-[#9CA3AF] shrink-0">
                 {new Date(entry.timestamp).toLocaleTimeString()}
               </span>
             </div>
@@ -621,7 +636,7 @@ export function AuditLogView() {
         })}
 
         {filtered.length === 0 && (
-          <div className="p-8 text-center rounded-xl border border-slate-200 dark:border-slate-800 text-xs text-slate-500 dark:text-slate-400">
+          <div className="p-8 text-center rounded-2xl border border-[#EAECEF] dark:border-[#242832] bg-white dark:bg-[#16191F] text-xs text-[#6B7280] dark:text-slate-400">
             <FileText size={24} className="mx-auto mb-2 opacity-50" />
             No audit records match this filter.
           </div>
@@ -684,19 +699,24 @@ export function ExecutiveBriefView() {
   return (
     <div className="space-y-5">
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <div>
-          <h2 className="text-xl font-bold text-slate-900 dark:text-slate-100">
-            Commissioner & Command Authority Brief
-          </h2>
-          <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-            153 MCG Hotspots · 36 Wards · 4 Municipal Zones · Gemini Tactical Synthesis
-          </p>
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-[#F4DFD3] via-[#E8DDF7] to-[#D8E7FA] dark:from-[#2C2538] dark:to-[#1F2430] border border-[#E6E7EC] dark:border-[#2D313D] flex items-center justify-center shrink-0">
+            <Sparkles size={18} className="text-[#111317] dark:text-[#F4F4F6]" />
+          </div>
+          <div>
+            <h2 className="text-xl font-bold tracking-tight text-[#111317] dark:text-[#F4F4F6]">
+              Commissioner & Command Authority Brief
+            </h2>
+            <p className="text-xs text-[#6B7280] dark:text-slate-400 mt-0.5">
+              153 MCG Hotspots · 36 Wards · 4 Municipal Zones · Monsoon Tactical Synthesis
+            </p>
+          </div>
         </div>
         <div className="flex items-center gap-2">
           <button
             onClick={generateAiBriefing}
             disabled={aiBriefingLoading}
-            className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-[#0B3D6B] dark:bg-blue-600 text-white text-xs font-semibold hover:opacity-95 disabled:opacity-60"
+            className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full bg-[#111317] hover:bg-[#23262F] dark:bg-[#F4F4F6] dark:hover:bg-white text-white dark:text-[#111317] text-xs font-semibold transition-colors disabled:opacity-60"
           >
             {aiBriefingLoading ? (
               <Loader2 size={14} className="animate-spin" />
@@ -707,14 +727,14 @@ export function ExecutiveBriefView() {
           </button>
           <button
             onClick={() => window.print()}
-            className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-700 text-xs font-semibold text-slate-700 dark:text-slate-200"
+            className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-full border border-[#E6E7EC] dark:border-[#282C36] bg-white dark:bg-[#181B20] text-xs font-semibold text-[#111317] dark:text-[#F4F4F6] hover:bg-[#F3F4F6] dark:hover:bg-[#23262F] transition-colors"
           >
             <Printer size={13} />
             Print
           </button>
           <button
             onClick={() => setActiveView('map')}
-            className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-700 text-xs font-semibold text-slate-700 dark:text-slate-200"
+            className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-full border border-[#E6E7EC] dark:border-[#282C36] bg-white dark:bg-[#181B20] text-xs font-semibold text-[#111317] dark:text-[#F4F4F6] hover:bg-[#F3F4F6] dark:hover:bg-[#23262F] transition-colors"
           >
             <ArrowLeft size={13} />
             Map
@@ -724,49 +744,49 @@ export function ExecutiveBriefView() {
 
       {/* KPI Strip */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-        <div className="p-4 rounded-xl border border-slate-200/80 dark:border-slate-800 bg-white/85 dark:bg-slate-900/70">
-          <p className="text-xs text-slate-500 dark:text-slate-400">Critical / High Risk</p>
+        <div className="p-4 rounded-2xl border border-[#EAECEF] dark:border-[#242832] bg-white dark:bg-[#16191F] shadow-[0_2px_10px_rgba(17,19,23,0.03)]">
+          <p className="text-xs text-[#6B7280] dark:text-slate-400">Critical / High Risk</p>
           <p className="text-2xl font-mono font-bold tabular-nums text-red-600 dark:text-red-400 mt-1">
             {summary.critical} <span className="text-sm text-amber-500">/ {summary.high}</span>
           </p>
-          <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">of {mcgHotspots.length} MCG points</p>
+          <p className="text-[11px] text-[#6B7280] dark:text-slate-400 mt-0.5">of {mcgHotspots.length} MCG points</p>
         </div>
-        <div className="p-4 rounded-xl border border-slate-200/80 dark:border-slate-800 bg-white/85 dark:bg-slate-900/70">
-          <p className="text-xs text-slate-500 dark:text-slate-400">Exposed Population</p>
-          <p className="text-2xl font-mono font-bold tabular-nums text-slate-900 dark:text-slate-100 mt-1">
+        <div className="p-4 rounded-2xl border border-[#EAECEF] dark:border-[#242832] bg-white dark:bg-[#16191F] shadow-[0_2px_10px_rgba(17,19,23,0.03)]">
+          <p className="text-xs text-[#6B7280] dark:text-slate-400">Exposed Population</p>
+          <p className="text-2xl font-mono font-bold tabular-nums text-[#111317] dark:text-[#F4F4F6] mt-1">
             {(summary.popExposed / 100000).toFixed(2)}L
           </p>
-          <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">
+          <p className="text-[11px] text-[#6B7280] dark:text-slate-400 mt-0.5">
             {summary.popExposed.toLocaleString()} residents
           </p>
         </div>
-        <div className="p-4 rounded-xl border border-slate-200/80 dark:border-slate-800 bg-white/85 dark:bg-slate-900/70">
-          <p className="text-xs text-slate-500 dark:text-slate-400">Model Accuracy</p>
+        <div className="p-4 rounded-2xl border border-[#EAECEF] dark:border-[#242832] bg-white dark:bg-[#16191F] shadow-[0_2px_10px_rgba(17,19,23,0.03)]">
+          <p className="text-xs text-[#6B7280] dark:text-slate-400">Model Accuracy</p>
           <p className="text-2xl font-mono font-bold tabular-nums text-emerald-600 dark:text-emerald-400 mt-1">
             {calibrationData.accuracy_pct}%
           </p>
-          <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">
+          <p className="text-[11px] text-[#6B7280] dark:text-slate-400 mt-0.5">
             {calibrationData.alerts_verified_correct}/{calibrationData.alerts_issued} alerts verified
           </p>
         </div>
-        <div className="p-4 rounded-xl border border-slate-200/80 dark:border-slate-800 bg-white/85 dark:bg-slate-900/70">
-          <p className="text-xs text-slate-500 dark:text-slate-400">Manual Overrides</p>
+        <div className="p-4 rounded-2xl border border-[#EAECEF] dark:border-[#242832] bg-white dark:bg-[#16191F] shadow-[0_2px_10px_rgba(17,19,23,0.03)]">
+          <p className="text-xs text-[#6B7280] dark:text-slate-400">Manual Overrides</p>
           <p className="text-2xl font-mono font-bold tabular-nums text-amber-600 dark:text-amber-400 mt-1">
             {summary.overrides}
           </p>
-          <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">100% justification logged</p>
+          <p className="text-[11px] text-[#6B7280] dark:text-slate-400 mt-0.5">100% justification logged</p>
         </div>
       </div>
 
-      {/* Gemini AI Tactical Briefing Card */}
-      <div className="p-5 rounded-2xl border border-blue-200/80 dark:border-blue-800/60 bg-white/90 dark:bg-slate-900/75 space-y-4">
+      {/* Tactical Briefing Card */}
+      <div className="p-5 rounded-2xl border border-[#EAECEF] dark:border-[#242832] bg-white dark:bg-[#16191F] shadow-[0_2px_10px_rgba(17,19,23,0.03)] space-y-4">
         <div className="flex items-center justify-between gap-2">
-          <div className="flex items-center gap-2 text-sm font-bold text-slate-900 dark:text-slate-100">
-            <Sparkles size={16} className="text-blue-600 dark:text-cyan-400" />
-            <span>AI Monsoon Command Briefing</span>
+          <div className="flex items-center gap-2 text-sm font-bold text-[#111317] dark:text-[#F4F4F6]">
+            <Sparkles size={16} className="text-[#111317] dark:text-[#F4F4F6]" />
+            <span>Monsoon Command Briefing</span>
           </div>
           {aiBriefing && (
-            <span className="text-[11px] font-mono text-slate-400">
+            <span className="text-[11px] font-mono text-[#9CA3AF]">
               {new Date(aiBriefing.generatedAt).toLocaleTimeString()}
             </span>
           )}
@@ -775,51 +795,51 @@ export function ExecutiveBriefView() {
         {aiBriefing ? (
           <div className="space-y-4">
             <div>
-              <p className="text-sm font-bold text-[#0B3D6B] dark:text-cyan-300">
+              <p className="text-sm font-bold text-[#111317] dark:text-[#F4F4F6]">
                 {aiBriefing.headline}
               </p>
-              <p className="text-xs text-slate-700 dark:text-slate-300 mt-1 leading-relaxed">
+              <p className="text-xs text-[#4B5563] dark:text-slate-300 mt-1 leading-relaxed">
                 {aiBriefing.executiveSummary}
               </p>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
               <div className="space-y-2">
-                <p className="text-xs font-semibold text-slate-800 dark:text-slate-200">
+                <p className="text-xs font-semibold text-[#111317] dark:text-[#F4F4F6]">
                   Priority Ward Directives
                 </p>
                 {aiBriefing.priorityWards.map((w, idx) => (
                   <div
                     key={idx}
-                    className="p-2.5 rounded-xl border border-slate-200/80 dark:border-slate-800 bg-slate-50/70 dark:bg-slate-950/50 text-xs"
+                    className="p-3 rounded-xl border border-[#EAECEF] dark:border-[#242832] bg-[#FAFAFB] dark:bg-[#1B1E25] text-xs"
                   >
-                    <p className="font-semibold text-slate-900 dark:text-slate-100">
+                    <p className="font-semibold text-[#111317] dark:text-[#F4F4F6]">
                       {w.wardLabel} · {w.officerToAlert}
                     </p>
-                    <p className="text-slate-600 dark:text-slate-400 mt-0.5">{w.actionDirective}</p>
+                    <p className="text-[#6B7280] dark:text-slate-400 mt-0.5">{w.actionDirective}</p>
                   </div>
                 ))}
               </div>
 
               <div className="space-y-3">
                 <div>
-                  <p className="text-xs font-semibold text-slate-800 dark:text-slate-200 mb-1.5">
+                  <p className="text-xs font-semibold text-[#111317] dark:text-[#F4F4F6] mb-1.5">
                     Inter-Agency Coordination (MCG / GMDA / NHAI)
                   </p>
-                  <ul className="space-y-1.5 text-xs text-slate-600 dark:text-slate-300">
+                  <ul className="space-y-1.5 text-xs text-[#4B5563] dark:text-slate-300">
                     {aiBriefing.interAgencyDirectives.map((d, i) => (
                       <li key={i} className="flex items-start gap-2">
-                        <span className="font-mono text-blue-600 dark:text-cyan-400">•</span>
+                        <span className="font-mono text-[#111317] dark:text-[#F4F4F6]">•</span>
                         <span>{d}</span>
                       </li>
                     ))}
                   </ul>
                 </div>
-                <div className="p-3 rounded-xl border border-slate-200/80 dark:border-slate-800 bg-slate-50/70 dark:bg-slate-950/50 text-xs">
-                  <p className="font-semibold text-slate-900 dark:text-slate-100">
+                <div className="p-3 rounded-xl border border-[#EAECEF] dark:border-[#242832] bg-[#FAFAFB] dark:bg-[#1B1E25] text-xs">
+                  <p className="font-semibold text-[#111317] dark:text-[#F4F4F6]">
                     Pump Reallocation Strategy
                   </p>
-                  <p className="text-slate-600 dark:text-slate-400 mt-0.5">
+                  <p className="text-[#6B7280] dark:text-slate-400 mt-0.5">
                     {aiBriefing.pumpReallocationAdvice}
                   </p>
                 </div>
@@ -827,16 +847,16 @@ export function ExecutiveBriefView() {
             </div>
           </div>
         ) : (
-          <p className="text-xs text-slate-500 dark:text-slate-400">
+          <p className="text-xs text-[#6B7280] dark:text-slate-400">
             Click <strong>{t('cmd.generate_briefing', lang)}</strong> to synthesize live rainfall telemetry, top vulnerable MCG wards, and recent citizen reports into an actionable command memo.
           </p>
         )}
       </div>
 
       {/* Zone Pressure Chart */}
-      <div className="p-4 rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-white/85 dark:bg-slate-900/70">
-        <div className="flex items-center gap-2 text-xs font-semibold text-slate-800 dark:text-slate-200 mb-3">
-          <TrendingUp size={15} className="text-blue-600 dark:text-cyan-400" />
+      <div className="p-5 rounded-2xl border border-[#EAECEF] dark:border-[#242832] bg-white dark:bg-[#16191F] shadow-[0_2px_10px_rgba(17,19,23,0.03)]">
+        <div className="flex items-center gap-2 text-xs font-semibold text-[#111317] dark:text-[#F4F4F6] mb-3">
+          <TrendingUp size={15} className="text-[#111317] dark:text-[#F4F4F6]" />
           <span>MCG Zone-Wise Critical & High Flood Pressure (Zones 1–4)</span>
         </div>
         <div className="h-52">
@@ -847,7 +867,7 @@ export function ExecutiveBriefView() {
               <Tooltip />
               <Bar dataKey="critical" fill="#ef4444" radius={[4, 4, 0, 0]} name="Critical" />
               <Bar dataKey="high" fill="#f59e0b" radius={[4, 4, 0, 0]} name="High" />
-              <Bar dataKey="total" fill="#334155" radius={[4, 4, 0, 0]} name="Total Hotspots" />
+              <Bar dataKey="total" fill="#181A1F" radius={[4, 4, 0, 0]} name="Total Hotspots" />
             </BarChart>
           </ResponsiveContainer>
         </div>
