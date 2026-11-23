@@ -16,12 +16,15 @@ import {
   AlertTriangle,
   Share2,
   X,
+  Shield,
+  FileText,
 } from 'lucide-react';
 import { useStore, type SosIncidentType, type EmergencySosRecord } from '../store/useStore';
 import { t } from '../i18n/translations';
 import { localizeLocationName, formatWardLabel } from '../i18n/locationHi';
 import { fetchRealtimePosition } from '../lib/geolocation';
 import { MCG_OFFICIAL_CHANNELS } from '../data/mcgHotspots';
+import { LegalModal, type LegalDocTab } from './LegalModal';
 
 const INCIDENT_OPTIONS: Array<{ value: SosIncidentType; label: string }> = [
   { value: 'person_injured', label: 'Someone Injured' },
@@ -64,6 +67,7 @@ export function SettingsView() {
   const [formError, setFormError] = useState<string | null>(null);
   const [submittingSos, setSubmittingSos] = useState(false);
   const [lastSubmittedSos, setLastSubmittedSos] = useState<EmergencySosRecord | null>(null);
+  const [legalTab, setLegalTab] = useState<LegalDocTab | null>(null);
 
   useEffect(() => {
     if (citizenUser?.phone && !callerPhone) {
@@ -741,6 +745,66 @@ export function SettingsView() {
           )}
         </div>
       </section>
+
+      {/* Privacy Policy & Terms & Conditions */}
+      <section className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-5 space-y-4">
+        <div>
+          <h2 className="text-sm font-bold text-slate-900 dark:text-slate-100">
+            {lang === 'hi' ? 'गोपनीयता नीति एवं नियम व शर्तें' : 'Privacy Policy & Terms & Conditions'}
+          </h2>
+          <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5 leading-relaxed">
+            {lang === 'hi'
+              ? 'जानें कि आपके फ़ोन नंबर, GPS लोकेशन और जलभराव व SOS रिपोर्ट का उपयोग कैसे किया जाता है।'
+              : 'Review how location GPS, resident phone details, flood reports, and Emergency SOS alerts are handled.'}
+          </p>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <button
+            type="button"
+            onClick={() => setLegalTab('privacy')}
+            className="p-3.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-950/60 text-left hover:bg-slate-50 dark:hover:bg-slate-800/60 transition-colors flex items-center gap-3"
+          >
+            <div className="w-9 h-9 rounded-lg bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-[#0B3D6B] dark:text-blue-300 flex items-center justify-center shrink-0">
+              <Shield size={17} />
+            </div>
+            <div>
+              <p className="text-xs font-bold text-slate-900 dark:text-slate-100">
+                {lang === 'hi' ? 'गोपनीयता नीति' : 'Privacy Policy'}
+              </p>
+              <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">
+                {lang === 'hi' ? 'GPS, फ़ोन डेटा और गोपनीयता विवरण' : 'How GPS & report data are protected'}
+              </p>
+            </div>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setLegalTab('terms')}
+            className="p-3.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-950/60 text-left hover:bg-slate-50 dark:hover:bg-slate-800/60 transition-colors flex items-center gap-3"
+          >
+            <div className="w-9 h-9 rounded-lg bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-[#0B3D6B] dark:text-blue-300 flex items-center justify-center shrink-0">
+              <FileText size={17} />
+            </div>
+            <div>
+              <p className="text-xs font-bold text-slate-900 dark:text-slate-100">
+                {lang === 'hi' ? 'नियम व शर्तें' : 'Terms & Conditions'}
+              </p>
+              <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">
+                {lang === 'hi' ? 'नागरिक उपयोग और SOS सुरक्षा दिशानिर्देश' : 'Portal usage & SOS safety guidelines'}
+              </p>
+            </div>
+          </button>
+        </div>
+      </section>
+
+      <LegalModal
+        open={legalTab !== null}
+        initialTab={legalTab ?? 'privacy'}
+        lang={lang}
+        onChangeTab={setLegalTab}
+        onClose={() => setLegalTab(null)}
+      />
     </div>
   );
 }
