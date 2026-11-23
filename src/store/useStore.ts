@@ -120,6 +120,26 @@ export interface ReportDraft {
   gpsAccuracy: number | null;
 }
 
+export type SosIncidentType =
+  | 'person_injured'
+  | 'road_accident'
+  | 'vehicle_submerged'
+  | 'electric_hazard'
+  | 'other';
+
+export interface EmergencySosRecord {
+  id: string;
+  incidentType: SosIncidentType;
+  injuredCount: number;
+  locationLabel: string;
+  lat: number | null;
+  lng: number | null;
+  description: string;
+  callerPhone: string;
+  createdAt: string;
+  status: 'dispatched';
+}
+
 interface AppState {
   theme: ThemeMode;
   lang: Lang;
@@ -147,6 +167,7 @@ interface AppState {
   // Operational Data
   sensors: Sensor[];
   floodReports: FloodReportRecord[];
+  sosReports: EmergencySosRecord[];
   dispatchRecords: Record<string, DispatchActionRecord>;
   auditLog: AuditLogRecord[];
   alertSubscriptions: AlertSubscriptionRecord[];
@@ -202,6 +223,9 @@ interface AppState {
   fetchLiveWeather: (syncRainfall?: boolean) => Promise<void>;
   initSupabaseAndRealtime: () => Promise<void>;
   submitFloodReport: (report: FloodReportRecord) => Promise<void>;
+  submitSosReport: (
+    report: Omit<EmergencySosRecord, 'id' | 'createdAt' | 'status'>
+  ) => Promise<EmergencySosRecord>;
   updateFloodReportStatus: (id: string, status: FloodReportRecord['status']) => Promise<void>;
   markHotspotCleared: (hotspotId: string) => Promise<void>;
   deployPumpToHotspot: (hotspotId: string) => Promise<void>;
@@ -436,6 +460,7 @@ export const useStore = create<AppState>()(
 
       sensors: initialSensors,
       floodReports: INITIAL_REPORTS,
+      sosReports: [],
       dispatchRecords: {},
       auditLog: INITIAL_AUDIT,
       alertSubscriptions: [],
@@ -698,6 +723,53 @@ export const useStore = create<AppState>()(
 
         await Promise.all([persistFloodReport(report), persistAuditLog(auditEntry)]);
         get().addToast('Flood report verified & broadcast to Command HUD', 'success');
+      },
+
+      submitSosReport: async (input) => {
+        const record: EmergencySosRecord = {
+          ...input,
+          id: `SOS-${Date.now().toString().slice(-6)}`,
+          createdAt: new Date().toISOString(),
+          status: 'dispatched',
+        };
+
+        const incidentLabelMap: Record<SosIncidentType, string> = {
+          person_injured: 'Person Injured',
+          road_accident: 'Road Accident',
+          vehicle_submerged: 'Vehicle Submerged',
+          electric_hazard: 'Electric Wire Hazard',
+          other: 'Emergency Incident',
+        };
+
+        const coordsSuffix =
+          record.lat !== null && record.lng !== null
+            ? ` (${record.lat.toFixed(5)}, ${record.lng.toFixed(5)})`
+            : '';
+
+        const auditEntry: AuditLogRecord = {
+          id: `AL-SOS-${Date.now()}`,
+          timestamp: record.createdAt,
+          actor: 'Emergency SOS',
+          action: 'alert_issued',
+          hotspot_id: record.locationLabel || 'Gurugram Live GPS',
+          original_rank: null,
+          new_rank: null,
+          reason: `${incidentLabelMap[record.incidentType]}${
+            record.injuredCount > 0 ? ` · ${record.injuredCount} injured` : ''
+          }${coordsSuffix}: ${record.description}`,
+        };
+
+        set((state) => ({
+          sosReports: [record, ...state.sosReports],
+          auditLog: [auditEntry, ...state.auditLog],
+        }));
+
+        await persistAuditLog(auditEntry);
+        get().addToast(
+          `Emergency SOS ${record.id} logged & flagged for immediate response`,
+          'warning'
+        );
+        return record;
       },
 
       updateFloodReportStatus: async (id, status) => {
@@ -1082,6 +1154,7 @@ export const useStore = create<AppState>()(
         authorityUser: state.authorityUser,
         sensors: state.sensors,
         floodReports: state.floodReports,
+        sosReports: state.sosReports,
         dispatchRecords: state.dispatchRecords,
         auditLog: state.auditLog,
         alertSubscriptions: state.alertSubscriptions,
