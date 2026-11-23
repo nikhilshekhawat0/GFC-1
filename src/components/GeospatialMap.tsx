@@ -20,6 +20,13 @@ import {
 } from '../store/useStore';
 import { fetchRealtimePosition, watchRealtimePosition } from '../lib/geolocation';
 import type { FloodReportRecord } from '../lib/supabase';
+import type { Lang } from '../i18n/translations';
+import {
+  getHotspotDisplayName,
+  localizeLocationName,
+  formatWardLabel,
+  formatZoneLabel,
+} from '../i18n/locationHi';
 
 const GOOGLE_MAPS_API_KEY = import.meta.env.VITE_GOOGLE_MAPS_API_KEY || '';
 const GURUGRAM_CENTER = { lat: 28.448, lng: 77.042 };
@@ -51,7 +58,9 @@ export function getFilteredHotspots(
     if (cause !== 'all' && h.causeCategory !== cause) return false;
     if (criticality !== 'all' && h.criticality !== criticality) return false;
     if (q) {
-      const hay = `${h.name} ${h.landmark} ward ${h.wardNo} ${h.causeAnalysis} ${h.contacts.je.name} ${h.owningAgency}`.toLowerCase();
+      const hiName = getHotspotDisplayName(h, 'hi');
+      const hiLandmark = localizeLocationName(h.landmark, 'hi');
+      const hay = `${h.name} ${h.landmark} ${hiName} ${hiLandmark} ward ${h.wardNo} वार्ड ${h.wardNo} ${h.causeAnalysis} ${h.contacts.je.name} ${h.owningAgency}`.toLowerCase();
       if (!hay.includes(q)) return false;
     }
     return true;
@@ -273,12 +282,14 @@ function DrainageCascadePolylines({
 function HotspotAdvancedMarker({
   hotspot,
   tel,
+  lang,
   isSelected,
   isHighlighted,
   onSelect,
 }: {
   hotspot: McgHotspot;
   tel: HotspotTelemetry;
+  lang: Lang;
   isSelected: boolean;
   isHighlighted: boolean;
   onSelect: (id: string) => void;
@@ -286,6 +297,7 @@ function HotspotAdvancedMarker({
   const [markerRef, marker] = useAdvancedMarkerRef();
   const color = getTierHex(tel.tier);
   const isCritical = tel.tier === 'critical';
+  const displayName = getHotspotDisplayName(hotspot, lang);
   const baseSize = isSelected
     ? 24
     : isHighlighted
@@ -301,7 +313,11 @@ function HotspotAdvancedMarker({
       <AdvancedMarker
         ref={markerRef}
         position={{ lat: hotspot.lat, lng: hotspot.lng }}
-        title={`${hotspot.name} · Ward ${hotspot.wardNo} · Flood chance ${tel.riskPct}%`}
+        title={
+          lang === 'hi'
+            ? `${displayName} · ${formatWardLabel(hotspot.wardNo, lang)} · जलभराव संभावना ${tel.riskPct}%`
+            : `${displayName} · Ward ${hotspot.wardNo} · Flood chance ${tel.riskPct}%`
+        }
         zIndex={isSelected ? 50 : isCritical ? 30 : 10}
         onClick={() => onSelect(hotspot.id)}
       >
@@ -362,12 +378,15 @@ function HotspotAdvancedMarker({
       {isSelected && marker && (
         <InfoWindow anchor={marker} maxWidth={250} headerDisabled>
           <div className="p-1 text-slate-900 text-xs leading-snug space-y-0.5">
-            <p className="font-bold text-slate-900">{hotspot.name}</p>
+            <p className="font-bold text-slate-900">{displayName}</p>
             <p className="text-slate-600">
-              Ward {hotspot.wardNo} · Zone {hotspot.zone} · {hotspot.owningAgency}
+              {formatWardLabel(hotspot.wardNo, lang)} · {formatZoneLabel(hotspot.zone, lang)} ·{' '}
+              {hotspot.owningAgency}
             </p>
             <p className="font-mono font-semibold text-[#0B3D6B]">
-              Flood chance {tel.riskPct}% (~{tel.waterDepthCm} cm)
+              {lang === 'hi'
+                ? `जलभराव संभावना ${tel.riskPct}% (~${tel.waterDepthCm} सेमी)`
+                : `Flood chance ${tel.riskPct}% (~${tel.waterDepthCm} cm)`}
             </p>
           </div>
         </InfoWindow>
@@ -378,13 +397,16 @@ function HotspotAdvancedMarker({
 
 function CitizenReportMarker({
   report,
+  lang,
   onSelectHotspot,
 }: {
   report: FloodReportRecord;
+  lang: Lang;
   onSelectHotspot: (id: string) => void;
 }) {
   const [markerRef, marker] = useAdvancedMarkerRef();
   const [open, setOpen] = useState(false);
+  const displayLocation = localizeLocationName(report.location_name, lang);
 
   const color =
     report.ai_severity === 'critical'
@@ -398,7 +420,11 @@ function CitizenReportMarker({
       <AdvancedMarker
         ref={markerRef}
         position={{ lat: report.lat, lng: report.lng }}
-        title={`Resident Report: ${report.location_name}`}
+        title={
+          lang === 'hi'
+            ? `नागरिक रिपोर्ट: ${displayLocation}`
+            : `Resident Report: ${displayLocation}`
+        }
         zIndex={40}
         onClick={() => {
           if (report.hotspot_id) onSelectHotspot(report.hotspot_id);
@@ -435,9 +461,13 @@ function CitizenReportMarker({
       {open && marker && (
         <InfoWindow anchor={marker} maxWidth={230} onCloseClick={() => setOpen(false)}>
           <div className="p-1 text-slate-900 text-xs space-y-0.5">
-            <p className="font-bold">Resident Report: {report.location_name}</p>
+            <p className="font-bold">
+              {lang === 'hi' ? `नागरिक रिपोर्ट: ${displayLocation}` : `Resident Report: ${displayLocation}`}
+            </p>
             <p className="text-slate-600">
-              Severity: {report.ai_severity.toUpperCase()} (~{report.ai_depth_cm} cm)
+              {lang === 'hi'
+                ? `गंभीरता: ${report.ai_severity.toUpperCase()} (~${report.ai_depth_cm} सेमी)`
+                : `Severity: ${report.ai_severity.toUpperCase()} (~${report.ai_depth_cm} cm)`}
             </p>
           </div>
         </InfoWindow>
@@ -728,6 +758,7 @@ export function GeospatialMap() {
                     key={hotspot.id}
                     hotspot={hotspot}
                     tel={tel}
+                    lang={lang}
                     isSelected={selectedHotspotId === hotspot.id}
                     isHighlighted={highlightedHotspotIds.includes(hotspot.id)}
                     onSelect={setSelectedHotspotId}
@@ -739,6 +770,7 @@ export function GeospatialMap() {
                 <CitizenReportMarker
                   key={report.id}
                   report={report}
+                  lang={lang}
                   onSelectHotspot={setSelectedHotspotId}
                 />
               ))}
@@ -782,13 +814,21 @@ export function GeospatialMap() {
             <div className="leading-tight">
               <p className="text-xs font-semibold text-slate-900 dark:text-slate-100 tabular-nums whitespace-nowrap">
                 {timelineHourOffset === 0
-                  ? 'Right Now'
+                  ? lang === 'hi'
+                    ? 'अभी'
+                    : 'Right Now'
                   : timelineHourOffset < 0
-                    ? `${Math.abs(timelineHourOffset)}h Earlier`
-                    : `+${timelineHourOffset}h Ahead`}
+                    ? lang === 'hi'
+                      ? `${Math.abs(timelineHourOffset)} घंटे पहले`
+                      : `${Math.abs(timelineHourOffset)}h Earlier`
+                    : lang === 'hi'
+                      ? `+${timelineHourOffset} घंटे बाद`
+                      : `+${timelineHourOffset}h Ahead`}
               </p>
               <p className="text-[11px] text-slate-500 dark:text-slate-400 tabular-nums whitespace-nowrap">
-                {criticalActiveCount} severe · {filteredHotspots.length} spots
+                {lang === 'hi'
+                  ? `${criticalActiveCount} गंभीर · ${filteredHotspots.length} स्थान`
+                  : `${criticalActiveCount} severe · ${filteredHotspots.length} spots`}
               </p>
             </div>
           </div>
@@ -825,7 +865,11 @@ export function GeospatialMap() {
               }`}
             >
               <Shield size={13} />
-              <span>Pumps: {pumpMitigationActive ? 'ON' : 'OFF'}</span>
+              <span>
+                {lang === 'hi'
+                  ? `पंप: ${pumpMitigationActive ? 'चालू' : 'बंद'}`
+                  : `Pumps: ${pumpMitigationActive ? 'ON' : 'OFF'}`}
+              </span>
             </button>
             <div className="hidden sm:flex items-center gap-1 text-xs font-semibold tabular-nums text-[#0B3D6B] dark:text-cyan-400 px-2.5 py-1.5 rounded-lg bg-blue-50 dark:bg-cyan-950/50 border border-blue-200/80 dark:border-cyan-800/40 whitespace-nowrap">
               <Droplets size={12} />

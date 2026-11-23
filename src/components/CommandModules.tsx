@@ -27,6 +27,13 @@ import {
 } from '../data/mcgHotspots';
 import { computeHotspotTelemetry, useStore } from '../store/useStore';
 import { t } from '../i18n/translations';
+import {
+  getHotspotDisplayName,
+  getCauseAnalysis,
+  localizeLocationName,
+  formatWardLabel,
+  formatZoneLabel,
+} from '../i18n/locationHi';
 import { getFilteredHotspots } from './GeospatialMap';
 
 function exportToCsv(filename: string, rows: string[][]) {
@@ -206,9 +213,9 @@ export function DispatchSlaView() {
                 </div>
                 <div className="min-w-0">
                   <div className="flex flex-wrap items-center gap-2 text-[11px] font-mono text-slate-500 dark:text-slate-400">
-                    <span>Ward {hotspot.wardNo}</span>
+                    <span>{formatWardLabel(hotspot.wardNo, lang)}</span>
                     <span>·</span>
-                    <span>Zone {hotspot.zone}</span>
+                    <span>{formatZoneLabel(hotspot.zone, lang)}</span>
                     <span>·</span>
                     <span>{hotspot.owningAgency}</span>
                     <span>·</span>
@@ -229,10 +236,10 @@ export function DispatchSlaView() {
                     }}
                     className="text-sm font-semibold text-slate-900 dark:text-slate-100 hover:underline text-left mt-0.5"
                   >
-                    {hotspot.name}
+                    {getHotspotDisplayName(hotspot, lang)}
                   </button>
                   <p className="text-xs text-slate-600 dark:text-slate-400 mt-0.5">
-                    {hotspot.causeAnalysis} · JE: {hotspot.contacts.je.name} ({crew.name})
+                    {getCauseAnalysis(hotspot.causeAnalysis, lang)} · JE: {hotspot.contacts.je.name} ({crew.name})
                   </p>
                 </div>
               </div>
@@ -598,7 +605,9 @@ export function AuditLogView() {
                   )}
                 </div>
                 <p className="text-sm font-semibold text-slate-900 dark:text-slate-100">
-                  {h ? `${h.name} (Ward ${h.wardNo})` : entry.hotspot_id}
+                  {h
+                    ? `${getHotspotDisplayName(h, lang)} (${formatWardLabel(h.wardNo, lang)})`
+                    : localizeLocationName(entry.hotspot_id, lang)}
                 </p>
                 {entry.reason && (
                   <p className="text-xs text-slate-600 dark:text-slate-300">{entry.reason}</p>

@@ -196,35 +196,35 @@ export function DedicatedLoginPage({ initialPortal }: { initialPortal: 'citizen'
         : null;
 
   return (
-    <div className="min-h-screen w-full flex flex-col justify-between bg-slate-50 dark:bg-[#070B12] text-slate-900 dark:text-slate-100 relative overflow-y-auto">
+    <div className="h-screen w-full flex flex-col justify-between bg-slate-50 dark:bg-[#070B12] text-slate-900 dark:text-slate-100 relative overflow-hidden">
       <FloodPhotoBackdrop />
 
       {/* Top Bar matching App Theme */}
-      <header className="relative z-10 w-full max-w-[1320px] mx-auto px-6 sm:px-10 pt-5 pb-3 flex items-start justify-between gap-4">
-        <div className="space-y-1.5 rounded-xl bg-white/85 dark:bg-slate-900/85 backdrop-blur-md px-3.5 py-2.5 border border-slate-200/70 dark:border-slate-800/70 shadow-xs">
+      <header className="relative z-10 w-full max-w-[1320px] mx-auto px-4 sm:px-8 pt-3 pb-1 flex items-center justify-between gap-3 shrink-0">
+        <div className="flex items-center gap-3 rounded-xl bg-white/85 dark:bg-slate-900/85 backdrop-blur-md px-3 py-1.5 border border-slate-200/70 dark:border-slate-800/70 shadow-xs">
           <button
             type="button"
             onClick={handleBackToMap}
-            className="inline-flex items-center gap-2.5 text-left whitespace-nowrap hover:opacity-90 transition-opacity"
+            className="inline-flex items-center gap-2 text-left whitespace-nowrap hover:opacity-90 transition-opacity"
           >
-            <span className="w-8 h-8 rounded-lg bg-[#0B3D6B] text-white flex items-center justify-center shrink-0">
-              <Droplets size={17} />
+            <span className="w-7 h-7 rounded-lg bg-[#0B3D6B] text-white flex items-center justify-center shrink-0">
+              <Droplets size={15} />
             </span>
-            <span className="text-base sm:text-lg font-bold tracking-tight text-slate-900 dark:text-slate-100">
+            <span className="text-sm sm:text-base font-bold tracking-tight text-slate-900 dark:text-slate-100">
               Gurgaon Flood Help
             </span>
           </button>
-          <div className="w-16 h-px bg-slate-300 dark:bg-slate-700" />
+          <span className="hidden sm:inline-block h-4 w-px bg-slate-300 dark:bg-slate-700" />
           <a
             href={`tel:${MCG_OFFICIAL_CHANNELS.helpline}`}
-            className="inline-flex items-center gap-1.5 text-[11px] font-medium text-slate-600 dark:text-slate-300 hover:text-[#0B3D6B] dark:hover:text-blue-300"
+            className="hidden sm:inline-flex items-center gap-1 text-[11px] font-medium text-slate-600 dark:text-slate-300 hover:text-[#0B3D6B] dark:hover:text-blue-300"
           >
-            <span>MCG Helpline {MCG_OFFICIAL_CHANNELS.helpline}</span>
+            <span>Helpline {MCG_OFFICIAL_CHANNELS.helpline}</span>
             <ArrowRight size={11} />
           </a>
         </div>
 
-        <div className="flex items-center gap-3 sm:gap-4 rounded-xl bg-white/85 dark:bg-slate-900/85 backdrop-blur-md px-3.5 py-2 border border-slate-200/70 dark:border-slate-800/70 shadow-xs">
+        <div className="flex items-center gap-2.5 sm:gap-3.5 rounded-xl bg-white/85 dark:bg-slate-900/85 backdrop-blur-md px-3 py-1.5 border border-slate-200/70 dark:border-slate-800/70 shadow-xs">
           <button
             type="button"
             onClick={() => setLang(lang === 'en' ? 'hi' : 'en')}
@@ -232,7 +232,7 @@ export function DedicatedLoginPage({ initialPortal }: { initialPortal: 'citizen'
             title="Switch Language"
             aria-label="Switch Language"
           >
-            <Globe size={16} />
+            <Globe size={15} />
             <span className="hidden sm:inline">{lang === 'en' ? 'EN' : 'हिं'}</span>
           </button>
 
@@ -249,31 +249,31 @@ export function DedicatedLoginPage({ initialPortal }: { initialPortal: 'citizen'
           <button
             type="button"
             onClick={handleBackToMap}
-            className="px-4 py-2 rounded-lg bg-[#0B3D6B] hover:bg-[#093055] dark:bg-blue-600 dark:hover:bg-blue-500 text-white text-xs font-semibold transition-colors whitespace-nowrap shadow-xs"
+            className="px-3.5 py-1.5 rounded-lg bg-[#0B3D6B] hover:bg-[#093055] dark:bg-blue-600 dark:hover:bg-blue-500 text-white text-xs font-semibold transition-colors whitespace-nowrap shadow-xs"
           >
             Back to Map
           </button>
         </div>
       </header>
 
-      {/* Centered Card Matching Classic White / Dark Mode Theme */}
-      <main className="relative z-10 flex-1 flex items-center justify-center px-4 py-6">
-        <div className="w-full max-w-[430px] rounded-2xl bg-white/95 dark:bg-[#0D131F]/95 backdrop-blur-sm border border-slate-200 dark:border-slate-800 shadow-[0_14px_45px_rgba(11,61,107,0.08)] dark:shadow-[0_14px_45px_rgba(0,0,0,0.45)] p-7 sm:p-9 space-y-6">
+      {/* Centered Card Fitting Single Viewport (Zero Page Scroll) */}
+      <main className="relative z-10 flex-1 min-h-0 flex items-center justify-center px-4 py-2">
+        <div className="w-full max-w-[420px] rounded-2xl bg-white/95 dark:bg-[#0D131F]/95 backdrop-blur-sm border border-slate-200 dark:border-slate-800 shadow-[0_14px_45px_rgba(11,61,107,0.12)] dark:shadow-[0_14px_45px_rgba(0,0,0,0.5)] p-5 sm:p-6 space-y-4">
           {/* Card Heading */}
-          <div className="text-center space-y-1.5">
+          <div className="text-center space-y-1">
             {redirectReason && (
               <p className="text-[11px] font-semibold text-[#0B3D6B] dark:text-blue-400">
                 {redirectReason}
               </p>
             )}
-            <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-slate-100">
+            <h1 className="text-xl font-bold tracking-tight text-slate-900 dark:text-slate-100">
               {portal === 'authority'
                 ? 'Authority Login'
                 : citizenMode === 'signin'
                   ? 'Resident Login'
                   : 'Resident Sign Up'}
             </h1>
-            <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed max-w-[295px] mx-auto">
+            <p className="text-xs text-slate-500 dark:text-slate-400 leading-snug max-w-[300px] mx-auto">
               {portal === 'authority'
                 ? 'Enter your Employee ID details to sign in to the MCG operations desk'
                 : citizenMode === 'signin'
@@ -311,7 +311,7 @@ export function DedicatedLoginPage({ initialPortal }: { initialPortal: 'citizen'
                 </div>
               </div>
             ) : (
-              <form onSubmit={handleCitizenSubmit} className="space-y-3.5">
+              <form onSubmit={handleCitizenSubmit} className="space-y-2.5">
                 <div className="relative">
                   <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-xs font-mono font-medium text-slate-500">
                     +91
@@ -321,7 +321,7 @@ export function DedicatedLoginPage({ initialPortal }: { initialPortal: 'citizen'
                     value={phone}
                     onChange={(e) => setPhone(e.target.value)}
                     placeholder="Enter Phone No"
-                    className="w-full pl-12 pr-10 py-3 rounded-xl text-sm border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-950 text-slate-900 dark:text-slate-100 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#0B3D6B] dark:focus:ring-blue-500"
+                    className="w-full pl-12 pr-10 py-2.5 rounded-xl text-sm border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-950 text-slate-900 dark:text-slate-100 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#0B3D6B] dark:focus:ring-blue-500"
                   />
                   <Circle
                     size={15}
@@ -341,22 +341,22 @@ export function DedicatedLoginPage({ initialPortal }: { initialPortal: 'citizen'
                         value={address}
                         onChange={(e) => setAddress(e.target.value)}
                         placeholder="Quick Address (House / Street / Sector) *"
-                        className="w-full pl-10 pr-3.5 py-3 rounded-xl text-sm border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-950 text-slate-900 dark:text-slate-100 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#0B3D6B] dark:focus:ring-blue-500"
+                        className="w-full pl-10 pr-3.5 py-2.5 rounded-xl text-sm border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-950 text-slate-900 dark:text-slate-100 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#0B3D6B] dark:focus:ring-blue-500"
                       />
                     </div>
 
-                    <div className="grid grid-cols-2 gap-2.5">
+                    <div className="grid grid-cols-2 gap-2">
                       <input
                         type="text"
                         value={name}
                         onChange={(e) => setName(e.target.value)}
                         placeholder="Your name (optional)"
-                        className="w-full px-3.5 py-2.5 rounded-xl text-xs border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-950 text-slate-900 dark:text-slate-100 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#0B3D6B] dark:focus:ring-blue-500"
+                        className="w-full px-3 py-2 rounded-xl text-xs border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-950 text-slate-900 dark:text-slate-100 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#0B3D6B] dark:focus:ring-blue-500"
                       />
                       <select
                         value={wardNo}
                         onChange={(e) => setWardNo(e.target.value)}
-                        className="w-full px-3 py-2.5 rounded-xl text-xs border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-950 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-[#0B3D6B] dark:focus:ring-blue-500"
+                        className="w-full px-3 py-2 rounded-xl text-xs border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-950 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-[#0B3D6B] dark:focus:ring-blue-500"
                       >
                         <option value="">Ward (optional)</option>
                         {Array.from({ length: 36 }, (_, idx) => idx + 1).map((w) => (
@@ -369,7 +369,7 @@ export function DedicatedLoginPage({ initialPortal }: { initialPortal: 'citizen'
                   </>
                 )}
 
-                <div className="flex items-center justify-between pt-0.5">
+                <div className="flex items-center justify-between">
                   <button
                     type="button"
                     onClick={() =>
@@ -385,7 +385,7 @@ export function DedicatedLoginPage({ initialPortal }: { initialPortal: 'citizen'
 
                 <button
                   type="submit"
-                  className="w-full py-3 rounded-xl bg-[#0B3D6B] hover:bg-[#093055] dark:bg-blue-600 dark:hover:bg-blue-500 text-white text-sm font-semibold transition-colors shadow-xs"
+                  className="w-full py-2.5 rounded-xl bg-[#0B3D6B] hover:bg-[#093055] dark:bg-blue-600 dark:hover:bg-blue-500 text-white text-sm font-semibold transition-colors shadow-xs"
                 >
                   {citizenMode === 'signin' ? 'Sign in' : 'Sign up & Continue'}
                 </button>
@@ -418,13 +418,13 @@ export function DedicatedLoginPage({ initialPortal }: { initialPortal: 'citizen'
               </div>
             </div>
           ) : (
-            <form onSubmit={handleAuthoritySubmit} className="space-y-3.5">
+            <form onSubmit={handleAuthoritySubmit} className="space-y-2.5">
               {/* Role & Department Compact Selector */}
               <div className="grid grid-cols-2 gap-2">
                 <button
                   type="button"
                   onClick={() => setSelectedRole('ward_engineer')}
-                  className={`py-2 px-3 rounded-xl border text-xs font-semibold transition-colors ${
+                  className={`py-1.5 px-3 rounded-xl border text-xs font-semibold transition-colors ${
                     selectedRole === 'ward_engineer'
                       ? 'border-[#0B3D6B] bg-[#0B3D6B] text-white dark:border-blue-500 dark:bg-blue-600'
                       : 'border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800'
@@ -435,7 +435,7 @@ export function DedicatedLoginPage({ initialPortal }: { initialPortal: 'citizen'
                 <button
                   type="button"
                   onClick={() => setSelectedRole('command_authority')}
-                  className={`py-2 px-3 rounded-xl border text-xs font-semibold transition-colors ${
+                  className={`py-1.5 px-3 rounded-xl border text-xs font-semibold transition-colors ${
                     selectedRole === 'command_authority'
                       ? 'border-[#0B3D6B] bg-[#0B3D6B] text-white dark:border-blue-500 dark:bg-blue-600'
                       : 'border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800'
@@ -450,7 +450,7 @@ export function DedicatedLoginPage({ initialPortal }: { initialPortal: 'citizen'
                   value={department}
                   onChange={(e) => setDepartment(e.target.value as 'MCG' | 'GMDA' | 'NHAI')}
                   aria-label="Department"
-                  className="px-2.5 py-2.5 rounded-xl text-xs font-semibold border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-950 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-[#0B3D6B]"
+                  className="px-2.5 py-2 rounded-xl text-xs font-semibold border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-950 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-[#0B3D6B]"
                 >
                   <option value="MCG">MCG</option>
                   <option value="GMDA">GMDA</option>
@@ -461,7 +461,7 @@ export function DedicatedLoginPage({ initialPortal }: { initialPortal: 'citizen'
                   value={officerName}
                   onChange={(e) => setOfficerName(e.target.value)}
                   placeholder="Officer name (optional)"
-                  className="col-span-2 px-3.5 py-2.5 rounded-xl text-xs border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-950 text-slate-900 dark:text-slate-100 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#0B3D6B]"
+                  className="col-span-2 px-3 py-2 rounded-xl text-xs border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-950 text-slate-900 dark:text-slate-100 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#0B3D6B]"
                 />
               </div>
 
@@ -471,7 +471,7 @@ export function DedicatedLoginPage({ initialPortal }: { initialPortal: 'citizen'
                   value={employeeId}
                   onChange={(e) => setEmployeeId(e.target.value)}
                   placeholder="Enter Employee ID (e.g. MCG-JE-204)"
-                  className="w-full px-4 pr-10 py-3 rounded-xl text-sm font-mono border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-950 text-slate-900 dark:text-slate-100 placeholder:font-sans placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#0B3D6B] dark:focus:ring-blue-500"
+                  className="w-full px-3.5 pr-10 py-2.5 rounded-xl text-sm font-mono border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-950 text-slate-900 dark:text-slate-100 placeholder:font-sans placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#0B3D6B] dark:focus:ring-blue-500"
                 />
                 <BadgeCheck
                   size={16}
@@ -485,7 +485,7 @@ export function DedicatedLoginPage({ initialPortal }: { initialPortal: 'citizen'
                   value={passcode}
                   onChange={(e) => setPasscode(e.target.value)}
                   placeholder="Passcode"
-                  className="w-full px-4 pr-14 py-3 rounded-xl text-sm border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-950 text-slate-900 dark:text-slate-100 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#0B3D6B] dark:focus:ring-blue-500"
+                  className="w-full px-3.5 pr-14 py-2.5 rounded-xl text-sm border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-950 text-slate-900 dark:text-slate-100 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#0B3D6B] dark:focus:ring-blue-500"
                 />
                 <button
                   type="button"
@@ -496,7 +496,7 @@ export function DedicatedLoginPage({ initialPortal }: { initialPortal: 'citizen'
                 </button>
               </div>
 
-              <div>
+              <div className="flex items-center justify-between gap-2">
                 <button
                   type="button"
                   onClick={() => setShowTroubleHelp((v) => !v)}
@@ -504,35 +504,29 @@ export function DedicatedLoginPage({ initialPortal }: { initialPortal: 'citizen'
                 >
                   Having trouble signing in?
                 </button>
-              </div>
-
-              {showTroubleHelp && (
-                <div className="p-3 rounded-xl bg-slate-50 dark:bg-slate-800/70 border border-slate-200 dark:border-slate-700 space-y-2">
-                  <p className="text-[11px] font-semibold text-slate-600 dark:text-slate-300">
-                    Demo Officer Credentials (1-Click Fill)
-                  </p>
-                  <div className="flex flex-wrap gap-2">
+                {showTroubleHelp && (
+                  <div className="flex items-center gap-1.5">
                     <button
                       type="button"
                       onClick={() => fillAuthorityDemo('ward_engineer')}
-                      className="px-2.5 py-1.5 rounded-lg text-[11px] font-medium bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800"
+                      className="px-2 py-1 rounded-md text-[10px] font-semibold bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:bg-slate-200 dark:hover:bg-slate-700"
                     >
-                      Ward JE · MCG-JE-204
+                      JE Demo
                     </button>
                     <button
                       type="button"
                       onClick={() => fillAuthorityDemo('command_authority')}
-                      className="px-2.5 py-1.5 rounded-lg text-[11px] font-medium bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800"
+                      className="px-2 py-1 rounded-md text-[10px] font-semibold bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:bg-slate-200 dark:hover:bg-slate-700"
                     >
-                      Command AE · MCG-CMD-001
+                      AE Demo
                     </button>
                   </div>
-                </div>
-              )}
+                )}
+              </div>
 
               <button
                 type="submit"
-                className="w-full py-3 rounded-xl bg-[#0B3D6B] hover:bg-[#093055] dark:bg-blue-600 dark:hover:bg-blue-500 text-white text-sm font-semibold transition-colors shadow-xs"
+                className="w-full py-2.5 rounded-xl bg-[#0B3D6B] hover:bg-[#093055] dark:bg-blue-600 dark:hover:bg-blue-500 text-white text-sm font-semibold transition-colors shadow-xs"
               >
                 Sign in
               </button>
@@ -540,18 +534,18 @@ export function DedicatedLoginPage({ initialPortal }: { initialPortal: 'citizen'
           )}
 
           {/* Divider & Portal Switcher */}
-          <div className="space-y-4">
+          <div className="space-y-3">
             <div className="flex items-center gap-3 text-[11px] font-medium text-slate-500 dark:text-slate-400">
               <div className="flex-1 h-px bg-slate-200 dark:bg-slate-800" />
               <span>Or Sign in with</span>
               <div className="flex-1 h-px bg-slate-200 dark:bg-slate-800" />
             </div>
 
-            <div className="grid grid-cols-2 gap-2.5">
+            <div className="grid grid-cols-2 gap-2">
               <button
                 type="button"
                 onClick={() => setActiveView('citizen-login')}
-                className={`py-2.5 px-3 rounded-xl border text-xs font-semibold flex items-center justify-center gap-1.5 transition-colors ${
+                className={`py-2 px-3 rounded-xl border text-xs font-semibold flex items-center justify-center gap-1.5 transition-colors ${
                   portal === 'citizen'
                     ? 'border-[#0B3D6B] dark:border-blue-500 bg-blue-50/70 dark:bg-blue-950/40 text-[#0B3D6B] dark:text-blue-300'
                     : 'border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800'
@@ -564,7 +558,7 @@ export function DedicatedLoginPage({ initialPortal }: { initialPortal: 'citizen'
               <button
                 type="button"
                 onClick={() => setActiveView('authority-login')}
-                className={`py-2.5 px-3 rounded-xl border text-xs font-semibold flex items-center justify-center gap-1.5 transition-colors ${
+                className={`py-2 px-3 rounded-xl border text-xs font-semibold flex items-center justify-center gap-1.5 transition-colors ${
                   portal === 'authority'
                     ? 'border-[#0B3D6B] dark:border-blue-500 bg-blue-50/70 dark:bg-blue-950/40 text-[#0B3D6B] dark:text-blue-300'
                     : 'border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800'
@@ -607,8 +601,8 @@ export function DedicatedLoginPage({ initialPortal }: { initialPortal: 'citizen'
       </main>
 
       {/* Footer with legible frosted pill */}
-      <footer className="relative z-10 py-4 flex justify-center px-4">
-        <div className="inline-flex items-center gap-2 rounded-lg bg-white/85 dark:bg-slate-900/85 backdrop-blur-md px-4 py-1.5 text-xs text-slate-600 dark:text-slate-300 border border-slate-200/70 dark:border-slate-800/70 shadow-xs">
+      <footer className="relative z-10 py-2.5 flex justify-center px-4 shrink-0">
+        <div className="inline-flex items-center gap-2 rounded-lg bg-white/85 dark:bg-slate-900/85 backdrop-blur-md px-3.5 py-1 text-[11px] text-slate-600 dark:text-slate-300 border border-slate-200/70 dark:border-slate-800/70 shadow-xs">
           <span>Gurgaon Flood Help</span>
           <span className="text-slate-400">|</span>
           <button

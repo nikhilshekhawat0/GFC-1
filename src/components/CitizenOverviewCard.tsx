@@ -13,6 +13,7 @@ import {
 import { mcgHotspots, MCG_OFFICIAL_CHANNELS } from '../data/mcgHotspots';
 import { computeHotspotTelemetry, useStore } from '../store/useStore';
 import { t } from '../i18n/translations';
+import { getHotspotDisplayName } from '../i18n/locationHi';
 import { fetchRealtimePosition } from '../lib/geolocation';
 
 export function CitizenOverviewCard() {
@@ -162,11 +163,11 @@ export function CitizenOverviewCard() {
             type="button"
             onClick={toggleRightSidebar}
             className="inline-flex items-center gap-1 px-2 py-1 rounded-lg text-xs font-medium text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-100 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
-            title="Collapse right sidebar"
+            title={lang === 'hi' ? 'साइडबार छिपाएं' : 'Collapse right sidebar'}
             aria-label="Collapse right sidebar"
           >
             <PanelRightClose size={15} />
-            <span>Hide</span>
+            <span>{lang === 'hi' ? 'छिपाएं' : 'Hide'}</span>
           </button>
         </div>
 
@@ -180,7 +181,7 @@ export function CitizenOverviewCard() {
               {lang === 'en' ? 'areas flooded' : 'गंभीर जलभराव क्षेत्र'}
             </span>
             <span className="text-xs text-slate-500 dark:text-slate-400 tabular-nums">
-              · {stats.high} at risk
+              · {stats.high} {lang === 'hi' ? 'जोखिम में' : 'at risk'}
             </span>
           </div>
           <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
@@ -194,7 +195,8 @@ export function CitizenOverviewCard() {
             className="pt-1 text-left text-xs font-semibold text-[#0B3D6B] dark:text-cyan-400 hover:underline inline-flex items-center gap-1"
           >
             <span>
-              Highest now: {stats.topHotspot.name} ({stats.topRisk}%)
+              {lang === 'hi' ? 'अभी सर्वाधिक:' : 'Highest now:'}{' '}
+              {getHotspotDisplayName(stats.topHotspot, lang)} ({stats.topRisk}%)
             </span>
             <ArrowRight size={12} />
           </button>
@@ -264,7 +266,7 @@ export function CitizenOverviewCard() {
       </div>
 
       <div className="px-5 py-3.5 border-t border-slate-200 dark:border-slate-800 flex items-center justify-between text-xs text-slate-600 dark:text-slate-400">
-        <span>MCG Helpline</span>
+        <span>{lang === 'hi' ? 'MCG हेल्पलाइन' : 'MCG Helpline'}</span>
         <a
           href={`tel:${MCG_OFFICIAL_CHANNELS.helpline}`}
           className="inline-flex items-center gap-1 font-mono font-semibold text-[#0B3D6B] dark:text-slate-200 hover:underline"

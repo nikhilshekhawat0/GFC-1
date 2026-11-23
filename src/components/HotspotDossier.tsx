@@ -16,6 +16,13 @@ import {
 import { mcgHotspots, MCG_OFFICIAL_CHANNELS } from '../data/mcgHotspots';
 import { computeHotspotTelemetry, useStore } from '../store/useStore';
 import { t } from '../i18n/translations';
+import {
+  getHotspotDisplayName,
+  getHotspotDisplayLandmark,
+  getCauseAnalysis,
+  formatWardLabel,
+  formatZoneLabel,
+} from '../i18n/locationHi';
 import { Sparkline } from './Sparkline';
 import { HotspotHistoryChart } from './HotspotHistoryChart';
 
@@ -130,18 +137,18 @@ export function HotspotDossier() {
           <div className="flex items-center gap-2 text-[11px] font-mono text-slate-500 dark:text-slate-400">
             <span>#{hotspot.srNo}</span>
             <span>·</span>
-            <span>Ward {hotspot.wardNo}</span>
+            <span>{formatWardLabel(hotspot.wardNo, lang)}</span>
             <span>·</span>
-            <span>Zone {hotspot.zone}</span>
+            <span>{formatZoneLabel(hotspot.zone, lang)}</span>
             <span>·</span>
             <span>{hotspot.owningAgency}</span>
           </div>
           <h2 className="text-base font-bold text-slate-900 dark:text-slate-100 mt-1 leading-snug">
-            {hotspot.name}
+            {getHotspotDisplayName(hotspot, lang)}
           </h2>
           <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5 flex items-center gap-1">
             <MapPin size={12} className="shrink-0" />
-            <span className="truncate">{hotspot.landmark}</span>
+            <span className="truncate">{getHotspotDisplayLandmark(hotspot, lang)}</span>
           </p>
         </div>
         <div className="flex items-center gap-1 shrink-0">
@@ -171,36 +178,66 @@ export function HotspotDossier() {
         <div className="grid grid-cols-3 gap-2">
           <div className="p-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/50">
             <p className="text-[11px] font-medium text-slate-500 dark:text-slate-400">
-              Flood Chance
+              {lang === 'hi' ? 'जलभराव संभावना' : 'Flood Chance'}
             </p>
             <p className={`text-xl font-bold tabular-nums mt-0.5 ${tierTextColor}`}>
               {telemetry.riskPct}%
             </p>
             <p className="text-[10px] font-semibold text-slate-500 dark:text-slate-400 capitalize">
-              {telemetry.tier === 'critical' ? 'Severe' : telemetry.tier === 'medium' ? 'Moderate' : telemetry.tier}
+              {lang === 'hi'
+                ? telemetry.tier === 'critical'
+                  ? 'गंभीर'
+                  : telemetry.tier === 'high'
+                    ? 'अधिक'
+                    : telemetry.tier === 'medium'
+                      ? 'मध्यम'
+                      : 'सामान्य'
+                : telemetry.tier === 'critical'
+                  ? 'Severe'
+                  : telemetry.tier === 'medium'
+                    ? 'Moderate'
+                    : telemetry.tier}
             </p>
           </div>
           <div className="p-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/50">
             <p className="text-[11px] font-medium text-slate-500 dark:text-slate-400">
-              Water Depth
+              {lang === 'hi' ? 'पानी की गहराई' : 'Water Depth'}
             </p>
             <p className="text-xl font-bold tabular-nums text-slate-900 dark:text-slate-100 mt-0.5">
               {telemetry.waterDepthCm}
-              <span className="text-xs font-normal text-slate-500 ml-0.5">cm</span>
+              <span className="text-xs font-normal text-slate-500 ml-0.5">
+                {lang === 'hi' ? 'सेमी' : 'cm'}
+              </span>
             </p>
             <p className="text-[10px] text-slate-500 dark:text-slate-400">
-              {telemetry.waterDepthCm >= 35 ? 'Knee-deep' : telemetry.waterDepthCm >= 18 ? 'Ankle-deep' : 'Shallow'}
+              {lang === 'hi'
+                ? telemetry.waterDepthCm >= 35
+                  ? 'घुटने तक पानी'
+                  : telemetry.waterDepthCm >= 18
+                    ? 'टखने तक पानी'
+                    : 'हल्का जलभराव'
+                : telemetry.waterDepthCm >= 35
+                  ? 'Knee-deep'
+                  : telemetry.waterDepthCm >= 18
+                    ? 'Ankle-deep'
+                    : 'Shallow'}
             </p>
           </div>
           <div className="p-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/50">
             <p className="text-[11px] font-medium text-slate-500 dark:text-slate-400">
-              Response SLA
+              {lang === 'hi' ? 'प्रतिक्रिया SLA' : 'Response SLA'}
             </p>
             <p className="text-xl font-bold tabular-nums text-amber-600 dark:text-amber-400 mt-0.5">
-              {dispatch?.status === 'done' ? 'Done' : `${telemetry.slaRemainingMins}m`}
+              {dispatch?.status === 'done'
+                ? lang === 'hi'
+                  ? 'साफ'
+                  : 'Done'
+                : `${telemetry.slaRemainingMins}${lang === 'hi' ? ' मि.' : 'm'}`}
             </p>
             <p className="text-[10px] text-slate-500 dark:text-slate-400">
-              Officer Level {telemetry.slaTier}/5
+              {lang === 'hi'
+                ? `अधिकारी स्तर ${telemetry.slaTier}/5`
+                : `Officer Level ${telemetry.slaTier}/5`}
             </p>
           </div>
         </div>
@@ -209,10 +246,10 @@ export function HotspotDossier() {
         <div className="p-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/50">
           <div className="flex items-center justify-between text-[11px] mb-1.5">
             <span className="font-semibold text-slate-700 dark:text-slate-300">
-              Expected Water Level (Today)
+              {lang === 'hi' ? 'अनुमानित जल स्तर (आज)' : 'Expected Water Level (Today)'}
             </span>
             <span className="font-mono tabular-nums text-slate-500 dark:text-slate-400">
-              Peak {Math.max(...telemetry.sparkline)}%
+              {lang === 'hi' ? 'अधिकतम' : 'Peak'} {Math.max(...telemetry.sparkline)}%
             </span>
           </div>
           <Sparkline
@@ -257,13 +294,13 @@ export function HotspotDossier() {
             {t('dossier.cause_analysis', lang)}
           </h3>
           <p className="text-xs text-slate-700 dark:text-slate-300 leading-relaxed">
-            {hotspot.causeAnalysis}
+            {getCauseAnalysis(hotspot.causeAnalysis, lang)}
           </p>
           {(hotspot.upstreamOf.length > 0 || hotspot.downstreamOf.length > 0) && (
             <div className="pt-1.5 border-t border-slate-200/70 dark:border-slate-800 space-y-1 text-[11px]">
               {hotspot.downstreamOf.length > 0 && (
                 <div className="flex flex-wrap items-center gap-1.5 text-slate-500 dark:text-slate-400">
-                  <span>Fed by upstream:</span>
+                  <span>{lang === 'hi' ? 'ऊपरी बहाव से प्रभावित:' : 'Fed by upstream:'}</span>
                   {hotspot.downstreamOf.map((id) => {
                     const target = mcgHotspots.find((x) => x.id === id);
                     if (!target) return null;
@@ -273,7 +310,7 @@ export function HotspotDossier() {
                         onClick={() => setSelectedHotspotId(id)}
                         className="text-blue-600 dark:text-cyan-400 hover:underline font-medium"
                       >
-                        {target.name}
+                        {getHotspotDisplayName(target, lang)}
                       </button>
                     );
                   })}
@@ -281,7 +318,7 @@ export function HotspotDossier() {
               )}
               {hotspot.upstreamOf.length > 0 && (
                 <div className="flex flex-wrap items-center gap-1.5 text-slate-500 dark:text-slate-400">
-                  <span>Impacts downstream:</span>
+                  <span>{lang === 'hi' ? 'निचले क्षेत्र पर प्रभाव:' : 'Impacts downstream:'}</span>
                   {hotspot.upstreamOf.map((id) => {
                     const target = mcgHotspots.find((x) => x.id === id);
                     if (!target) return null;
@@ -291,7 +328,7 @@ export function HotspotDossier() {
                         onClick={() => setSelectedHotspotId(id)}
                         className="text-blue-600 dark:text-cyan-400 hover:underline font-medium"
                       >
-                        {target.name}
+                        {getHotspotDisplayName(target, lang)}
                       </button>
                     );
                   })}

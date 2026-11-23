@@ -19,6 +19,7 @@ import {
 } from 'lucide-react';
 import { useStore, type SosIncidentType, type EmergencySosRecord } from '../store/useStore';
 import { t } from '../i18n/translations';
+import { localizeLocationName, formatWardLabel } from '../i18n/locationHi';
 import { fetchRealtimePosition } from '../lib/geolocation';
 import { MCG_OFFICIAL_CHANNELS } from '../data/mcgHotspots';
 
@@ -268,9 +269,9 @@ export function SettingsView() {
                   SOS Alert Logged · {lastSubmittedSos.id}
                 </p>
                 <p className="text-xs text-emerald-800 dark:text-emerald-300 mt-0.5">
-                  {lastSubmittedSos.locationLabel}
+                  {localizeLocationName(lastSubmittedSos.locationLabel, lang)}
                   {lastSubmittedSos.injuredCount > 0
-                    ? ` · ${lastSubmittedSos.injuredCount} injured`
+                    ? ` · ${lastSubmittedSos.injuredCount} ${lang === 'hi' ? 'घायल' : 'injured'}`
                     : ''}
                 </p>
               </div>
@@ -491,7 +492,7 @@ export function SettingsView() {
                         {item.injuredCount > 0 ? ` · ${item.injuredCount} injured` : ''}
                       </p>
                       <p className="text-slate-600 dark:text-slate-300 truncate">
-                        {item.locationLabel}
+                        {localizeLocationName(item.locationLabel, lang)}
                       </p>
                       <p className="text-[11px] text-slate-500 dark:text-slate-400 line-clamp-2">
                         {item.description}
@@ -650,8 +651,8 @@ export function SettingsView() {
                   {citizenUser.name} · +91 {citizenUser.phone}
                 </p>
                 <p className="text-[11px] text-slate-500 dark:text-slate-400">
-                  {citizenUser.address}
-                  {citizenUser.wardNo ? ` · Ward ${citizenUser.wardNo}` : ''}
+                  {localizeLocationName(citizenUser.address, lang)}
+                  {citizenUser.wardNo ? ` · ${formatWardLabel(citizenUser.wardNo, lang)}` : ''}
                 </p>
               </div>
             </div>

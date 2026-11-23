@@ -19,6 +19,11 @@ import {
 import { mcgHotspots, type CauseCategory } from '../data/mcgHotspots';
 import { computeHotspotTelemetry, useStore, type ActiveView } from '../store/useStore';
 import { t } from '../i18n/translations';
+import {
+  getHotspotDisplayName,
+  formatWardLabel,
+  formatZoneLabel,
+} from '../i18n/locationHi';
 import { getFilteredHotspots } from './GeospatialMap';
 
 export function LeftCommandRail() {
@@ -176,17 +181,23 @@ export function LeftCommandRail() {
       {/* Sidebar Header with Collapse Toggle */}
       <div className="px-4 py-2.5 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between shrink-0">
         <span className="text-xs font-semibold text-slate-500 dark:text-slate-400">
-          {role === 'citizen' ? 'Citizen Menu' : 'Operations Menu'}
+          {role === 'citizen'
+            ? lang === 'hi'
+              ? 'नागरिक मेनू'
+              : 'Citizen Menu'
+            : lang === 'hi'
+              ? 'संचालन मेनू'
+              : 'Operations Menu'}
         </span>
         <button
           type="button"
           onClick={toggleLeftSidebar}
           className="inline-flex items-center gap-1 px-2 py-1 rounded-lg text-xs font-medium text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-100 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
-          title="Collapse sidebar"
+          title={lang === 'hi' ? 'साइडबार छिपाएं' : 'Collapse sidebar'}
           aria-label="Collapse sidebar"
         >
           <PanelLeftClose size={15} />
-          <span>Hide</span>
+          <span>{lang === 'hi' ? 'छिपाएं' : 'Hide'}</span>
         </button>
       </div>
 
@@ -282,7 +293,9 @@ export function LeftCommandRail() {
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Search sector, street, ward..."
+              placeholder={
+                lang === 'hi' ? 'सेक्टर, सड़क, वार्ड खोजें...' : 'Search sector, street, ward...'
+              }
               className="w-full pl-8 pr-3 py-2 rounded-lg text-xs border border-slate-200 dark:border-slate-700/80 bg-slate-50 dark:bg-slate-900/70 text-slate-900 dark:text-slate-100 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#0B3D6B]"
             />
           </div>
@@ -298,11 +311,11 @@ export function LeftCommandRail() {
               className="px-2.5 py-2 rounded-lg text-xs border border-slate-200 dark:border-slate-700/80 bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-200 focus:outline-none"
               aria-label="Filter by Zone"
             >
-              <option value="all">All Zones</option>
-              <option value="1">Zone 1</option>
-              <option value="2">Zone 2</option>
-              <option value="3">Zone 3</option>
-              <option value="4">Zone 4</option>
+              <option value="all">{lang === 'hi' ? 'सभी ज़ोन' : 'All Zones'}</option>
+              <option value="1">{formatZoneLabel(1, lang)}</option>
+              <option value="2">{formatZoneLabel(2, lang)}</option>
+              <option value="3">{formatZoneLabel(3, lang)}</option>
+              <option value="4">{formatZoneLabel(4, lang)}</option>
             </select>
 
             <select
@@ -313,10 +326,10 @@ export function LeftCommandRail() {
               className="px-2.5 py-2 rounded-lg text-xs border border-slate-200 dark:border-slate-700/80 bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-200 focus:outline-none"
               aria-label="Filter by Ward"
             >
-              <option value="all">All 36 Wards</option>
+              <option value="all">{lang === 'hi' ? 'सभी 36 वार्ड' : 'All 36 Wards'}</option>
               {wardsInZone.map((w) => (
                 <option key={w} value={w}>
-                  Ward {w}
+                  {formatWardLabel(w, lang)}
                 </option>
               ))}
             </select>
@@ -328,22 +341,22 @@ export function LeftCommandRail() {
             className="w-full px-2.5 py-2 rounded-lg text-xs border border-slate-200 dark:border-slate-700/80 bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-200 focus:outline-none"
             aria-label="Filter by Drainage Reason"
           >
-            <option value="all">All Drainage Reasons</option>
-            <option value="gmda_backflow">Main Drain Backflow</option>
-            <option value="silt_blockage">Blocked / Silted Drain</option>
-            <option value="no_master_drain">No Master Drain</option>
-            <option value="telecom_obstruction">Cable Obstruction</option>
-            <option value="road_level_diff">Uneven Road Level</option>
-            <option value="critical_junction">Major Chokepoint</option>
-            <option value="low_lying">Low-Lying Area</option>
+            <option value="all">{lang === 'hi' ? 'जलभराव के सभी कारण' : 'All Drainage Reasons'}</option>
+            <option value="gmda_backflow">{lang === 'hi' ? 'मुख्य नाला बैकफ्लो' : 'Main Drain Backflow'}</option>
+            <option value="silt_blockage">{lang === 'hi' ? 'अवरुद्ध / गाद भरा नाला' : 'Blocked / Silted Drain'}</option>
+            <option value="no_master_drain">{lang === 'hi' ? 'मास्टर ड्रेन उपलब्ध नहीं' : 'No Master Drain'}</option>
+            <option value="telecom_obstruction">{lang === 'hi' ? 'केबल बाधा' : 'Cable Obstruction'}</option>
+            <option value="road_level_diff">{lang === 'hi' ? 'सड़क स्तर में अंतर' : 'Uneven Road Level'}</option>
+            <option value="critical_junction">{lang === 'hi' ? 'प्रमुख चोकपॉइंट' : 'Major Chokepoint'}</option>
+            <option value="low_lying">{lang === 'hi' ? 'निचला इलाका' : 'Low-Lying Area'}</option>
           </select>
 
           <div className="flex items-center justify-between pt-0.5 text-[11px] text-slate-500 dark:text-slate-400">
             <div className="flex items-center gap-1">
               {([
-                { id: 'all', label: 'All' },
-                { id: 'critical', label: 'Severe' },
-                { id: 'high', label: 'High' },
+                { id: 'all', label: lang === 'hi' ? 'सभी' : 'All' },
+                { id: 'critical', label: lang === 'hi' ? 'गंभीर' : 'Severe' },
+                { id: 'high', label: lang === 'hi' ? 'अधिक' : 'High' },
               ] as const).map((c) => (
                 <button
                   key={c.id}
@@ -359,7 +372,9 @@ export function LeftCommandRail() {
                 </button>
               ))}
             </div>
-            <span className="tabular-nums font-medium">{filteredTopList.length} spots</span>
+            <span className="tabular-nums font-medium">
+              {lang === 'hi' ? `${filteredTopList.length} स्थान` : `${filteredTopList.length} spots`}
+            </span>
           </div>
         </div>
 
@@ -392,10 +407,11 @@ export function LeftCommandRail() {
               >
                 <div className="min-w-0">
                   <p className="text-xs font-semibold text-slate-900 dark:text-slate-100 truncate">
-                    {hotspot.name}
+                    {getHotspotDisplayName(hotspot, lang)}
                   </p>
                   <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5 truncate">
-                    Ward {hotspot.wardNo} · Zone {hotspot.zone} · {hotspot.owningAgency}
+                    {formatWardLabel(hotspot.wardNo, lang)} · {formatZoneLabel(hotspot.zone, lang)} ·{' '}
+                    {hotspot.owningAgency}
                   </p>
                 </div>
                 <div className="text-right shrink-0">
@@ -403,7 +419,7 @@ export function LeftCommandRail() {
                     {tel.riskPct}%
                   </p>
                   <p className="text-[10px] font-mono tabular-nums text-slate-500 dark:text-slate-400">
-                    ~{tel.waterDepthCm} cm
+                    ~{tel.waterDepthCm} {lang === 'hi' ? 'सेमी' : 'cm'}
                   </p>
                 </div>
               </button>
@@ -412,7 +428,9 @@ export function LeftCommandRail() {
 
           {filteredTopList.length === 0 && (
             <div className="p-6 text-center text-xs text-slate-500 dark:text-slate-400">
-              No Gurugram spots match your current filter.
+              {lang === 'hi'
+                ? 'इस फ़िल्टर से कोई स्थान नहीं मिला।'
+                : 'No Gurugram spots match your current filter.'}
             </div>
           )}
         </div>

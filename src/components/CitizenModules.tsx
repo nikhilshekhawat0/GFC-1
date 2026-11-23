@@ -23,6 +23,14 @@ import {
 } from '../data/mcgHotspots';
 import { computeHotspotTelemetry, useStore } from '../store/useStore';
 import { t } from '../i18n/translations';
+import {
+  getHotspotDisplayName,
+  getCorridorLabel,
+  getCauseAnalysis,
+  localizeLocationName,
+  formatWardLabel,
+  formatZoneLabel,
+} from '../i18n/locationHi';
 import { fetchRealtimePosition } from '../lib/geolocation';
 import type { FloodReportRecord } from '../lib/supabase';
 
@@ -101,7 +109,9 @@ export function RouteSafetyView() {
 
     const hits = mcgHotspots
       .filter((h) => {
-        const hay = `${h.name} ${h.landmark} sector ${h.wardNo}`.toLowerCase();
+        const hiName = getHotspotDisplayName(h, 'hi');
+        const hiLandmark = localizeLocationName(h.landmark, 'hi');
+        const hay = `${h.name} ${h.landmark} ${hiName} ${hiLandmark} sector ${h.wardNo} वार्ड ${h.wardNo}`.toLowerCase();
         return terms.some((term) => hay.includes(term));
       })
       .map((h) => ({
@@ -170,8 +180,8 @@ export function RouteSafetyView() {
             key={p.id}
             onClick={() => {
               setActivePresetId(p.id);
-              setFromQuery(p.from);
-              setToQuery(p.to);
+              setFromQuery(lang === 'hi' ? localizeLocationName(p.from, 'hi') : p.from);
+              setToQuery(lang === 'hi' ? localizeLocationName(p.to, 'hi') : p.to);
             }}
             className={`px-3 py-1.5 rounded-lg text-xs font-medium border transition-colors ${
               activePresetId === p.id
@@ -179,7 +189,7 @@ export function RouteSafetyView() {
                 : 'border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900/60 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800'
             }`}
           >
-            {p.label}
+            {getCorridorLabel(p, lang)}
           </button>
         ))}
       </div>
@@ -264,17 +274,17 @@ export function RouteSafetyView() {
           >
             <div className="min-w-0">
               <div className="flex items-center gap-2 text-[11px] text-slate-500 dark:text-slate-400">
-                <span>Ward {hotspot.wardNo}</span>
+                <span>{formatWardLabel(hotspot.wardNo, lang)}</span>
                 <span>·</span>
                 <span>{hotspot.owningAgency}</span>
                 <span>·</span>
                 <span>JE: {hotspot.contacts.je.name}</span>
               </div>
               <p className="text-sm font-semibold text-slate-900 dark:text-slate-100 mt-0.5">
-                {hotspot.name}
+                {getHotspotDisplayName(hotspot, lang)}
               </p>
               <p className="text-xs text-slate-600 dark:text-slate-400 mt-0.5">
-                {hotspot.causeAnalysis}
+                {getCauseAnalysis(hotspot.causeAnalysis, lang)}
               </p>
             </div>
             <div className="text-right shrink-0">
@@ -562,7 +572,7 @@ export function AiFloodReportView() {
             >
               {mcgHotspots.map((h) => (
                 <option key={h.id} value={h.id}>
-                  Ward {h.wardNo} · {h.name}
+                  {formatWardLabel(h.wardNo, lang)} · {getHotspotDisplayName(h, lang)}
                 </option>
               ))}
             </select>
@@ -785,7 +795,7 @@ export function AiFloodReportView() {
                 <span className="text-slate-500 dark:text-slate-400">{rep.ai_recommended_agency}</span>
               </div>
               <p className="text-sm font-semibold text-slate-900 dark:text-slate-100">
-                {rep.location_name}
+                {localizeLocationName(rep.location_name, lang)}
               </p>
               <p className="text-xs text-slate-600 dark:text-slate-300">{rep.description}</p>
               {rep.ai_summary && (
@@ -894,7 +904,8 @@ export function CitizenAlertsView() {
           >
             {mcgHotspots.map((h) => (
               <option key={h.id} value={h.id}>
-                Ward {h.wardNo} (Zone {h.zone}) — {h.name}
+                {formatWardLabel(h.wardNo, lang)} ({formatZoneLabel(h.zone, lang)}) —{' '}
+                {getHotspotDisplayName(h, lang)}
               </option>
             ))}
           </select>
@@ -922,14 +933,16 @@ export function CitizenAlertsView() {
           className="w-full py-2.5 rounded-xl bg-[#0B3D6B] dark:bg-blue-600 text-white text-sm font-semibold flex items-center justify-center gap-2"
         >
           <Bell size={15} />
-          Activate Proactive Alerts
+          {lang === 'hi' ? 'वार्ड बारिश अलर्ट सक्रिय करें' : 'Activate Proactive Alerts'}
         </button>
       </div>
 
       {alertSubscriptions.length > 0 && (
         <div className="space-y-2">
           <h3 className="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
-            Active Subscriptions ({alertSubscriptions.length})
+            {lang === 'hi'
+              ? `सक्रिय अलर्ट (${alertSubscriptions.length})`
+              : `Active Subscriptions (${alertSubscriptions.length})`}
           </h3>
           {alertSubscriptions.map((sub) => (
             <div
@@ -937,7 +950,9 @@ export function CitizenAlertsView() {
               className="px-3.5 py-2.5 rounded-xl border border-slate-200/80 dark:border-slate-800 bg-white/80 dark:bg-slate-900/60 flex items-center justify-between text-xs"
             >
               <div>
-                <p className="font-semibold text-slate-900 dark:text-slate-100">{sub.sector_label}</p>
+                <p className="font-semibold text-slate-900 dark:text-slate-100">
+                  {localizeLocationName(sub.sector_label, lang)}
+                </p>
                 <p className="text-slate-500 dark:text-slate-400 font-mono">{sub.phone}</p>
               </div>
               <span className="uppercase font-mono font-semibold text-emerald-600 dark:text-emerald-400">
