@@ -66,13 +66,22 @@ function App() {
 
   const panelContent = renderPanelView();
 
+  if (isAuthScreen) {
+    return (
+      <div className="min-h-screen w-screen bg-slate-50 dark:bg-[#070B12] text-slate-900 dark:text-slate-100">
+        {panelContent}
+        <Toasts />
+      </div>
+    );
+  }
+
   return (
     <div className="h-screen w-screen flex flex-col overflow-hidden bg-slate-50 dark:bg-[#070B12] text-slate-900 dark:text-slate-100">
       <TopBar />
 
       <main className="relative flex-1 min-h-0 flex overflow-hidden bg-slate-50 dark:bg-[#070B12]">
         {/* Docked Left Navigation & Filters Rail */}
-        {!isAuthScreen && <LeftCommandRail />}
+        <LeftCommandRail />
 
         {/* Center Workspace: Either Map (+ Docked Bottom Timeline) OR Active Form / Command View */}
         <div className="flex-1 min-w-0 h-full flex flex-col overflow-hidden">
@@ -88,8 +97,8 @@ function App() {
         </div>
 
         {/* Docked Right Panel: Citizen Summary (when no pin selected) OR Selected Hotspot Dossier */}
-        {!isAuthScreen && !panelContent && <CitizenOverviewCard />}
-        {!isAuthScreen && !panelContent && <HotspotDossier />}
+        {!panelContent && <CitizenOverviewCard />}
+        {!panelContent && <HotspotDossier />}
 
         <Toasts />
       </main>

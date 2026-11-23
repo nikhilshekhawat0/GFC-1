@@ -110,6 +110,16 @@ export interface UserLocation {
   focusNonce: number;
 }
 
+export interface ReportDraft {
+  hotspotId: string;
+  customLocation: string;
+  description: string;
+  lat: number;
+  lng: number;
+  locationMode: 'gps' | 'ward';
+  gpsAccuracy: number | null;
+}
+
 interface AppState {
   theme: ThemeMode;
   lang: Lang;
@@ -154,6 +164,7 @@ interface AppState {
   registeredCitizens: CitizenUser[];
   authorityUser: AuthorityUser | null;
   postLoginRedirect: ActiveView | null;
+  draftReport: ReportDraft | null;
 
   // Actions
   toggleTheme: () => void;
@@ -166,6 +177,7 @@ interface AppState {
   toggleRightSidebar: () => void;
   setRightSidebarCollapsed: (collapsed: boolean) => void;
   setPostLoginRedirect: (view: ActiveView | null) => void;
+  setDraftReport: (draft: ReportDraft | null) => void;
   signInCitizen: (user: Omit<CitizenUser, 'signedInAt'>) => void;
   signInCitizenByPhone: (phone: string) => CitizenUser | null;
   signOutCitizen: () => void;
@@ -437,6 +449,7 @@ export const useStore = create<AppState>()(
       registeredCitizens: [],
       authorityUser: null,
       postLoginRedirect: null,
+      draftReport: null,
 
       toggleTheme: () => {
         const next: ThemeMode = get().theme === 'dark' ? 'light' : 'dark';
@@ -465,12 +478,20 @@ export const useStore = create<AppState>()(
         set({ role, activeView: nextView });
       },
 
-      setActiveView: (activeView) => set({ activeView }),
+      setActiveView: (activeView) =>
+        set((state) => ({
+          activeView,
+          postLoginRedirect:
+            activeView === 'citizen-login' || activeView === 'authority-login'
+              ? state.postLoginRedirect
+              : null,
+        })),
       toggleLeftSidebar: () => set((s) => ({ leftSidebarCollapsed: !s.leftSidebarCollapsed })),
       setLeftSidebarCollapsed: (leftSidebarCollapsed) => set({ leftSidebarCollapsed }),
       toggleRightSidebar: () => set((s) => ({ rightSidebarCollapsed: !s.rightSidebarCollapsed })),
       setRightSidebarCollapsed: (rightSidebarCollapsed) => set({ rightSidebarCollapsed }),
       setPostLoginRedirect: (postLoginRedirect) => set({ postLoginRedirect }),
+      setDraftReport: (draftReport) => set({ draftReport }),
 
       signInCitizen: (user) => {
         const signedIn: CitizenUser = {
@@ -515,10 +536,12 @@ export const useStore = create<AppState>()(
           ...user,
           signedInAt: new Date().toISOString(),
         };
+        const redirect = get().postLoginRedirect;
         set({
           authorityUser: signedIn,
           role: signedIn.role,
-          activeView: 'dispatch',
+          postLoginRedirect: null,
+          activeView: redirect || 'dispatch',
         });
         get().addToast(`Signed in as ${signedIn.name} (${signedIn.employeeId})`, 'success');
       },
@@ -774,6 +797,11 @@ export const useStore = create<AppState>()(
       },
 
       escalateHotspotSla: async (hotspotId) => {
+        if (!get().citizenUser && !get().authorityUser) {
+          set({ postLoginRedirect: 'map', activeView: 'citizen-login' });
+          get().addToast('Please sign in to escalate a ward issue', 'info');
+          return;
+        }
         const hotspot = mcgHotspots.find((h) => h.id === hotspotId);
         if (!hotspot) return;
         const existing = get().dispatchRecords[hotspotId];

@@ -1,4 +1,4 @@
-import { Settings, ShieldCheck, UserCheck, LogOut, Droplets } from 'lucide-react';
+import { Settings, ShieldCheck, LogOut, Droplets } from 'lucide-react';
 import { useStore } from '../store/useStore';
 import { t } from '../i18n/translations';
 
@@ -9,9 +9,7 @@ export function TopBar() {
     setRole,
     activeView,
     setActiveView,
-    citizenUser,
     authorityUser,
-    signOutCitizen,
     signOutAuthority,
   } = useStore();
 
@@ -33,9 +31,9 @@ export function TopBar() {
         </span>
       </button>
 
-      {/* Zone 2: Separate Citizen & Municipal Authority Sign-In */}
-      <div className="flex items-center gap-2 shrink-0">
-        {isAuthoritySession && authorityUser ? (
+      {/* Zone 2 & 3: Clean Right Actions (Authority Switcher when active + Settings) */}
+      <div className="flex items-center gap-2.5 shrink-0">
+        {isAuthoritySession && authorityUser && (
           <div className="flex items-center gap-2">
             <button
               type="button"
@@ -60,49 +58,8 @@ export function TopBar() {
               </button>
             </div>
           </div>
-        ) : (
-          <div className="flex items-center gap-2">
-            {citizenUser ? (
-              <div className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-teal-50 dark:bg-teal-950/50 border border-teal-200 dark:border-teal-800 text-xs font-semibold text-teal-800 dark:text-teal-200 whitespace-nowrap">
-                <UserCheck size={13} />
-                <span className="max-w-[120px] truncate">{citizenUser.name}</span>
-                <button
-                  type="button"
-                  onClick={signOutCitizen}
-                  className="ml-0.5 text-teal-700/70 hover:text-red-600"
-                  title="Sign out"
-                  aria-label="Sign out"
-                >
-                  <LogOut size={12} />
-                </button>
-              </div>
-            ) : (
-              <button
-                type="button"
-                onClick={() => setActiveView('citizen-login')}
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors whitespace-nowrap"
-              >
-                <UserCheck size={13} className="text-teal-700 dark:text-teal-400" />
-                <span>Resident Sign In</span>
-              </button>
-            )}
-
-            <button
-              type="button"
-              onClick={() =>
-                authorityUser ? setRole(authorityUser.role) : setActiveView('authority-login')
-              }
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-[#0B3D6B] text-white hover:bg-[#093055] transition-colors whitespace-nowrap"
-            >
-              <ShieldCheck size={13} />
-              <span>{authorityUser ? 'Officer Desk' : 'Authority Login'}</span>
-            </button>
-          </div>
         )}
-      </div>
 
-      {/* Zone 3: Settings (Dark Mode & Language) */}
-      <div className="flex items-center shrink-0">
         <button
           type="button"
           onClick={() => setActiveView(activeView === 'settings' ? 'map' : 'settings')}

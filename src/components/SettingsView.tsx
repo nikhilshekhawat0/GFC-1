@@ -155,35 +155,45 @@ export function SettingsView() {
         </div>
       </section>
 
-      {/* Signed-in Session Info */}
-      <section className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-5 space-y-3">
-        <h2 className="text-sm font-bold text-slate-900 dark:text-slate-100">Account Access</h2>
+      {/* Account & Sign-In Controls (moved from top bar into Settings) */}
+      <section className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-5 space-y-4">
+        <div>
+          <h2 className="text-sm font-bold text-slate-900 dark:text-slate-100">
+            Account & Sign In
+          </h2>
+          <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5 leading-relaxed">
+            No login is required to browse the flood map, live GPS view, or route safety. Sign in only when registering flood reports, ward alerts, or opening the MCG Officer Desk.
+          </p>
+        </div>
 
-        {citizenUser ? (
+        {citizenUser && (
           <div className="flex flex-wrap items-center justify-between gap-3 p-3.5 rounded-lg bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700">
             <div className="flex items-center gap-2.5">
-              <UserCheck size={16} className="text-teal-700 dark:text-teal-400" />
+              <UserCheck size={16} className="text-teal-700 dark:text-teal-400 shrink-0" />
               <div>
                 <p className="text-xs font-semibold text-slate-900 dark:text-slate-100">
                   {citizenUser.name} · +91 {citizenUser.phone}
                 </p>
                 <p className="text-[11px] text-slate-500 dark:text-slate-400">
                   {citizenUser.address}
+                  {citizenUser.wardNo ? ` · Ward ${citizenUser.wardNo}` : ''}
                 </p>
               </div>
             </div>
             <button
               type="button"
               onClick={signOutCitizen}
-              className="px-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs font-semibold text-slate-700 dark:text-slate-200 hover:bg-slate-50"
+              className="px-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs font-semibold text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800"
             >
               Sign Out
             </button>
           </div>
-        ) : authorityUser ? (
+        )}
+
+        {authorityUser && (
           <div className="flex flex-wrap items-center justify-between gap-3 p-3.5 rounded-lg bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700">
             <div className="flex items-center gap-2.5">
-              <ShieldCheck size={16} className="text-[#0B3D6B] dark:text-blue-400" />
+              <ShieldCheck size={16} className="text-[#0B3D6B] dark:text-blue-400 shrink-0" />
               <div>
                 <p className="text-xs font-semibold text-slate-900 dark:text-slate-100">
                   {authorityUser.name} · ID: {authorityUser.employeeId}
@@ -194,32 +204,66 @@ export function SettingsView() {
                 </p>
               </div>
             </div>
-            <button
-              type="button"
-              onClick={signOutAuthority}
-              className="px-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs font-semibold text-slate-700 dark:text-slate-200 hover:bg-slate-50"
-            >
-              Sign Out
-            </button>
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={() => setActiveView('dispatch')}
+                className="px-3 py-1.5 rounded-lg bg-[#0B3D6B] text-white text-xs font-semibold hover:bg-[#093055]"
+              >
+                Officer Desk
+              </button>
+              <button
+                type="button"
+                onClick={signOutAuthority}
+                className="px-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs font-semibold text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800"
+              >
+                Sign Out
+              </button>
+            </div>
           </div>
-        ) : (
-          <div className="flex flex-wrap items-center gap-2.5">
+        )}
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
+          {!citizenUser && (
             <button
               type="button"
               onClick={() => setActiveView('citizen-login')}
-              className="px-3.5 py-2 rounded-lg border border-slate-200 dark:border-slate-700 text-xs font-semibold text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800"
+              className="p-3.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-950/60 text-left hover:bg-slate-50 dark:hover:bg-slate-800/60 transition-colors flex items-center gap-3"
             >
-              Resident Sign In (Phone)
+              <div className="w-9 h-9 rounded-lg bg-teal-50 dark:bg-teal-950/50 border border-teal-200 dark:border-teal-800 text-teal-700 dark:text-teal-300 flex items-center justify-center shrink-0">
+                <UserCheck size={17} />
+              </div>
+              <div>
+                <p className="text-xs font-bold text-slate-900 dark:text-slate-100">
+                  Resident Sign In / Sign Up
+                </p>
+                <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">
+                  Phone number & quick Gurugram address
+                </p>
+              </div>
             </button>
+          )}
+
+          {!authorityUser && (
             <button
               type="button"
               onClick={() => setActiveView('authority-login')}
-              className="px-3.5 py-2 rounded-lg bg-[#0B3D6B] text-white text-xs font-semibold hover:bg-[#093055]"
+              className="p-3.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-950/60 text-left hover:bg-slate-50 dark:hover:bg-slate-800/60 transition-colors flex items-center gap-3"
             >
-              Authority Sign In (Employee ID)
+              <div className="w-9 h-9 rounded-lg bg-blue-50 dark:bg-blue-950/50 border border-blue-200 dark:border-blue-800 text-[#0B3D6B] dark:text-blue-300 flex items-center justify-center shrink-0">
+                <ShieldCheck size={17} />
+              </div>
+              <div>
+                <p className="text-xs font-bold text-slate-900 dark:text-slate-100">
+                  Municipal Authority Login
+                </p>
+                <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">
+                  Sign in with Employee ID & passcode
+                </p>
+              </div>
             </button>
-          </div>
-        )}
+          )}
+        </div>
       </section>
     </div>
   );

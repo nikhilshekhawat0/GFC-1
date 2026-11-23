@@ -318,38 +318,42 @@ export function AiFloodReportView() {
   const {
     lang,
     citizenUser,
-    signInCitizen,
+    authorityUser,
     userLocation,
     setUserLocation,
     floodReports,
     submitFloodReport,
     setActiveView,
+    setPostLoginRedirect,
+    draftReport,
+    setDraftReport,
     setSelectedHotspotId,
     addToast,
   } = useStore();
 
-  const [selectedHotspotIdInput, setSelectedHotspotIdInput] = useState<string>(mcgHotspots[3].id);
-  const [customLocation, setCustomLocation] = useState<string>('');
-  const [locationMode, setLocationMode] = useState<'gps' | 'ward'>(userLocation ? 'gps' : 'ward');
+  const [selectedHotspotIdInput, setSelectedHotspotIdInput] = useState<string>(
+    draftReport?.hotspotId || mcgHotspots[3].id
+  );
+  const [customLocation, setCustomLocation] = useState<string>(draftReport?.customLocation || '');
+  const [locationMode, setLocationMode] = useState<'gps' | 'ward'>(
+    draftReport?.locationMode || (userLocation ? 'gps' : 'ward')
+  );
   const [gpsAccuracy, setGpsAccuracy] = useState<number | null>(
-    userLocation?.accuracyMeters ?? null
+    draftReport?.gpsAccuracy ?? userLocation?.accuracyMeters ?? null
   );
   const [coords, setCoords] = useState<{ lat: number; lng: number }>(
-    userLocation
-      ? { lat: userLocation.lat, lng: userLocation.lng }
-      : { lat: mcgHotspots[3].lat, lng: mcgHotspots[3].lng }
+    draftReport
+      ? { lat: draftReport.lat, lng: draftReport.lng }
+      : userLocation
+        ? { lat: userLocation.lat, lng: userLocation.lng }
+        : { lat: mcgHotspots[3].lat, lng: mcgHotspots[3].lng }
   );
-  const [description, setDescription] = useState('');
+  const [description, setDescription] = useState(draftReport?.description || '');
   const [photoPreview, setPhotoPreview] = useState<string | null>(null);
   const [photoMime, setPhotoMime] = useState<string>('image/jpeg');
   const [submitting, setSubmitting] = useState(false);
   const [lastTriaged, setLastTriaged] = useState<FloodReportRecord | null>(null);
   const [locating, setLocating] = useState(false);
-
-  // Lazy citizen sign-up fields (only needed when submitting a report)
-  const [residentPhone, setResidentPhone] = useState(citizenUser?.phone || '');
-  const [residentAddress, setResidentAddress] = useState(citizenUser?.address || '');
-  const [residentName, setResidentName] = useState(citizenUser?.name || '');
 
   const selectedHotspot: McgHotspot | undefined = useMemo(
     () => mcgHotspots.find((h) => h.id === selectedHotspotIdInput),
@@ -406,39 +410,30 @@ export function AiFloodReportView() {
   };
 
   const handleSubmit = async () => {
+    if (!citizenUser && !authorityUser) {
+      setDraftReport({
+        hotspotId: selectedHotspotIdInput,
+        customLocation,
+        description,
+        lat: coords.lat,
+        lng: coords.lng,
+        locationMode,
+        gpsAccuracy,
+      });
+      setPostLoginRedirect('report');
+      setActiveView('citizen-login');
+      addToast('Sign in with your phone number to register this flood report', 'info');
+      return;
+    }
+
     if (!description.trim() && !photoPreview) {
       addToast('Please describe the waterlogging or attach a street photo', 'warning');
       return;
     }
 
-    // Lazy resident sign-up check right when submitting a flood report
-    let activeCitizen = citizenUser;
-    if (!activeCitizen) {
-      const digits = residentPhone.replace(/\D/g, '');
-      if (digits.length < 10) {
-        addToast('Please enter your 10-digit phone number below to send this report', 'warning');
-        return;
-      }
-      if (residentAddress.trim().length < 5) {
-        addToast('Please enter your quick Gurugram address below', 'warning');
-        return;
-      }
-      const cleanPhone = digits.slice(-10);
-      const cleanName = residentName.trim() || `Resident (${cleanPhone.slice(-4)})`;
-      signInCitizen({
-        name: cleanName,
-        phone: cleanPhone,
-        address: residentAddress.trim(),
-        wardNo: selectedHotspot?.wardNo,
-      });
-      activeCitizen = {
-        name: cleanName,
-        phone: cleanPhone,
-        address: residentAddress.trim(),
-        wardNo: selectedHotspot?.wardNo,
-        signedInAt: new Date().toISOString(),
-      };
-    }
+    const reporterLabel =
+      citizenUser?.name ||
+      (authorityUser ? `${authorityUser.name} (${authorityUser.employeeId})` : 'Gurugram Resident');
 
     setSubmitting(true);
     const gpsLabel = `Live GPS (${coords.lat.toFixed(4)}, ${coords.lng.toFixed(4)})`;
@@ -472,7 +467,7 @@ export function AiFloodReportView() {
         estimatedDepthCm: 28,
         blockedDrainSuspected: true,
         recommendedAgency: selectedHotspot?.owningAgency || 'MCG',
-        triageSummary: `Report logged by ${activeCitizen.name} for ${locationLabel}; Ward ${selectedHotspot?.wardNo || 'N/A'} Engineer notified for drain inspection.`,
+        triageSummary: `Report logged by ${reporterLabel} for ${locationLabel}; Ward ${selectedHotspot?.wardNo || 'N/A'} Engineer notified for drain inspection.`,
         confidence: 82,
       };
 
@@ -504,7 +499,7 @@ export function AiFloodReportView() {
         location_name: locationLabel,
         lat: reportLat,
         lng: reportLng,
-        description: `${description.trim() || 'Street waterlogging photo report'} — Reported by ${activeCitizen.name}`,
+        description: `${description.trim() || 'Street waterlogging photo report'} — Reported by ${reporterLabel}`,
         photo_data_url: photoPreview || null,
         ai_severity: triage.severity,
         ai_depth_cm: triage.estimatedDepthCm,
@@ -518,6 +513,7 @@ export function AiFloodReportView() {
 
       await submitFloodReport(record);
       setLastTriaged(record);
+      setDraftReport(null);
       setDescription('');
       setPhotoPreview(null);
     } finally {
@@ -677,54 +673,29 @@ export function AiFloodReportView() {
           </div>
         </div>
 
-        {/* Lazy Resident Sign-Up Prompt (Only shown if not signed in yet) */}
-        {!citizenUser ? (
-          <div className="p-4 rounded-xl bg-teal-50/70 dark:bg-teal-950/30 border border-teal-200 dark:border-teal-800 space-y-3">
-            <div>
-              <p className="text-xs font-bold text-teal-900 dark:text-teal-200">
-                Quick Resident Verification (Phone & Quick Address)
-              </p>
-              <p className="text-[11px] text-teal-800/80 dark:text-teal-300/80 mt-0.5">
-                Sign up with your phone number and quick address only when submitting a report so the Ward Engineer can confirm clearance.
-              </p>
-            </div>
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-              <input
-                type="tel"
-                value={residentPhone}
-                onChange={(e) => setResidentPhone(e.target.value)}
-                placeholder="10-digit phone number *"
-                className="px-3 py-2 rounded-lg text-sm border border-teal-200 dark:border-teal-700 bg-white dark:bg-slate-950 text-slate-900 dark:text-slate-100"
-              />
-              <input
-                type="text"
-                value={residentAddress}
-                onChange={(e) => setResidentAddress(e.target.value)}
-                placeholder="Quick address (House / Sector) *"
-                className="px-3 py-2 rounded-lg text-sm border border-teal-200 dark:border-teal-700 bg-white dark:bg-slate-950 text-slate-900 dark:text-slate-100 sm:col-span-2"
-              />
-            </div>
-            <input
-              type="text"
-              value={residentName}
-              onChange={(e) => setResidentName(e.target.value)}
-              placeholder="Your name (optional)"
-              className="w-full px-3 py-2 rounded-lg text-sm border border-teal-200 dark:border-teal-700 bg-white dark:bg-slate-950 text-slate-900 dark:text-slate-100"
-            />
-          </div>
-        ) : (
-          <div className="flex items-center justify-between px-3.5 py-2 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 text-xs text-slate-600 dark:text-slate-300">
+        {citizenUser ? (
+          <div className="flex items-center justify-between px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 text-xs text-slate-600 dark:text-slate-300">
             <span>
               Reporting as <strong className="text-slate-900 dark:text-slate-100">{citizenUser.name}</strong> (+91 {citizenUser.phone})
             </span>
             <button
               type="button"
-              onClick={() => setActiveView('citizen-login')}
+              onClick={() => setActiveView('settings')}
               className="text-[#0B3D6B] dark:text-blue-400 font-semibold hover:underline"
             >
               Account
             </button>
           </div>
+        ) : authorityUser ? (
+          <div className="flex items-center justify-between px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 text-xs text-slate-600 dark:text-slate-300">
+            <span>
+              Reporting as <strong className="text-slate-900 dark:text-slate-100">{authorityUser.name}</strong> ({authorityUser.employeeId})
+            </span>
+          </div>
+        ) : (
+          <p className="text-xs text-slate-500 dark:text-slate-400">
+            You can browse reports without signing in. When you click submit, you will be asked to sign in with your phone number to register this report.
+          </p>
         )}
 
         <button
@@ -740,7 +711,9 @@ export function AiFloodReportView() {
           ) : (
             <>
               <Camera size={16} />
-              <span>{citizenUser ? 'Send Flood Report' : 'Verify & Send Flood Report'}</span>
+              <span>
+                {citizenUser || authorityUser ? 'Send Flood Report' : 'Sign In & Register Flood Report'}
+              </span>
             </>
           )}
         </button>
@@ -840,12 +813,27 @@ export function AiFloodReportView() {
 }
 
 export function CitizenAlertsView() {
-  const { lang, subscribeAlerts, alertSubscriptions, setActiveView, addToast } = useStore();
-  const [phone, setPhone] = useState('');
+  const {
+    lang,
+    citizenUser,
+    authorityUser,
+    subscribeAlerts,
+    alertSubscriptions,
+    setActiveView,
+    setPostLoginRedirect,
+    addToast,
+  } = useStore();
+  const [phone, setPhone] = useState(citizenUser?.phone ? `+91 ${citizenUser.phone}` : '');
   const [hotspotId, setHotspotId] = useState(mcgHotspots[0].id);
   const [channel, setChannel] = useState<'whatsapp' | 'sms' | 'ivr'>('whatsapp');
 
   const handleSubscribe = async () => {
+    if (!citizenUser && !authorityUser) {
+      setPostLoginRedirect('alerts');
+      setActiveView('citizen-login');
+      addToast('Sign in with your phone number to register ward rain alerts', 'info');
+      return;
+    }
     if (!phone.trim()) {
       addToast('Enter a mobile number', 'warning');
       return;
