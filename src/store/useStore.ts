@@ -468,8 +468,8 @@ export const useStore = create<AppState>()(
       aiBriefingLoading: false,
       supabaseSynced: false,
       toasts: [],
-      leftSidebarCollapsed: false,
-      rightSidebarCollapsed: false,
+      leftSidebarCollapsed: typeof window !== 'undefined' ? window.innerWidth < 768 : false,
+      rightSidebarCollapsed: typeof window !== 'undefined' ? window.innerWidth < 768 : false,
       citizenUser: null,
       registeredCitizens: [],
       authorityUser: null,
@@ -510,6 +510,9 @@ export const useStore = create<AppState>()(
             activeView === 'citizen-login' || activeView === 'authority-login'
               ? state.postLoginRedirect
               : null,
+          ...(typeof window !== 'undefined' && window.innerWidth < 768
+            ? { leftSidebarCollapsed: true }
+            : {}),
         })),
       toggleLeftSidebar: () => set((s) => ({ leftSidebarCollapsed: !s.leftSidebarCollapsed })),
       setLeftSidebarCollapsed: (leftSidebarCollapsed) => set({ leftSidebarCollapsed }),
@@ -532,7 +535,10 @@ export const useStore = create<AppState>()(
           postLoginRedirect: null,
           activeView: redirect || (get().activeView === 'citizen-login' ? 'map' : get().activeView),
         });
-        get().addToast(`Welcome, ${signedIn.name}.`, 'success');
+        get().addToast(
+          get().lang === 'hi' ? `स्वागत है, ${signedIn.name}।` : `Welcome, ${signedIn.name}.`,
+          'success'
+        );
       },
 
       signInCitizenByPhone: (phone) => {
@@ -547,13 +553,19 @@ export const useStore = create<AppState>()(
           postLoginRedirect: null,
           activeView: redirect || (get().activeView === 'citizen-login' ? 'map' : get().activeView),
         });
-        get().addToast(`Welcome back, ${updated.name}.`, 'success');
+        get().addToast(
+          get().lang === 'hi' ? `वापसी पर स्वागत है, ${updated.name}।` : `Welcome back, ${updated.name}.`,
+          'success'
+        );
         return updated;
       },
 
       signOutCitizen: () => {
         set({ citizenUser: null });
-        get().addToast('Signed out of resident account', 'info');
+        get().addToast(
+          get().lang === 'hi' ? 'निवासी खाते से साइन आउट हो गया' : 'Signed out of resident account',
+          'info'
+        );
       },
 
       signInAuthority: (user) => {
@@ -568,7 +580,12 @@ export const useStore = create<AppState>()(
           postLoginRedirect: null,
           activeView: redirect || 'dispatch',
         });
-        get().addToast(`Signed in as ${signedIn.name} (${signedIn.employeeId})`, 'success');
+        get().addToast(
+          get().lang === 'hi'
+            ? `${signedIn.name} (${signedIn.employeeId}) के रूप में साइन इन`
+            : `Signed in as ${signedIn.name} (${signedIn.employeeId})`,
+          'success'
+        );
       },
 
       signOutAuthority: () => {
@@ -577,18 +594,26 @@ export const useStore = create<AppState>()(
           role: 'citizen',
           activeView: 'map',
         });
-        get().addToast('Signed out of Municipal Authority portal', 'info');
+        get().addToast(
+          get().lang === 'hi' ? 'नगर निगम अधिकारी पोर्टल से साइन आउट हो गया' : 'Signed out of Municipal Authority portal',
+          'info'
+        );
       },
       setRainfallMm: (rainfallMm) => set({ rainfallMm }),
       setTimelineHourOffset: (timelineHourOffset) => set({ timelineHourOffset }),
       setIsPlayingTimeline: (isPlayingTimeline) => set({ isPlayingTimeline }),
       togglePumpMitigation: () => {
         const next = !get().pumpMitigationActive;
+        const hi = get().lang === 'hi';
         set({ pumpMitigationActive: next });
         get().addToast(
           next
-            ? 'Pump pre-positioning simulation active across critical underpasses'
-            : 'Pump mitigation simulation disabled',
+            ? hi
+              ? 'प्रमुख अंडरपास पर पंप पूर्व-तैनाती सिमुलेशन सक्रिय'
+              : 'Pump pre-positioning simulation active across critical underpasses'
+            : hi
+              ? 'पंप तैनाती सिमुलेशन बंद किया गया'
+              : 'Pump mitigation simulation disabled',
           'info'
         );
       },
@@ -602,6 +627,9 @@ export const useStore = create<AppState>()(
         set((state) => ({
           selectedHotspotId,
           rightSidebarCollapsed: selectedHotspotId ? false : state.rightSidebarCollapsed,
+          ...(selectedHotspotId && typeof window !== 'undefined' && window.innerWidth < 768
+            ? { leftSidebarCollapsed: true }
+            : {}),
         })),
       setHighlightedHotspotIds: (highlightedHotspotIds) => set({ highlightedHotspotIds }),
       setUserLocation: (loc, focusMap = false) =>
@@ -630,7 +658,12 @@ export const useStore = create<AppState>()(
               : {}),
           });
           if (syncRainfall) {
-            get().addToast(`Synced Gurugram live forecast: ${data.sixHourForecastMm}mm / 6h`, 'info');
+            get().addToast(
+              get().lang === 'hi'
+                ? `गुरुग्राम लाइव पूर्वानुमान सिंक: ${data.sixHourForecastMm} मिमी / 6 घंटे`
+                : `Synced Gurugram live forecast: ${data.sixHourForecastMm}mm / 6h`,
+              'info'
+            );
           }
         } catch {
           set({ weatherLoading: false });
@@ -722,7 +755,12 @@ export const useStore = create<AppState>()(
         set((state) => ({ auditLog: [auditEntry, ...state.auditLog] }));
 
         await Promise.all([persistFloodReport(report), persistAuditLog(auditEntry)]);
-        get().addToast('Flood report verified & broadcast to Command HUD', 'success');
+        get().addToast(
+          get().lang === 'hi'
+            ? 'जलभराव रिपोर्ट सत्यापित और कमांड पैनल को भेजी गई'
+            : 'Flood report verified & broadcast to Command HUD',
+          'success'
+        );
       },
 
       submitSosReport: async (input) => {
@@ -766,7 +804,9 @@ export const useStore = create<AppState>()(
 
         await persistAuditLog(auditEntry);
         get().addToast(
-          `Emergency SOS ${record.id} logged & flagged for immediate response`,
+          get().lang === 'hi'
+            ? `आपातकालीन SOS ${record.id} दर्ज और त्वरित प्रतिक्रिया के लिए चिह्नित`
+            : `Emergency SOS ${record.id} logged & flagged for immediate response`,
           'warning'
         );
         return record;
@@ -777,7 +817,10 @@ export const useStore = create<AppState>()(
           floodReports: state.floodReports.map((r) => (r.id === id ? { ...r, status } : r)),
         }));
         await updateFloodReportStatusInDb(id, status);
-        get().addToast(`Report marked ${status}`, 'info');
+        get().addToast(
+          get().lang === 'hi' ? `रिपोर्ट की स्थिति ${status} अपडेट हुई` : `Report marked ${status}`,
+          'info'
+        );
       },
 
       markHotspotCleared: async (hotspotId) => {
@@ -821,7 +864,10 @@ export const useStore = create<AppState>()(
         }));
 
         await Promise.all([persistDispatchAction(record), persistAuditLog(auditEntry)]);
-        get().addToast(`${hotspot.name} marked cleared`, 'success');
+        get().addToast(
+          get().lang === 'hi' ? `${hotspot.name} साफ चिह्नित किया गया` : `${hotspot.name} marked cleared`,
+          'success'
+        );
       },
 
       deployPumpToHotspot: async (hotspotId) => {
@@ -865,13 +911,21 @@ export const useStore = create<AppState>()(
         }));
 
         await Promise.all([persistDispatchAction(record), persistAuditLog(auditEntry)]);
-        get().addToast(`Dispatched ${crew.name} to ${hotspot.name}`, 'success');
+        get().addToast(
+          get().lang === 'hi'
+            ? `${hotspot.name} पर ${crew.name} को भेजा गया`
+            : `Dispatched ${crew.name} to ${hotspot.name}`,
+          'success'
+        );
       },
 
       escalateHotspotSla: async (hotspotId) => {
         if (!get().citizenUser && !get().authorityUser) {
           set({ postLoginRedirect: 'map', activeView: 'citizen-login' });
-          get().addToast('Please sign in to escalate a ward issue', 'info');
+          get().addToast(
+            get().lang === 'hi' ? 'वार्ड समस्या आगे भेजने के लिए साइन इन करें' : 'Please sign in to escalate a ward issue',
+            'info'
+          );
           return;
         }
         const hotspot = mcgHotspots.find((h) => h.id === hotspotId);
@@ -936,7 +990,12 @@ export const useStore = create<AppState>()(
         }));
 
         await Promise.all([persistDispatchAction(record), persistAuditLog(auditEntry)]);
-        get().addToast(`Escalated to ${targetOfficer.role}: ${targetOfficer.name}`, 'warning');
+        get().addToast(
+          get().lang === 'hi'
+            ? `${targetOfficer.role}: ${targetOfficer.name} को एस्केलेट किया गया`
+            : `Escalated to ${targetOfficer.role}: ${targetOfficer.name}`,
+          'warning'
+        );
       },
 
       flagHotspotBlocker: async (hotspotId, note) => {
@@ -979,7 +1038,12 @@ export const useStore = create<AppState>()(
         }));
 
         await Promise.all([persistDispatchAction(record), persistAuditLog(auditEntry)]);
-        get().addToast('Blocker flagged & logged in audit stream', 'warning');
+        get().addToast(
+          get().lang === 'hi'
+            ? 'अवरोध चिह्नित किया गया और ऑडिट लॉग में दर्ज हुआ'
+            : 'Blocker flagged & logged in audit stream',
+          'warning'
+        );
       },
 
       overrideHotspotRank: async (hotspotId, newRank, reason) => {
@@ -1022,7 +1086,12 @@ export const useStore = create<AppState>()(
         }));
 
         await Promise.all([persistDispatchAction(record), persistAuditLog(auditEntry)]);
-        get().addToast(`Manual override to #${newRank} logged`, 'warning');
+        get().addToast(
+          get().lang === 'hi'
+            ? `प्राथमिकता #${newRank} पर मैनुअल बदलाव दर्ज`
+            : `Manual override to #${newRank} logged`,
+          'warning'
+        );
       },
 
       setSensorStatus: async (sensorId, status) => {
@@ -1055,7 +1124,10 @@ export const useStore = create<AppState>()(
           };
           set((state) => ({ auditLog: [auditEntry, ...state.auditLog] }));
           await persistAuditLog(auditEntry);
-          get().addToast(`Sensor ${sensorId} marked ${status}`, status === 'offline' ? 'warning' : 'success');
+          get().addToast(
+            get().lang === 'hi' ? `सेंसर ${sensorId} की स्थिति ${status} हुई` : `Sensor ${sensorId} marked ${status}`,
+            status === 'offline' ? 'warning' : 'success'
+          );
         }
       },
 
@@ -1069,30 +1141,35 @@ export const useStore = create<AppState>()(
           alertSubscriptions: [record, ...state.alertSubscriptions],
         }));
         await persistAlertSubscription(record);
-        get().addToast(`Subscribed ${sub.phone} to ${sub.channel.toUpperCase()} flood alerts`, 'success');
+        get().addToast(
+          get().lang === 'hi'
+            ? `${sub.phone} को ${sub.channel.toUpperCase()} बाढ़ अलर्ट के लिए सक्रिय किया गया`
+            : `Subscribed ${sub.phone} to ${sub.channel.toUpperCase()} flood alerts`,
+          'success'
+        );
       },
 
       generateAiBriefing: async () => {
         const { rainfallMm, timelineHourOffset, pumpMitigationActive, sensors, floodReports, dispatchRecords, lang } = get();
         set({ aiBriefingLoading: true });
+        const scored = mcgHotspots
+          .map((h) => ({
+            hotspot: h,
+            tel: computeHotspotTelemetry(
+              h,
+              rainfallMm,
+              timelineHourOffset,
+              pumpMitigationActive,
+              sensors,
+              floodReports,
+              dispatchRecords[h.id]
+            ),
+          }))
+          .sort((a, b) => b.tel.riskPct - a.tel.riskPct);
+
+        const highRiskCount = scored.filter((s) => s.tel.riskPct >= 55).length;
+
         try {
-          const scored = mcgHotspots
-            .map((h) => ({
-              hotspot: h,
-              tel: computeHotspotTelemetry(
-                h,
-                rainfallMm,
-                timelineHourOffset,
-                pumpMitigationActive,
-                sensors,
-                floodReports,
-                dispatchRecords[h.id]
-              ),
-            }))
-            .sort((a, b) => b.tel.riskPct - a.tel.riskPct);
-
-          const highRiskCount = scored.filter((s) => s.tel.riskPct >= 55).length;
-
           const res = await fetch('/api/ai/briefing', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -1120,17 +1197,65 @@ export const useStore = create<AppState>()(
           });
 
           if (!res.ok) {
-            const errBody = (await res.json().catch(() => ({}))) as { error?: string };
-            throw new Error(errBody.error || `HTTP ${res.status}`);
+            throw new Error(`HTTP ${res.status}`);
           }
 
           const data = (await res.json()) as AiBriefingData;
           set({ aiBriefing: data, aiBriefingLoading: false });
-          get().addToast('Gemini AI Monsoon Briefing updated', 'success');
-        } catch (err) {
-          const msg = err instanceof Error ? err.message : 'Unable to generate AI briefing';
-          set({ aiBriefingLoading: false });
-          get().addToast(msg, 'error');
+          get().addToast(
+            lang === 'hi' ? 'मानसून कमांड ब्रीफिंग अपडेट हो गई' : 'Monsoon Command Briefing updated',
+            'success'
+          );
+        } catch {
+          const top3 = scored.slice(0, 3);
+          const fallbackBriefing: AiBriefingData =
+            lang === 'hi'
+              ? {
+                  generatedAt: new Date().toISOString(),
+                  model: 'telemetry-baseline',
+                  headline: `${rainfallMm} मिमी वर्षा दबाव पर ${highRiskCount} संवेदनशील बिंदुओं पर त्वरित जल निकासी निगरानी`,
+                  executiveSummary: `वर्तमान T${timelineHourOffset >= 0 ? `+${timelineHourOffset}` : timelineHourOffset}h क्षितिज पर 153 MCG बिंदुओं में से ${highRiskCount} स्थानों पर उच्च जलभराव जोखिम दर्ज है। ${pumpMitigationActive ? 'पंप पूर्व-तैनाती सिमुलेशन सक्रिय है और प्रमुख अंडरपास पर भार कम हो रहा है।' : 'प्रमुख अंडरपास और NH-48 नालों पर मोबाइल पंप तैनाती तुरंत सक्रिय करें।'}`,
+                  priorityWards: top3.map((s) => ({
+                    wardLabel: `वार्ड ${s.hotspot.wardNo} · ${s.hotspot.name} (${s.tel.riskPct}%)`,
+                    actionDirective: `${s.hotspot.owningAgency} सक्शन पंप और गाद सफाई दल तैनात करें (${s.hotspot.causeAnalysis})।`,
+                    officerToAlert: `${s.hotspot.contacts.je.name} (${s.hotspot.contacts.je.phone})`,
+                  })),
+                  interAgencyDirectives: [
+                    'NHAI और GMDA मुख्य राजमार्ग सर्विस लेन व कल्वर्ट निकासी समन्वय करें।',
+                    'ट्रैफिक पुलिस गंभीर अंडरपास (हीरो होंडा, इफ्को, राजीव चौक) पर डायवर्जन अलर्ट जारी रखे।',
+                    `लाइव नागरिक रिपोर्ट कतार (${floodReports.length} प्रविष्टियाँ) की वार्ड स्तर पर पुष्टि करें।`,
+                  ],
+                  pumpReallocationAdvice: pumpMitigationActive
+                    ? 'अतिरिक्त बैकअप पंप ज़ोन 3 और ज़ोन 4 के निचले अंडरपास क्लस्टर में आरक्षित रखें।'
+                    : 'शीर्ष 3 उच्च जोखिम वाले वार्डों में उच्च क्षमता वाले डीजल/ट्रैक्टर पंप तुरंत स्थानांतरित करें।',
+                }
+              : {
+                  generatedAt: new Date().toISOString(),
+                  model: 'telemetry-baseline',
+                  headline: `Immediate Drainage Mobilization Across ${highRiskCount} High-Risk Points (${rainfallMm}mm Load)`,
+                  executiveSummary: `At the T${timelineHourOffset >= 0 ? `+${timelineHourOffset}` : timelineHourOffset}h horizon, ${highRiskCount} of 153 monitored MCG corridors exceed critical/high waterlogging thresholds. ${pumpMitigationActive ? 'Pre-positioned pump mitigation is active and lowering peak surge across major underpasses.' : 'Activate standby suction pumps immediately across critical NH-48 and Badshahpur basin corridors.'}`,
+                  priorityWards: top3.map((s) => ({
+                    wardLabel: `Ward ${s.hotspot.wardNo} · ${s.hotspot.name} (${s.tel.riskPct}%)`,
+                    actionDirective: `Deploy ${s.hotspot.owningAgency} dewatering team and clear storm grate (${s.hotspot.causeAnalysis}).`,
+                    officerToAlert: `${s.hotspot.contacts.je.name} (${s.hotspot.contacts.je.phone})`,
+                  })),
+                  interAgencyDirectives: [
+                    'NHAI & GMDA: Keep expressway service-lane box culverts cleared and open to downstream outfall.',
+                    'Gurugram Traffic Police: Pre-stage diversion cones at submergence-prone underpasses.',
+                    `Ward Control Room: Verify ${floodReports.length} active resident flood reports against telemetry feeds.`,
+                  ],
+                  pumpReallocationAdvice: pumpMitigationActive
+                    ? 'Maintain standby suction reserve on Zone 3 & Zone 4 underpass clusters while monitoring 6h inflow.'
+                    : 'Reallocate mobile high-head pumps from low-risk Zone 1 sectors to top 3 Ward 24/32/34 bottlenecks.',
+                };
+
+          set({ aiBriefing: fallbackBriefing, aiBriefingLoading: false });
+          get().addToast(
+            lang === 'hi'
+              ? 'लाइव टेलीमेट्री के आधार पर कमांड ब्रीफिंग तैयार की गई'
+              : 'Command briefing synthesized from live telemetry',
+            'info'
+          );
         }
       },
 

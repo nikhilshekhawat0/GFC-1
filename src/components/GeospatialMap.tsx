@@ -213,7 +213,7 @@ function UserLocationMarker({
             <button
               type="button"
               onClick={onReportHere}
-              className="w-full py-1.5 px-2.5 rounded-full bg-[#111317] text-white text-[11px] font-semibold hover:bg-[#23262F] transition-colors"
+              className="w-full py-1.5 px-2.5 rounded-full bg-[#0D2621] text-white text-[11px] font-semibold hover:bg-[#153B33] transition-colors"
             >
               {lang === 'hi' ? 'यहाँ जलभराव की रिपोर्ट करें' : 'Report Flood at My Location'}
             </button>
@@ -244,7 +244,7 @@ function DrainageCascadePolylines({
         const down = mcgHotspots.find((h) => h.id === downId);
         if (!down) return;
         const upTel = telemetryById[up.id];
-        const strokeColor = upTel?.tier === 'critical' ? '#dc2626' : '#181A1F';
+        const strokeColor = upTel?.tier === 'critical' ? '#dc2626' : '#0D2621';
 
         const polyline = new mapsLib.Polyline({
           map,
@@ -795,7 +795,7 @@ export function GeospatialMap() {
             <button
               type="button"
               onClick={() => setIsPlayingTimeline(!isPlayingTimeline)}
-              className="w-8 h-8 rounded-full bg-[#111317] hover:bg-[#23262F] dark:bg-[#F4F4F6] dark:hover:bg-white text-white dark:text-[#111317] flex items-center justify-center transition-colors"
+              className="w-8 h-8 rounded-full bg-[#0D2621] hover:bg-[#153B33] dark:bg-[#F4F4F6] dark:hover:bg-white text-white dark:text-[#111317] flex items-center justify-center transition-colors"
               aria-label={isPlayingTimeline ? 'Pause flood forecast playback' : 'Play flood forecast playback'}
             >
               {isPlayingTimeline ? <Pause size={14} /> : <Play size={14} className="ml-0.5" />}
@@ -845,7 +845,7 @@ export function GeospatialMap() {
               step={1}
               value={timelineHourOffset}
               onChange={(e) => setTimelineHourOffset(Number(e.target.value))}
-              className="flex-1 h-1.5 accent-[#111317] dark:accent-[#F4F4F6] cursor-pointer"
+              className="flex-1 h-1.5 accent-[#0D2621] dark:accent-[#F4F4F6] cursor-pointer"
               aria-label="Slide to preview flooding over time"
             />
             <span className="text-[11px] font-medium tabular-nums text-[#6B7280] dark:text-slate-400 whitespace-nowrap">

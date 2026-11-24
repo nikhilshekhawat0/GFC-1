@@ -26,12 +26,12 @@ import { fetchRealtimePosition } from '../lib/geolocation';
 import { MCG_OFFICIAL_CHANNELS } from '../data/mcgHotspots';
 import { LegalModal, type LegalDocTab } from './LegalModal';
 
-const INCIDENT_OPTIONS: Array<{ value: SosIncidentType; label: string }> = [
-  { value: 'person_injured', label: 'Someone Injured' },
-  { value: 'road_accident', label: 'Road Accident' },
-  { value: 'vehicle_submerged', label: 'Vehicle Submerged' },
-  { value: 'electric_hazard', label: 'Electric Wire Hazard' },
-  { value: 'other', label: 'Other Emergency' },
+const INCIDENT_OPTIONS: Array<{ value: SosIncidentType; en: string; hi: string }> = [
+  { value: 'person_injured', en: 'Someone Injured', hi: 'कोई घायल है' },
+  { value: 'road_accident', en: 'Road Accident', hi: 'सड़क दुर्घटना' },
+  { value: 'vehicle_submerged', en: 'Vehicle Submerged', hi: 'वाहन पानी में डूबा' },
+  { value: 'electric_hazard', en: 'Electric Wire Hazard', hi: 'बिजली के तार का खतरा' },
+  { value: 'other', en: 'Other Emergency', hi: 'अन्य आपातकाल' },
 ];
 
 export function SettingsView() {
@@ -102,10 +102,18 @@ export function SettingsView() {
         false
       );
       if (!locationLabel.trim()) {
-        setLocationLabel(`Gurugram GPS (${fix.lat.toFixed(4)}, ${fix.lng.toFixed(4)})`);
+        setLocationLabel(
+          `${lang === 'hi' ? 'गुरुग्राम GPS' : 'Gurugram GPS'} (${fix.lat.toFixed(4)}, ${fix.lng.toFixed(4)})`
+        );
       }
     } catch (err) {
-      setGpsError(err instanceof Error ? err.message : 'Unable to capture live GPS location.');
+      setGpsError(
+        err instanceof Error
+          ? err.message
+          : lang === 'hi'
+            ? 'लाइव GPS लोकेशन प्राप्त करने में असमर्थ।'
+            : 'Unable to capture live GPS location.'
+      );
     } finally {
       setLocatingGps(false);
     }
@@ -126,11 +134,19 @@ export function SettingsView() {
     const trimmedDesc = description.trim();
     const trimmedLoc = locationLabel.trim();
     if (!trimmedLoc && !coords) {
-      setFormError('Please enter a location or attach your live GPS coordinates.');
+      setFormError(
+        lang === 'hi'
+          ? 'कृपया स्थान दर्ज करें या अपनी लाइव GPS लोकेशन जोड़ें।'
+          : 'Please enter a location or attach your live GPS coordinates.'
+      );
       return;
     }
     if (!trimmedDesc) {
-      setFormError('Please briefly describe the accident, injury, or hazard.');
+      setFormError(
+        lang === 'hi'
+          ? 'कृपया दुर्घटना, चोट या खतरे का संक्षिप्त विवरण लिखें।'
+          : 'Please briefly describe the accident, injury, or hazard.'
+      );
       return;
     }
 
@@ -155,8 +171,8 @@ export function SettingsView() {
   };
 
   const buildWhatsappShareHref = (record: EmergencySosRecord) => {
-    const typeLabel =
-      INCIDENT_OPTIONS.find((o) => o.value === record.incidentType)?.label || 'Emergency';
+    const matchedOpt = INCIDENT_OPTIONS.find((o) => o.value === record.incidentType);
+    const typeLabel = matchedOpt ? matchedOpt[lang] : lang === 'hi' ? 'आपातकाल' : 'Emergency';
     const mapLink =
       record.lat !== null && record.lng !== null
         ? ` https://maps.google.com/?q=${record.lat.toFixed(6)},${record.lng.toFixed(6)}`
@@ -204,10 +220,12 @@ export function SettingsView() {
             </div>
             <div>
               <h2 className="text-sm font-bold text-[#111317] dark:text-[#F4F4F6]">
-                Emergency SOS & Accident Report
+                {lang === 'hi' ? 'आपातकालीन SOS और दुर्घटना रिपोर्ट' : 'Emergency SOS & Accident Report'}
               </h2>
               <p className="text-xs text-[#6B7280] dark:text-slate-400 mt-0.5 leading-relaxed">
-                Immediate emergency help for someone injured, road accidents, submerged vehicles, or exposed power lines. No login required.
+                {lang === 'hi'
+                  ? 'किसी के घायल होने, सड़क दुर्घटना, वाहन डूबने या बिजली के तार के खतरे के लिए त्वरित मदद। बिना लॉगिन उपयोग करें।'
+                  : 'Immediate emergency help for someone injured, road accidents, submerged vehicles, or exposed power lines. No login required.'}
               </p>
             </div>
           </div>
@@ -218,7 +236,15 @@ export function SettingsView() {
             className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-full bg-red-600 hover:bg-red-700 active:bg-red-800 text-white text-xs font-bold tracking-wide transition-colors whitespace-nowrap shrink-0 shadow-xs"
           >
             <Siren size={15} />
-            <span>{sosOpen ? 'Hide SOS Form' : 'Emergency SOS'}</span>
+            <span>
+              {sosOpen
+                ? lang === 'hi'
+                  ? 'SOS फॉर्म छिपाएं'
+                  : 'Hide SOS Form'
+                : lang === 'hi'
+                  ? 'आपातकालीन SOS'
+                  : 'Emergency SOS'}
+            </span>
           </button>
         </div>
 
@@ -229,7 +255,7 @@ export function SettingsView() {
             className="flex items-center justify-between px-3 py-2.5 rounded-xl border border-red-200 dark:border-red-900/50 bg-red-50/70 dark:bg-red-950/30 text-red-700 dark:text-red-300 hover:bg-red-100/70 dark:hover:bg-red-950/50 transition-colors"
           >
             <div>
-              <p className="text-[11px] font-semibold">Emergency</p>
+              <p className="text-[11px] font-semibold">{lang === 'hi' ? 'आपातकाल' : 'Emergency'}</p>
               <p className="text-sm font-bold tabular-nums">112</p>
             </div>
             <PhoneCall size={14} className="shrink-0" />
@@ -240,7 +266,9 @@ export function SettingsView() {
             className="flex items-center justify-between px-3 py-2.5 rounded-xl border border-[#EAECEF] dark:border-[#242832] bg-[#FAFAFB] dark:bg-[#1B1E25] text-[#111317] dark:text-[#F4F4F6] hover:bg-[#F3F4F6] dark:hover:bg-[#23262F] transition-colors"
           >
             <div>
-              <p className="text-[11px] font-medium text-[#6B7280] dark:text-slate-400">Ambulance</p>
+              <p className="text-[11px] font-medium text-[#6B7280] dark:text-slate-400">
+                {lang === 'hi' ? 'एम्बुलेंस' : 'Ambulance'}
+              </p>
               <p className="text-sm font-bold tabular-nums">108</p>
             </div>
             <PhoneCall size={14} className="text-red-600 dark:text-red-400 shrink-0" />
@@ -251,7 +279,9 @@ export function SettingsView() {
             className="flex items-center justify-between px-3 py-2.5 rounded-xl border border-[#EAECEF] dark:border-[#242832] bg-[#FAFAFB] dark:bg-[#1B1E25] text-[#111317] dark:text-[#F4F4F6] hover:bg-[#F3F4F6] dark:hover:bg-[#23262F] transition-colors"
           >
             <div>
-              <p className="text-[11px] font-medium text-[#6B7280] dark:text-slate-400">Police</p>
+              <p className="text-[11px] font-medium text-[#6B7280] dark:text-slate-400">
+                {lang === 'hi' ? 'पुलिस' : 'Police'}
+              </p>
               <p className="text-sm font-bold tabular-nums">100</p>
             </div>
             <PhoneCall size={14} className="text-[#111317] dark:text-[#E4E4E7] shrink-0" />
@@ -262,7 +292,9 @@ export function SettingsView() {
             className="flex items-center justify-between px-3 py-2.5 rounded-xl border border-[#EAECEF] dark:border-[#242832] bg-[#FAFAFB] dark:bg-[#1B1E25] text-[#111317] dark:text-[#F4F4F6] hover:bg-[#F3F4F6] dark:hover:bg-[#23262F] transition-colors"
           >
             <div className="min-w-0">
-              <p className="text-[11px] font-medium text-[#6B7280] dark:text-slate-400">MCG Desk</p>
+              <p className="text-[11px] font-medium text-[#6B7280] dark:text-slate-400">
+                {lang === 'hi' ? 'MCG डेस्क' : 'MCG Desk'}
+              </p>
               <p className="text-xs font-bold tabular-nums truncate">18001801817</p>
             </div>
             <PhoneCall size={14} className="text-[#111317] dark:text-[#E4E4E7] shrink-0" />
@@ -275,7 +307,7 @@ export function SettingsView() {
             <div className="flex items-start justify-between gap-2">
               <div>
                 <p className="text-xs font-bold text-emerald-900 dark:text-emerald-200">
-                  SOS Alert Logged · {lastSubmittedSos.id}
+                  {lang === 'hi' ? 'SOS अलर्ट दर्ज' : 'SOS Alert Logged'} · {lastSubmittedSos.id}
                 </p>
                 <p className="text-xs text-emerald-800 dark:text-emerald-300 mt-0.5">
                   {localizeLocationName(lastSubmittedSos.locationLabel, lang)}
@@ -287,7 +319,7 @@ export function SettingsView() {
               <button
                 type="button"
                 onClick={() => setLastSubmittedSos(null)}
-                aria-label="Dismiss SOS confirmation"
+                aria-label={lang === 'hi' ? 'SOS पुष्टि बंद करें' : 'Dismiss SOS confirmation'}
                 className="text-emerald-700 dark:text-emerald-300 hover:opacity-75 p-0.5"
               >
                 <X size={14} />
@@ -300,14 +332,14 @@ export function SettingsView() {
                 className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-red-600 hover:bg-red-700 text-white text-xs font-semibold"
               >
                 <PhoneCall size={13} />
-                <span>Call 108 Ambulance</span>
+                <span>{lang === 'hi' ? '108 एम्बुलेंस कॉल करें' : 'Call 108 Ambulance'}</span>
               </a>
               <a
                 href="tel:112"
                 className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full border border-[#EAECEF] dark:border-[#282C36] bg-white dark:bg-[#16191F] text-[#111317] dark:text-[#F4F4F6] text-xs font-semibold hover:bg-[#F3F4F6] dark:hover:bg-[#23262F]"
               >
                 <PhoneCall size={13} />
-                <span>Call 112</span>
+                <span>{lang === 'hi' ? '112 कॉल करें' : 'Call 112'}</span>
               </a>
               <a
                 href={buildWhatsappShareHref(lastSubmittedSos)}
@@ -316,7 +348,7 @@ export function SettingsView() {
                 className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full border border-emerald-300 dark:border-emerald-700 bg-white dark:bg-[#16191F] text-emerald-800 dark:text-emerald-200 text-xs font-semibold hover:bg-emerald-50 dark:hover:bg-emerald-950/40"
               >
                 <Share2 size={13} />
-                <span>Share Details & GPS</span>
+                <span>{lang === 'hi' ? 'विवरण और GPS साझा करें' : 'Share Details & GPS'}</span>
               </a>
             </div>
           </div>
@@ -330,7 +362,7 @@ export function SettingsView() {
           >
             <div className="space-y-1.5">
               <label className="block text-xs font-semibold text-[#111317] dark:text-[#F4F4F6]">
-                Type of Emergency
+                {lang === 'hi' ? 'आपातकाल का प्रकार' : 'Type of Emergency'}
               </label>
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
                 {INCIDENT_OPTIONS.map((opt) => (
@@ -344,7 +376,7 @@ export function SettingsView() {
                         : 'border-[#EAECEF] dark:border-[#242832] bg-white dark:bg-[#16191F] text-[#111317] dark:text-slate-300 hover:bg-[#F3F4F6] dark:hover:bg-[#23262F]'
                     }`}
                   >
-                    {opt.label}
+                    {opt[lang]}
                   </button>
                 ))}
               </div>
@@ -353,7 +385,7 @@ export function SettingsView() {
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div className="space-y-1.5">
                 <label className="block text-xs font-semibold text-[#111317] dark:text-[#F4F4F6]">
-                  People Injured
+                  {lang === 'hi' ? 'घायल लोगों की संख्या' : 'People Injured'}
                 </label>
                 <div className="grid grid-cols-4 gap-1.5">
                   {[0, 1, 2, 3].map((count) => (
@@ -378,14 +410,14 @@ export function SettingsView() {
                   htmlFor="sos-phone"
                   className="block text-xs font-semibold text-[#111317] dark:text-[#F4F4F6]"
                 >
-                  Callback Phone (Optional)
+                  {lang === 'hi' ? 'कॉलबैक फ़ोन नंबर (वैकल्पिक)' : 'Callback Phone (Optional)'}
                 </label>
                 <input
                   id="sos-phone"
                   type="tel"
                   value={callerPhone}
                   onChange={(e) => setCallerPhone(e.target.value)}
-                  placeholder="10-digit mobile number"
+                  placeholder={lang === 'hi' ? '10-अंकीय मोबाइल नंबर' : '10-digit mobile number'}
                   className="w-full px-3.5 py-2 rounded-xl border border-[#EAECEF] dark:border-[#282C36] bg-white dark:bg-[#16191F] text-xs text-[#111317] dark:text-[#F4F4F6] placeholder:text-[#9CA3AF] focus:outline-none focus:ring-2 focus:ring-red-500/40"
                 />
               </div>
@@ -397,7 +429,7 @@ export function SettingsView() {
                   htmlFor="sos-location"
                   className="block text-xs font-semibold text-[#111317] dark:text-[#F4F4F6]"
                 >
-                  Accident / Emergency Location
+                  {lang === 'hi' ? 'दुर्घटना / आपातकाल का स्थान' : 'Accident / Emergency Location'}
                 </label>
                 <button
                   type="button"
@@ -410,7 +442,15 @@ export function SettingsView() {
                   ) : (
                     <Crosshair size={13} />
                   )}
-                  <span>{locatingGps ? 'Locating...' : 'Attach Live GPS'}</span>
+                  <span>
+                    {locatingGps
+                      ? lang === 'hi'
+                        ? 'लोकेशन खोज रहे हैं...'
+                        : 'Locating...'
+                      : lang === 'hi'
+                        ? 'लाइव GPS जोड़ें'
+                        : 'Attach Live GPS'}
+                  </span>
                 </button>
               </div>
               <input
@@ -418,14 +458,19 @@ export function SettingsView() {
                 type="text"
                 value={locationLabel}
                 onChange={(e) => setLocationLabel(e.target.value)}
-                placeholder="Landmark, sector, road, or underpass name"
+                placeholder={
+                  lang === 'hi'
+                    ? 'लैंडमार्क, सेक्टर, सड़क या अंडरपास का नाम'
+                    : 'Landmark, sector, road, or underpass name'
+                }
                 className="w-full px-3.5 py-2 rounded-xl border border-[#EAECEF] dark:border-[#282C36] bg-white dark:bg-[#16191F] text-xs text-[#111317] dark:text-[#F4F4F6] placeholder:text-[#9CA3AF] focus:outline-none focus:ring-2 focus:ring-red-500/40"
               />
               {coords && (
                 <p className="text-[11px] text-[#6B7280] dark:text-slate-400 flex items-center gap-1.5 tabular-nums">
                   <MapPin size={12} className="text-red-600 dark:text-red-400 shrink-0" />
                   <span>
-                    GPS locked: {coords.lat.toFixed(5)}, {coords.lng.toFixed(5)}
+                    {lang === 'hi' ? 'GPS लॉक:' : 'GPS locked:'} {coords.lat.toFixed(5)},{' '}
+                    {coords.lng.toFixed(5)}
                     {coords.accuracy ? ` · ±${coords.accuracy}m` : ''}
                   </span>
                 </p>
@@ -440,14 +485,20 @@ export function SettingsView() {
                 htmlFor="sos-details"
                 className="block text-xs font-semibold text-[#111317] dark:text-[#F4F4F6]"
               >
-                What Happened? (Injuries, trapped persons, traffic blockage)
+                {lang === 'hi'
+                  ? 'क्या हुआ? (चोट, फंसे लोग, या ट्रैफिक बाधा)'
+                  : 'What Happened? (Injuries, trapped persons, traffic blockage)'}
               </label>
               <textarea
                 id="sos-details"
                 rows={3}
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
-                placeholder="e.g., Two-wheeler slipped into flooded manhole near Hero Honda Chowk, rider has leg injury and needs ambulance..."
+                placeholder={
+                  lang === 'hi'
+                    ? 'जैसे: हीरो होंडा चौक के पास जलभराव में दोपहिया फिसला, चालक को चोट लगी है और एम्बुलेंस की आवश्यकता है...'
+                    : 'e.g., Two-wheeler slipped into flooded manhole near Hero Honda Chowk, rider has leg injury and needs ambulance...'
+                }
                 className="w-full px-3.5 py-2 rounded-xl border border-[#EAECEF] dark:border-[#282C36] bg-white dark:bg-[#16191F] text-xs text-[#111317] dark:text-[#F4F4F6] placeholder:text-[#9CA3AF] focus:outline-none focus:ring-2 focus:ring-red-500/40 resize-none"
               />
             </div>
@@ -465,7 +516,7 @@ export function SettingsView() {
                 onClick={() => setSosOpen(false)}
                 className="px-4 py-2 rounded-full border border-[#E6E7EC] dark:border-[#282C36] bg-white dark:bg-[#16191F] text-xs font-semibold text-[#111317] dark:text-[#F4F4F6] hover:bg-[#F3F4F6] dark:hover:bg-[#23262F]"
               >
-                Cancel
+                {lang === 'hi' ? 'रद्द करें' : 'Cancel'}
               </button>
               <button
                 type="submit"
@@ -473,7 +524,9 @@ export function SettingsView() {
                 className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full bg-red-600 hover:bg-red-700 text-white text-xs font-bold disabled:opacity-60"
               >
                 {submittingSos ? <Loader2 size={14} className="animate-spin" /> : <Send size={14} />}
-                <span>Send Emergency SOS Alert</span>
+                <span>
+                  {lang === 'hi' ? 'आपातकालीन SOS अलर्ट भेजें' : 'Send Emergency SOS Alert'}
+                </span>
               </button>
             </div>
           </form>
@@ -483,13 +536,14 @@ export function SettingsView() {
         {sosReports.length > 0 && (
           <div className="pt-2 border-t border-[#EAECEF] dark:border-[#242832] space-y-2">
             <p className="text-[11px] font-semibold uppercase tracking-wider text-[#6B7280] dark:text-slate-400">
-              Recent SOS Alerts ({sosReports.length})
+              {lang === 'hi'
+                ? `हाल के SOS अलर्ट (${sosReports.length})`
+                : `Recent SOS Alerts (${sosReports.length})`}
             </p>
             <div className="space-y-2">
               {sosReports.slice(0, 3).map((item) => {
-                const label =
-                  INCIDENT_OPTIONS.find((o) => o.value === item.incidentType)?.label ||
-                  'Emergency';
+                const matchedOpt = INCIDENT_OPTIONS.find((o) => o.value === item.incidentType);
+                const label = matchedOpt ? matchedOpt[lang] : lang === 'hi' ? 'आपातकाल' : 'Emergency';
                 return (
                   <div
                     key={item.id}
@@ -498,7 +552,9 @@ export function SettingsView() {
                     <div className="space-y-0.5 min-w-0">
                       <p className="font-semibold text-[#111317] dark:text-[#F4F4F6]">
                         {item.id} · {label}
-                        {item.injuredCount > 0 ? ` · ${item.injuredCount} injured` : ''}
+                        {item.injuredCount > 0
+                          ? ` · ${item.injuredCount} ${lang === 'hi' ? 'घायल' : 'injured'}`
+                          : ''}
                       </p>
                       <p className="text-[#4B5563] dark:text-slate-300 truncate">
                         {localizeLocationName(item.locationLabel, lang)}
@@ -528,7 +584,9 @@ export function SettingsView() {
             {t('settings.appearance', lang)}
           </h2>
           <p className="text-xs text-[#6B7280] dark:text-slate-400 mt-0.5">
-            Choose between Studio Pearl daylight theme or Monochrome Dark Mode for night viewing.
+            {lang === 'hi'
+              ? 'दिन की रोशनी के लिए स्टूडियो पर्ल थीम या रात के लिए डार्क मोड चुनें।'
+              : 'Choose between Studio Pearl daylight theme or Monochrome Dark Mode for night viewing.'}
           </p>
         </div>
 
@@ -538,7 +596,7 @@ export function SettingsView() {
             onClick={() => setTheme('light')}
             className={`p-4 rounded-2xl border text-left transition-all flex items-start justify-between gap-3 ${
               theme === 'light'
-                ? 'border-[#111317] bg-[#FAFAFB] dark:bg-[#1B1E25] shadow-[0_6px_20px_rgba(17,19,23,0.06)]'
+                ? 'border-[#0D2621] bg-[#FAFAFB] dark:bg-[#1B1E25] shadow-[0_6px_20px_rgba(13,38,33,0.08)]'
                 : 'border-[#EAECEF] dark:border-[#242832] hover:bg-[#FAFAFB] dark:hover:bg-[#1B1E25]'
             }`}
           >
@@ -548,14 +606,16 @@ export function SettingsView() {
               </div>
               <div>
                 <p className="text-sm font-semibold text-[#111317] dark:text-[#F4F4F6]">
-                  Studio Pearl
+                  {lang === 'hi' ? 'स्टूडियो पर्ल (सफेद)' : 'Studio Pearl'}
                 </p>
                 <p className="text-xs text-[#6B7280] dark:text-slate-400 mt-0.5">
-                  Soft daylight pearl surfaces with crisp map
+                  {lang === 'hi'
+                    ? 'स्पष्ट मानचित्र के साथ दिन की हल्की थीम'
+                    : 'Soft daylight pearl surfaces with crisp map'}
                 </p>
               </div>
             </div>
-            {theme === 'light' && <Check size={16} className="text-[#111317] shrink-0 mt-0.5" />}
+            {theme === 'light' && <Check size={16} className="text-[#0D2621] shrink-0 mt-0.5" />}
           </button>
 
           <button
@@ -563,7 +623,7 @@ export function SettingsView() {
             onClick={() => setTheme('dark')}
             className={`p-4 rounded-2xl border text-left transition-all flex items-start justify-between gap-3 ${
               theme === 'dark'
-                ? 'border-[#111317] dark:border-[#F4F4F6] bg-[#FAFAFB] dark:bg-[#1B1E25] shadow-[0_6px_20px_rgba(17,19,23,0.06)]'
+                ? 'border-[#0D2621] dark:border-[#F4F4F6] bg-[#FAFAFB] dark:bg-[#1B1E25] shadow-[0_6px_20px_rgba(13,38,33,0.08)]'
                 : 'border-[#EAECEF] dark:border-[#242832] hover:bg-[#FAFAFB] dark:hover:bg-[#1B1E25]'
             }`}
           >
@@ -573,10 +633,12 @@ export function SettingsView() {
               </div>
               <div>
                 <p className="text-sm font-semibold text-[#111317] dark:text-[#F4F4F6]">
-                  Dark Mode
+                  {lang === 'hi' ? 'डार्क मोड (रात्रि)' : 'Dark Mode'}
                 </p>
                 <p className="text-xs text-[#6B7280] dark:text-slate-400 mt-0.5">
-                  Low-glare dark interface with night map tiles
+                  {lang === 'hi'
+                    ? 'रात्रि में उपयोग के लिए कम चमक वाला डार्क इंटरफ़ेस'
+                    : 'Low-glare dark interface with night map tiles'}
                 </p>
               </div>
             </div>
@@ -596,7 +658,9 @@ export function SettingsView() {
               {t('settings.language', lang)}
             </h2>
             <p className="text-xs text-[#6B7280] dark:text-slate-400 mt-0.5">
-              Select your preferred language for labels, ward alerts, and guidance.
+              {lang === 'hi'
+                ? 'लेबल, वार्ड अलर्ट और मार्गदर्शन के लिए अपनी पसंदीदा भाषा चुनें।'
+                : 'Select your preferred language for labels, ward alerts, and guidance.'}
             </p>
           </div>
         </div>
@@ -607,16 +671,18 @@ export function SettingsView() {
             onClick={() => setLang('en')}
             className={`p-3.5 rounded-2xl border text-left transition-all flex items-center justify-between ${
               lang === 'en'
-                ? 'border-[#111317] dark:border-[#F4F4F6] bg-[#FAFAFB] dark:bg-[#1B1E25]'
+                ? 'border-[#0D2621] dark:border-[#F4F4F6] bg-[#FAFAFB] dark:bg-[#1B1E25]'
                 : 'border-[#EAECEF] dark:border-[#242832] hover:bg-[#FAFAFB] dark:hover:bg-[#1B1E25]'
             }`}
           >
             <div>
               <p className="text-sm font-semibold text-[#111317] dark:text-[#F4F4F6]">English</p>
-              <p className="text-xs text-[#6B7280] dark:text-slate-400">Default portal language</p>
+              <p className="text-xs text-[#6B7280] dark:text-slate-400">
+                {lang === 'hi' ? 'अंग्रेज़ी पोर्टल भाषा' : 'Default portal language'}
+              </p>
             </div>
             {lang === 'en' && (
-              <Check size={16} className="text-[#111317] dark:text-[#F4F4F6] shrink-0" />
+              <Check size={16} className="text-[#0D2621] dark:text-[#F4F4F6] shrink-0" />
             )}
           </button>
 
@@ -625,7 +691,7 @@ export function SettingsView() {
             onClick={() => setLang('hi')}
             className={`p-3.5 rounded-2xl border text-left transition-all flex items-center justify-between ${
               lang === 'hi'
-                ? 'border-[#111317] dark:border-[#F4F4F6] bg-[#FAFAFB] dark:bg-[#1B1E25]'
+                ? 'border-[#0D2621] dark:border-[#F4F4F6] bg-[#FAFAFB] dark:bg-[#1B1E25]'
                 : 'border-[#EAECEF] dark:border-[#242832] hover:bg-[#FAFAFB] dark:hover:bg-[#1B1E25]'
             }`}
           >
@@ -634,7 +700,7 @@ export function SettingsView() {
               <p className="text-xs text-[#6B7280] dark:text-slate-400">गुरुग्राम नागरिक पोर्टल</p>
             </div>
             {lang === 'hi' && (
-              <Check size={16} className="text-[#111317] dark:text-[#F4F4F6] shrink-0" />
+              <Check size={16} className="text-[#0D2621] dark:text-[#F4F4F6] shrink-0" />
             )}
           </button>
         </div>
@@ -644,10 +710,12 @@ export function SettingsView() {
       <section className="rounded-2xl border border-[#EAECEF] dark:border-[#242832] bg-white dark:bg-[#16191F] shadow-[0_2px_10px_rgba(17,19,23,0.03)] p-5 space-y-4">
         <div>
           <h2 className="text-sm font-bold text-[#111317] dark:text-[#F4F4F6]">
-            Account & Sign In
+            {lang === 'hi' ? 'खाता और साइन इन' : 'Account & Sign In'}
           </h2>
           <p className="text-xs text-[#6B7280] dark:text-slate-400 mt-0.5 leading-relaxed">
-            No login is required to browse the flood map, live GPS view, or route safety. Sign in only when registering flood reports, ward alerts, or opening the MCG Officer Desk.
+            {lang === 'hi'
+              ? 'जलभराव मानचित्र, लाइव GPS या सुरक्षित मार्ग देखने के लिए लॉगिन आवश्यक नहीं है। केवल रिपोर्ट दर्ज करने, वार्ड अलर्ट पाने या MCG अधिकारी डेस्क खोलने के लिए साइन इन करें।'
+              : 'No login is required to browse the flood map, live GPS view, or route safety. Sign in only when registering flood reports, ward alerts, or opening the MCG Officer Desk.'}
           </p>
         </div>
 
@@ -670,7 +738,7 @@ export function SettingsView() {
               onClick={signOutCitizen}
               className="px-3.5 py-1.5 rounded-full border border-[#E6E7EC] dark:border-[#282C36] bg-white dark:bg-[#16191F] text-xs font-semibold text-[#111317] dark:text-[#F4F4F6] hover:bg-[#F3F4F6] dark:hover:bg-[#23262F]"
             >
-              Sign Out
+              {lang === 'hi' ? 'साइन आउट' : 'Sign Out'}
             </button>
           </div>
         )}
@@ -681,11 +749,13 @@ export function SettingsView() {
               <ShieldCheck size={16} className="text-[#111317] dark:text-[#F4F4F6] shrink-0" />
               <div>
                 <p className="text-xs font-semibold text-[#111317] dark:text-[#F4F4F6]">
-                  {authorityUser.name} · ID: {authorityUser.employeeId}
+                  {authorityUser.name} · {lang === 'hi' ? 'आईडी:' : 'ID:'} {authorityUser.employeeId}
                 </p>
                 <p className="text-[11px] text-[#6B7280] dark:text-slate-400">
                   {authorityUser.department} ·{' '}
-                  {authorityUser.role === 'command_authority' ? 'Command Authority' : 'Ward Engineer'}
+                  {authorityUser.role === 'command_authority'
+                    ? t('role.command_authority', lang)
+                    : t('role.ward_engineer', lang)}
                 </p>
               </div>
             </div>
@@ -693,16 +763,16 @@ export function SettingsView() {
               <button
                 type="button"
                 onClick={() => setActiveView('dispatch')}
-                className="px-3.5 py-1.5 rounded-full bg-[#111317] hover:bg-[#23262F] dark:bg-[#F4F4F6] dark:hover:bg-white text-white dark:text-[#111317] text-xs font-semibold"
+                className="px-3.5 py-1.5 rounded-full bg-[#0D2621] hover:bg-[#153B33] dark:bg-[#F4F4F6] dark:hover:bg-white text-white dark:text-[#111317] text-xs font-semibold"
               >
-                Officer Desk
+                {lang === 'hi' ? 'अधिकारी डेस्क' : 'Officer Desk'}
               </button>
               <button
                 type="button"
                 onClick={signOutAuthority}
                 className="px-3.5 py-1.5 rounded-full border border-[#E6E7EC] dark:border-[#282C36] bg-white dark:bg-[#16191F] text-xs font-semibold text-[#111317] dark:text-[#F4F4F6] hover:bg-[#F3F4F6] dark:hover:bg-[#23262F]"
               >
-                Sign Out
+                {lang === 'hi' ? 'साइन आउट' : 'Sign Out'}
               </button>
             </div>
           </div>
@@ -720,10 +790,10 @@ export function SettingsView() {
               </div>
               <div>
                 <p className="text-xs font-bold text-[#111317] dark:text-[#F4F4F6]">
-                  Resident Sign In / Sign Up
+                  {lang === 'hi' ? 'निवासी साइन इन / पंजीकरण' : 'Resident Sign In / Sign Up'}
                 </p>
                 <p className="text-[11px] text-[#6B7280] dark:text-slate-400 mt-0.5">
-                  Phone number & quick Gurugram address
+                  {lang === 'hi' ? 'फ़ोन नंबर और गुरुग्राम पता' : 'Phone number & quick Gurugram address'}
                 </p>
               </div>
             </button>
@@ -740,10 +810,12 @@ export function SettingsView() {
               </div>
               <div>
                 <p className="text-xs font-bold text-[#111317] dark:text-[#F4F4F6]">
-                  Municipal Authority Login
+                  {lang === 'hi' ? 'नगर निगम अधिकारी लॉगिन' : 'Municipal Authority Login'}
                 </p>
                 <p className="text-[11px] text-[#6B7280] dark:text-slate-400 mt-0.5">
-                  Sign in with Employee ID & passcode
+                  {lang === 'hi'
+                    ? 'कर्मचारी आईडी और पासकोड से लॉगिन'
+                    : 'Sign in with Employee ID & passcode'}
                 </p>
               </div>
             </button>

@@ -166,10 +166,12 @@ export function DispatchSlaView() {
           </div>
           <div>
             <h2 className="text-xl font-bold tracking-tight text-[#111317] dark:text-[#F4F4F6]">
-              Ward SLA & Pump Dispatch Queue
+              {lang === 'hi' ? 'वार्ड SLA और पंप तैनाती सूची' : 'Ward SLA & Pump Dispatch Queue'}
             </h2>
             <p className="text-xs text-[#6B7280] dark:text-slate-400 mt-0.5">
-              {rankedList.length} MCG hotspots ranked by live flood risk, drain leverage & citizen reports
+              {lang === 'hi'
+                ? `${rankedList.length} MCG हॉटस्पॉट — लाइव जोखिम, नाला प्रभाव और नागरिक रिपोर्ट के अनुसार क्रमबद्ध`
+                : `${rankedList.length} MCG hotspots ranked by live flood risk, drain leverage & citizen reports`}
             </p>
           </div>
         </div>
@@ -186,14 +188,14 @@ export function DispatchSlaView() {
             className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-full text-xs font-semibold border border-[#E6E7EC] dark:border-[#282C36] bg-white dark:bg-[#181B20] text-[#111317] dark:text-[#F4F4F6] hover:bg-[#F3F4F6] dark:hover:bg-[#23262F] transition-colors"
           >
             <Printer size={13} />
-            Print
+            {lang === 'hi' ? 'प्रिंट' : 'Print'}
           </button>
           <button
             onClick={() => setActiveView('map')}
-            className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full text-xs font-semibold bg-[#111317] hover:bg-[#23262F] dark:bg-[#F4F4F6] dark:hover:bg-white text-white dark:text-[#111317] transition-colors"
+            className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full text-xs font-semibold bg-[#0D2621] hover:bg-[#153B33] dark:bg-[#F4F4F6] dark:hover:bg-white text-white dark:text-[#111317] transition-colors"
           >
             <ArrowLeft size={13} />
-            Map
+            {lang === 'hi' ? 'मानचित्र' : 'Map'}
           </button>
         </div>
       </div>
@@ -224,13 +226,26 @@ export function DispatchSlaView() {
                     <span>·</span>
                     <span>{hotspot.owningAgency}</span>
                     <span>·</span>
-                    <span className={riskColor}>{tel.riskPct}% (~{tel.waterDepthCm}cm)</span>
+                    <span className={riskColor}>
+                      {tel.riskPct}% (~{tel.waterDepthCm}
+                      {lang === 'hi' ? 'सेमी' : 'cm'})
+                    </span>
                     <span>·</span>
-                    <span>SLA L{tel.slaTier} ({dispatch?.status === 'done' ? 'CLEARED' : `${tel.slaRemainingMins}m`})</span>
+                    <span>
+                      SLA L{tel.slaTier} (
+                      {dispatch?.status === 'done'
+                        ? lang === 'hi'
+                          ? 'साफ'
+                          : 'CLEARED'
+                        : `${tel.slaRemainingMins}${lang === 'hi' ? ' मि.' : 'm'}`}
+                      )
+                    </span>
                     {dispatch?.is_override && (
                       <>
                         <span>·</span>
-                        <span className="text-amber-600 dark:text-amber-400 font-semibold">OVERRIDE</span>
+                        <span className="text-amber-600 dark:text-amber-400 font-semibold">
+                          {lang === 'hi' ? 'प्राथमिकता बदली गई' : 'OVERRIDE'}
+                        </span>
                       </>
                     )}
                   </div>
@@ -255,11 +270,11 @@ export function DispatchSlaView() {
                   className="inline-flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-medium border border-[#E6E7EC] dark:border-[#282C36] text-[#111317] dark:text-[#F4F4F6] hover:bg-[#F3F4F6] dark:hover:bg-[#23262F] whitespace-nowrap"
                 >
                   <Phone size={12} />
-                  Call JE
+                  {lang === 'hi' ? 'JE को कॉल' : 'Call JE'}
                 </a>
                 <a
                   href={`https://wa.me/91${hotspot.contacts.je.phone.replace(/\D/g, '')}?text=${encodeURIComponent(
-                    `GFC Dispatch [Ward ${hotspot.wardNo}] ${hotspot.name}: Risk ${tel.riskPct}%. Please deploy pump/desilt crew.`
+                    `SAHIBI Dispatch [Ward ${hotspot.wardNo}] ${hotspot.name}: Risk ${tel.riskPct}%. Please deploy pump/desilt crew.`
                   )}`}
                   target="_blank"
                   rel="noreferrer"
@@ -272,7 +287,7 @@ export function DispatchSlaView() {
                   <>
                     <button
                       onClick={() => deployPumpToHotspot(hotspot.id)}
-                      className="inline-flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-semibold bg-[#111317] hover:bg-[#23262F] dark:bg-[#F4F4F6] dark:hover:bg-white text-white dark:text-[#111317] whitespace-nowrap"
+                      className="inline-flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-semibold bg-[#0D2621] hover:bg-[#153B33] dark:bg-[#F4F4F6] dark:hover:bg-white text-white dark:text-[#111317] whitespace-nowrap"
                     >
                       <Truck size={12} />
                       {t('cmd.deploy_pump', lang)}
@@ -282,20 +297,24 @@ export function DispatchSlaView() {
                       className="inline-flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-medium border border-emerald-300 dark:border-emerald-700 text-emerald-700 dark:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-950/30 whitespace-nowrap"
                     >
                       <CheckCircle2 size={12} />
-                      Clear
+                      {lang === 'hi' ? 'साफ' : 'Clear'}
                     </button>
                     <button
                       onClick={() => escalateHotspotSla(hotspot.id)}
                       className="inline-flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-medium border border-amber-300 dark:border-amber-700/70 text-amber-700 dark:text-amber-400 hover:bg-amber-50 dark:hover:bg-amber-950/30 whitespace-nowrap"
                     >
                       <Clock size={12} />
-                      Escalate
+                      {lang === 'hi' ? 'एस्केलेट' : 'Escalate'}
                     </button>
                   </>
                 )}
                 <button
                   onClick={() => {
-                    setOverrideTarget({ hotspotId: hotspot.id, name: hotspot.name, currentRank: rank });
+                    setOverrideTarget({
+                      hotspotId: hotspot.id,
+                      name: getHotspotDisplayName(hotspot, lang),
+                      currentRank: rank,
+                    });
                     setNewRankInput('1');
                     setOverrideReason('');
                     setConfirmChecked(false);
@@ -317,7 +336,7 @@ export function DispatchSlaView() {
           <div className="w-full max-w-md rounded-2xl border border-[#EAECEF] dark:border-[#242832] bg-white dark:bg-[#16191F] p-5 shadow-2xl space-y-4">
             <div className="flex items-center justify-between">
               <h3 className="text-base font-bold text-[#111317] dark:text-[#F4F4F6]">
-                Override Priority — {overrideTarget.name}
+                {lang === 'hi' ? 'प्राथमिकता बदलें' : 'Override Priority'} — {overrideTarget.name}
               </h3>
               <button
                 onClick={() => setOverrideTarget(null)}
@@ -328,7 +347,9 @@ export function DispatchSlaView() {
             </div>
             <div>
               <label className="block text-xs font-medium text-[#6B7280] dark:text-slate-400 mb-1">
-                New Rank (Current #{overrideTarget.currentRank})
+                {lang === 'hi'
+                  ? `नया क्रम (वर्तमान #${overrideTarget.currentRank})`
+                  : `New Rank (Current #${overrideTarget.currentRank})`}
               </label>
               <input
                 type="number"
@@ -341,13 +362,17 @@ export function DispatchSlaView() {
             </div>
             <div>
               <label className="block text-xs font-medium text-[#6B7280] dark:text-slate-400 mb-1">
-                Mandatory Audit Reason
+                {lang === 'hi' ? 'अनिवार्य ऑडिट कारण' : 'Mandatory Audit Reason'}
               </label>
               <textarea
                 rows={3}
                 value={overrideReason}
                 onChange={(e) => setOverrideReason(e.target.value)}
-                placeholder="e.g. Hospital ambulance route blocked; Commissioner field directive..."
+                placeholder={
+                  lang === 'hi'
+                    ? 'जैसे: अस्पताल एम्बुलेंस मार्ग बाधित; आयुक्त निर्देश...'
+                    : 'e.g. Hospital ambulance route blocked; Commissioner field directive...'
+                }
                 className="w-full px-3.5 py-2 rounded-xl text-sm border border-[#EAECEF] dark:border-[#282C36] bg-[#FAFAFB] dark:bg-[#111317] text-[#111317] dark:text-[#F4F4F6] resize-none"
               />
             </div>
@@ -356,23 +381,27 @@ export function DispatchSlaView() {
                 type="checkbox"
                 checked={confirmChecked}
                 onChange={(e) => setConfirmChecked(e.target.checked)}
-                className="accent-[#111317] dark:accent-[#F4F4F6]"
+                className="accent-[#0D2621] dark:accent-[#F4F4F6]"
               />
-              <span>I acknowledge this override is permanently logged in the Audit Trail</span>
+              <span>
+                {lang === 'hi'
+                  ? 'मैं स्वीकार करता हूँ कि यह बदलाव स्थायी रूप से ऑडिट लॉग में दर्ज होगा'
+                  : 'I acknowledge this override is permanently logged in the Audit Trail'}
+              </span>
             </label>
             <div className="flex gap-2">
               <button
                 onClick={() => setOverrideTarget(null)}
                 className="flex-1 py-2.5 rounded-full border border-[#E6E7EC] dark:border-[#282C36] text-xs font-semibold text-[#111317] dark:text-[#F4F4F6] hover:bg-[#F3F4F6] dark:hover:bg-[#23262F]"
               >
-                Cancel
+                {lang === 'hi' ? 'रद्द करें' : 'Cancel'}
               </button>
               <button
                 onClick={handleConfirmOverride}
                 disabled={!overrideReason.trim() || !confirmChecked}
                 className="flex-1 py-2.5 rounded-full bg-amber-600 text-white text-xs font-semibold disabled:opacity-50"
               >
-                Log Override
+                {lang === 'hi' ? 'बदलाव दर्ज करें' : 'Log Override'}
               </button>
             </div>
           </div>
@@ -383,7 +412,7 @@ export function DispatchSlaView() {
 }
 
 export function SensorHealthView() {
-  const { sensors, setSensorStatus, setActiveView } = useStore();
+  const { lang, sensors, setSensorStatus, setActiveView } = useStore();
   const onlineCount = sensors.filter((s) => s.status === 'online').length;
   const offlineCount = sensors.filter((s) => s.status === 'offline').length;
   const uptime = Math.round((onlineCount / sensors.length) * 100);
@@ -397,25 +426,31 @@ export function SensorHealthView() {
           </div>
           <div>
             <h2 className="text-xl font-bold tracking-tight text-[#111317] dark:text-[#F4F4F6]">
-              Drain & Rain Sensor Telemetry Health
+              {lang === 'hi'
+                ? 'नाला एवं वर्षा सेंसर टेलीमेट्री स्थिति'
+                : 'Drain & Rain Sensor Telemetry Health'}
             </h2>
             <p className="text-xs text-[#6B7280] dark:text-slate-400 mt-0.5 font-mono tabular-nums">
-              Network Uptime: {uptime}% · {offlineCount} of {sensors.length} nodes offline
+              {lang === 'hi'
+                ? `नेटवर्क अपटाइम: ${uptime}% · ${sensors.length} में से ${offlineCount} नोड ऑफ़लाइन`
+                : `Network Uptime: ${uptime}% · ${offlineCount} of ${sensors.length} nodes offline`}
             </p>
           </div>
         </div>
         <button
           onClick={() => setActiveView('map')}
-          className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full text-xs font-semibold bg-[#111317] hover:bg-[#23262F] dark:bg-[#F4F4F6] dark:hover:bg-white text-white dark:text-[#111317] transition-colors"
+          className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full text-xs font-semibold bg-[#0D2621] hover:bg-[#153B33] dark:bg-[#F4F4F6] dark:hover:bg-white text-white dark:text-[#111317] transition-colors"
         >
           <ArrowLeft size={13} />
-          Map
+          {lang === 'hi' ? 'मानचित्र' : 'Map'}
         </button>
       </div>
 
       <div className="p-5 rounded-2xl border border-[#EAECEF] dark:border-[#242832] bg-white dark:bg-[#16191F] shadow-[0_2px_10px_rgba(17,19,23,0.03)]">
         <p className="text-xs font-semibold text-[#111317] dark:text-[#F4F4F6] mb-3">
-          Offline Sensor Incidents (Last 7 Days)
+          {lang === 'hi'
+            ? 'ऑफ़लाइन सेंसर घटनाएँ (पिछले 7 दिन)'
+            : 'Offline Sensor Incidents (Last 7 Days)'}
         </p>
         <div className="h-40">
           <ResponsiveContainer width="100%" height="100%">
@@ -441,13 +476,15 @@ export function SensorHealthView() {
           <table className="w-full text-xs">
             <thead className="border-b border-[#EAECEF] dark:border-[#242832] text-[#6B7280] dark:text-slate-400 bg-[#FAFAFB] dark:bg-[#121418]">
               <tr>
-                <th className="text-left px-4 py-3 font-semibold">Node</th>
-                <th className="text-left px-4 py-3 font-semibold">MCG Hotspot</th>
-                <th className="text-left px-4 py-3 font-semibold">Type</th>
-                <th className="text-left px-4 py-3 font-semibold">Status</th>
-                <th className="text-right px-4 py-3 font-semibold">Reading</th>
-                <th className="text-right px-4 py-3 font-semibold">Battery</th>
-                <th className="text-right px-4 py-3 font-semibold">Action</th>
+                <th className="text-left px-4 py-3 font-semibold">{lang === 'hi' ? 'नोड' : 'Node'}</th>
+                <th className="text-left px-4 py-3 font-semibold">
+                  {lang === 'hi' ? 'MCG हॉटस्पॉट' : 'MCG Hotspot'}
+                </th>
+                <th className="text-left px-4 py-3 font-semibold">{lang === 'hi' ? 'प्रकार' : 'Type'}</th>
+                <th className="text-left px-4 py-3 font-semibold">{lang === 'hi' ? 'स्थिति' : 'Status'}</th>
+                <th className="text-right px-4 py-3 font-semibold">{lang === 'hi' ? 'रीडिंग' : 'Reading'}</th>
+                <th className="text-right px-4 py-3 font-semibold">{lang === 'hi' ? 'बैटरी' : 'Battery'}</th>
+                <th className="text-right px-4 py-3 font-semibold">{lang === 'hi' ? 'कार्रवाई' : 'Action'}</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-[#EAECEF] dark:divide-[#242832]">
@@ -459,7 +496,7 @@ export function SensorHealthView() {
                       {sensor.id}
                     </td>
                     <td className="px-4 py-3 text-[#4B5563] dark:text-slate-300">
-                      {h?.name || sensor.hotspot_id}
+                      {h ? getHotspotDisplayName(h, lang) : sensor.hotspot_id}
                     </td>
                     <td className="px-4 py-3 text-[#6B7280] dark:text-slate-400 capitalize">
                       {sensor.type.replace('_', ' ')}
@@ -481,11 +518,19 @@ export function SensorHealthView() {
                         ) : (
                           <AlertCircle size={12} />
                         )}
-                        {sensor.status}
+                        {lang === 'hi'
+                          ? sensor.status === 'online'
+                            ? 'ऑनलाइन'
+                            : sensor.status === 'offline'
+                              ? 'ऑफ़लाइन'
+                              : 'चेतावनी'
+                          : sensor.status}
                       </span>
                     </td>
                     <td className="px-4 py-3 text-right font-mono tabular-nums text-[#4B5563] dark:text-slate-300">
-                      {sensor.last_reading !== null ? `${sensor.last_reading} cm` : '—'}
+                      {sensor.last_reading !== null
+                        ? `${sensor.last_reading} ${lang === 'hi' ? 'सेमी' : 'cm'}`
+                        : '—'}
                     </td>
                     <td className="px-4 py-3 text-right font-mono tabular-nums text-[#4B5563] dark:text-slate-300">
                       {sensor.battery_pct}%
@@ -496,14 +541,14 @@ export function SensorHealthView() {
                           onClick={() => setSensorStatus(sensor.id, 'offline')}
                           className="text-red-600 dark:text-red-400 font-semibold hover:underline"
                         >
-                          Flag Offline
+                          {lang === 'hi' ? 'ऑफ़लाइन चिह्नित करें' : 'Flag Offline'}
                         </button>
                       ) : (
                         <button
                           onClick={() => setSensorStatus(sensor.id, 'online')}
                           className="text-emerald-600 dark:text-emerald-400 font-semibold hover:underline"
                         >
-                          Restore
+                          {lang === 'hi' ? 'बहाल करें' : 'Restore'}
                         </button>
                       )}
                     </td>
@@ -535,7 +580,7 @@ export function AuditLogView() {
       e.new_rank !== null ? String(e.new_rank) : '',
       e.reason || '',
     ]);
-    exportToCsv('gfc-audit-trail.csv', [header, ...rows]);
+    exportToCsv('sahibi-audit-trail.csv', [header, ...rows]);
   };
 
   return (
@@ -547,7 +592,7 @@ export function AuditLogView() {
           </div>
           <div>
             <h2 className="text-xl font-bold tracking-tight text-[#111317] dark:text-[#F4F4F6]">
-              Governance & Override Audit Stream
+              {lang === 'hi' ? 'प्रशासन और ओवरराइड ऑडिट स्ट्रीम' : 'Governance & Override Audit Stream'}
             </h2>
             <p className="text-xs text-[#6B7280] dark:text-slate-400 mt-0.5">
               {t('cmd.audit_banner', lang)}
@@ -560,33 +605,33 @@ export function AuditLogView() {
             className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-full text-xs font-semibold border border-[#E6E7EC] dark:border-[#282C36] bg-white dark:bg-[#181B20] text-[#111317] dark:text-[#F4F4F6] hover:bg-[#F3F4F6] dark:hover:bg-[#23262F] transition-colors"
           >
             <Download size={13} />
-            Export CSV
+            {lang === 'hi' ? 'CSV डाउनलोड' : 'Export CSV'}
           </button>
           <button
             onClick={() => setActiveView('map')}
-            className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full text-xs font-semibold bg-[#111317] hover:bg-[#23262F] dark:bg-[#F4F4F6] dark:hover:bg-white text-white dark:text-[#111317] transition-colors"
+            className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full text-xs font-semibold bg-[#0D2621] hover:bg-[#153B33] dark:bg-[#F4F4F6] dark:hover:bg-white text-white dark:text-[#111317] transition-colors"
           >
             <ArrowLeft size={13} />
-            Map
+            {lang === 'hi' ? 'मानचित्र' : 'Map'}
           </button>
         </div>
       </div>
 
       <div className="flex flex-wrap gap-1.5">
         {[
-          { id: 'all', label: 'All Events' },
-          { id: 'manual_override', label: 'Overrides' },
-          { id: 'sla_escalated', label: 'SLA Escalations' },
-          { id: 'citizen_report_triaged', label: 'AI Citizen Reports' },
-          { id: 'action_completed', label: 'Cleared' },
-          { id: 'sensor_flagged', label: 'Sensor & Blockers' },
+          { id: 'all', label: lang === 'hi' ? 'सभी घटनाएँ' : 'All Events' },
+          { id: 'manual_override', label: lang === 'hi' ? 'प्राथमिकता बदलाव' : 'Overrides' },
+          { id: 'sla_escalated', label: lang === 'hi' ? 'SLA एस्केलेशन' : 'SLA Escalations' },
+          { id: 'citizen_report_triaged', label: lang === 'hi' ? 'AI नागरिक रिपोर्ट' : 'AI Citizen Reports' },
+          { id: 'action_completed', label: lang === 'hi' ? 'साफ किया गया' : 'Cleared' },
+          { id: 'sensor_flagged', label: lang === 'hi' ? 'सेंसर और बाधाएं' : 'Sensor & Blockers' },
         ].map((tab) => (
           <button
             key={tab.id}
             onClick={() => setFilter(tab.id)}
             className={`px-3.5 py-1.5 rounded-full text-xs font-semibold transition-colors ${
               filter === tab.id
-                ? 'bg-[#111317] dark:bg-[#F4F4F6] text-white dark:text-[#111317]'
+                ? 'bg-[#0D2621] dark:bg-[#F4F4F6] text-white dark:text-[#111317]'
                 : 'border border-[#EAECEF] dark:border-[#282C36] bg-white dark:bg-[#16191F] text-[#6B7280] dark:text-slate-300 hover:bg-[#F3F4F6] dark:hover:bg-[#23262F]'
             }`}
           >
@@ -614,7 +659,7 @@ export function AuditLogView() {
                     <>
                       <span>·</span>
                       <span className="text-amber-600 dark:text-amber-400 font-semibold">
-                        Rank #{entry.new_rank}
+                        {lang === 'hi' ? `क्रम #${entry.new_rank}` : `Rank #${entry.new_rank}`}
                       </span>
                     </>
                   )}
@@ -638,7 +683,7 @@ export function AuditLogView() {
         {filtered.length === 0 && (
           <div className="p-8 text-center rounded-2xl border border-[#EAECEF] dark:border-[#242832] bg-white dark:bg-[#16191F] text-xs text-[#6B7280] dark:text-slate-400">
             <FileText size={24} className="mx-auto mb-2 opacity-50" />
-            No audit records match this filter.
+            {lang === 'hi' ? 'इस फ़िल्टर के लिए कोई ऑडिट रिकॉर्ड नहीं मिला।' : 'No audit records match this filter.'}
           </div>
         )}
       </div>
@@ -686,7 +731,7 @@ export function ExecutiveBriefView() {
     const byZone = ([1, 2, 3, 4] as const).map((z) => {
       const zoneItems = scored.filter((s) => s.hotspot.zone === z);
       return {
-        zone: `Zone ${z}`,
+        zone: lang === 'hi' ? `ज़ोन ${z}` : `Zone ${z}`,
         total: zoneItems.length,
         critical: zoneItems.filter((s) => s.tel.tier === 'critical').length,
         high: zoneItems.filter((s) => s.tel.tier === 'high').length,
@@ -694,7 +739,7 @@ export function ExecutiveBriefView() {
     });
 
     return { critical, high, popExposed, overrides, byZone };
-  }, [rainfallMm, timelineHourOffset, pumpMitigationActive, sensors, floodReports, dispatchRecords, auditLog]);
+  }, [rainfallMm, timelineHourOffset, pumpMitigationActive, sensors, floodReports, dispatchRecords, auditLog, lang]);
 
   return (
     <div className="space-y-5">
@@ -705,10 +750,14 @@ export function ExecutiveBriefView() {
           </div>
           <div>
             <h2 className="text-xl font-bold tracking-tight text-[#111317] dark:text-[#F4F4F6]">
-              Commissioner & Command Authority Brief
+              {lang === 'hi'
+                ? 'आयुक्त और कमांड प्राधिकरण सारांश'
+                : 'Commissioner & Command Authority Brief'}
             </h2>
             <p className="text-xs text-[#6B7280] dark:text-slate-400 mt-0.5">
-              153 MCG Hotspots · 36 Wards · 4 Municipal Zones · Monsoon Tactical Synthesis
+              {lang === 'hi'
+                ? '153 MCG हॉटस्पॉट · 36 वार्ड · 4 नगर निगम ज़ोन · मानसून रणनीति संश्लेषण'
+                : '153 MCG Hotspots · 36 Wards · 4 Municipal Zones · Monsoon Tactical Synthesis'}
             </p>
           </div>
         </div>
@@ -716,7 +765,7 @@ export function ExecutiveBriefView() {
           <button
             onClick={generateAiBriefing}
             disabled={aiBriefingLoading}
-            className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full bg-[#111317] hover:bg-[#23262F] dark:bg-[#F4F4F6] dark:hover:bg-white text-white dark:text-[#111317] text-xs font-semibold transition-colors disabled:opacity-60"
+            className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full bg-[#0D2621] hover:bg-[#153B33] dark:bg-[#F4F4F6] dark:hover:bg-white text-white dark:text-[#111317] text-xs font-semibold transition-colors disabled:opacity-60"
           >
             {aiBriefingLoading ? (
               <Loader2 size={14} className="animate-spin" />
@@ -730,14 +779,14 @@ export function ExecutiveBriefView() {
             className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-full border border-[#E6E7EC] dark:border-[#282C36] bg-white dark:bg-[#181B20] text-xs font-semibold text-[#111317] dark:text-[#F4F4F6] hover:bg-[#F3F4F6] dark:hover:bg-[#23262F] transition-colors"
           >
             <Printer size={13} />
-            Print
+            {lang === 'hi' ? 'प्रिंट' : 'Print'}
           </button>
           <button
             onClick={() => setActiveView('map')}
             className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-full border border-[#E6E7EC] dark:border-[#282C36] bg-white dark:bg-[#181B20] text-xs font-semibold text-[#111317] dark:text-[#F4F4F6] hover:bg-[#F3F4F6] dark:hover:bg-[#23262F] transition-colors"
           >
             <ArrowLeft size={13} />
-            Map
+            {lang === 'hi' ? 'मानचित्र' : 'Map'}
           </button>
         </div>
       </div>
@@ -745,36 +794,49 @@ export function ExecutiveBriefView() {
       {/* KPI Strip */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
         <div className="p-4 rounded-2xl border border-[#EAECEF] dark:border-[#242832] bg-white dark:bg-[#16191F] shadow-[0_2px_10px_rgba(17,19,23,0.03)]">
-          <p className="text-xs text-[#6B7280] dark:text-slate-400">Critical / High Risk</p>
+          <p className="text-xs text-[#6B7280] dark:text-slate-400">
+            {lang === 'hi' ? 'गंभीर / अधिक जोखिम' : 'Critical / High Risk'}
+          </p>
           <p className="text-2xl font-mono font-bold tabular-nums text-red-600 dark:text-red-400 mt-1">
             {summary.critical} <span className="text-sm text-amber-500">/ {summary.high}</span>
           </p>
-          <p className="text-[11px] text-[#6B7280] dark:text-slate-400 mt-0.5">of {mcgHotspots.length} MCG points</p>
+          <p className="text-[11px] text-[#6B7280] dark:text-slate-400 mt-0.5">
+            {lang === 'hi' ? `${mcgHotspots.length} MCG बिंदुओं में से` : `of ${mcgHotspots.length} MCG points`}
+          </p>
         </div>
         <div className="p-4 rounded-2xl border border-[#EAECEF] dark:border-[#242832] bg-white dark:bg-[#16191F] shadow-[0_2px_10px_rgba(17,19,23,0.03)]">
-          <p className="text-xs text-[#6B7280] dark:text-slate-400">Exposed Population</p>
+          <p className="text-xs text-[#6B7280] dark:text-slate-400">
+            {lang === 'hi' ? 'प्रभावित आबादी' : 'Exposed Population'}
+          </p>
           <p className="text-2xl font-mono font-bold tabular-nums text-[#111317] dark:text-[#F4F4F6] mt-1">
             {(summary.popExposed / 100000).toFixed(2)}L
           </p>
           <p className="text-[11px] text-[#6B7280] dark:text-slate-400 mt-0.5">
-            {summary.popExposed.toLocaleString()} residents
+            {summary.popExposed.toLocaleString()} {lang === 'hi' ? 'निवासी' : 'residents'}
           </p>
         </div>
         <div className="p-4 rounded-2xl border border-[#EAECEF] dark:border-[#242832] bg-white dark:bg-[#16191F] shadow-[0_2px_10px_rgba(17,19,23,0.03)]">
-          <p className="text-xs text-[#6B7280] dark:text-slate-400">Model Accuracy</p>
+          <p className="text-xs text-[#6B7280] dark:text-slate-400">
+            {lang === 'hi' ? 'मॉडल सटीकता' : 'Model Accuracy'}
+          </p>
           <p className="text-2xl font-mono font-bold tabular-nums text-emerald-600 dark:text-emerald-400 mt-1">
             {calibrationData.accuracy_pct}%
           </p>
           <p className="text-[11px] text-[#6B7280] dark:text-slate-400 mt-0.5">
-            {calibrationData.alerts_verified_correct}/{calibrationData.alerts_issued} alerts verified
+            {calibrationData.alerts_verified_correct}/{calibrationData.alerts_issued}{' '}
+            {lang === 'hi' ? 'अलर्ट सत्यापित' : 'alerts verified'}
           </p>
         </div>
         <div className="p-4 rounded-2xl border border-[#EAECEF] dark:border-[#242832] bg-white dark:bg-[#16191F] shadow-[0_2px_10px_rgba(17,19,23,0.03)]">
-          <p className="text-xs text-[#6B7280] dark:text-slate-400">Manual Overrides</p>
+          <p className="text-xs text-[#6B7280] dark:text-slate-400">
+            {lang === 'hi' ? 'मैनुअल बदलाव' : 'Manual Overrides'}
+          </p>
           <p className="text-2xl font-mono font-bold tabular-nums text-amber-600 dark:text-amber-400 mt-1">
             {summary.overrides}
           </p>
-          <p className="text-[11px] text-[#6B7280] dark:text-slate-400 mt-0.5">100% justification logged</p>
+          <p className="text-[11px] text-[#6B7280] dark:text-slate-400 mt-0.5">
+            {lang === 'hi' ? '100% कारण ऑडिट में दर्ज' : '100% justification logged'}
+          </p>
         </div>
       </div>
 
@@ -783,7 +845,7 @@ export function ExecutiveBriefView() {
         <div className="flex items-center justify-between gap-2">
           <div className="flex items-center gap-2 text-sm font-bold text-[#111317] dark:text-[#F4F4F6]">
             <Sparkles size={16} className="text-[#111317] dark:text-[#F4F4F6]" />
-            <span>Monsoon Command Briefing</span>
+            <span>{lang === 'hi' ? 'मानसून कमांड ब्रीफिंग' : 'Monsoon Command Briefing'}</span>
           </div>
           {aiBriefing && (
             <span className="text-[11px] font-mono text-[#9CA3AF]">
@@ -806,7 +868,7 @@ export function ExecutiveBriefView() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
               <div className="space-y-2">
                 <p className="text-xs font-semibold text-[#111317] dark:text-[#F4F4F6]">
-                  Priority Ward Directives
+                  {lang === 'hi' ? 'प्राथमिकता वाले वार्ड निर्देश' : 'Priority Ward Directives'}
                 </p>
                 {aiBriefing.priorityWards.map((w, idx) => (
                   <div
@@ -824,7 +886,9 @@ export function ExecutiveBriefView() {
               <div className="space-y-3">
                 <div>
                   <p className="text-xs font-semibold text-[#111317] dark:text-[#F4F4F6] mb-1.5">
-                    Inter-Agency Coordination (MCG / GMDA / NHAI)
+                    {lang === 'hi'
+                      ? 'अंतर-एजेंसी समन्वय (MCG / GMDA / NHAI)'
+                      : 'Inter-Agency Coordination (MCG / GMDA / NHAI)'}
                   </p>
                   <ul className="space-y-1.5 text-xs text-[#4B5563] dark:text-slate-300">
                     {aiBriefing.interAgencyDirectives.map((d, i) => (
@@ -837,7 +901,7 @@ export function ExecutiveBriefView() {
                 </div>
                 <div className="p-3 rounded-xl border border-[#EAECEF] dark:border-[#242832] bg-[#FAFAFB] dark:bg-[#1B1E25] text-xs">
                   <p className="font-semibold text-[#111317] dark:text-[#F4F4F6]">
-                    Pump Reallocation Strategy
+                    {lang === 'hi' ? 'पंप पुनर्वितरण रणनीति' : 'Pump Reallocation Strategy'}
                   </p>
                   <p className="text-[#6B7280] dark:text-slate-400 mt-0.5">
                     {aiBriefing.pumpReallocationAdvice}
@@ -848,7 +912,16 @@ export function ExecutiveBriefView() {
           </div>
         ) : (
           <p className="text-xs text-[#6B7280] dark:text-slate-400">
-            Click <strong>{t('cmd.generate_briefing', lang)}</strong> to synthesize live rainfall telemetry, top vulnerable MCG wards, and recent citizen reports into an actionable command memo.
+            {lang === 'hi' ? (
+              <>
+                लाइव वर्षा डेटा, संवेदनशील MCG वार्ड और हाल की नागरिक रिपोर्ट से कार्य योजना बनाने के लिए{' '}
+                <strong>{t('cmd.generate_briefing', lang)}</strong> पर क्लिक करें।
+              </>
+            ) : (
+              <>
+                Click <strong>{t('cmd.generate_briefing', lang)}</strong> to synthesize live rainfall telemetry, top vulnerable MCG wards, and recent citizen reports into an actionable command memo.
+              </>
+            )}
           </p>
         )}
       </div>
@@ -857,7 +930,11 @@ export function ExecutiveBriefView() {
       <div className="p-5 rounded-2xl border border-[#EAECEF] dark:border-[#242832] bg-white dark:bg-[#16191F] shadow-[0_2px_10px_rgba(17,19,23,0.03)]">
         <div className="flex items-center gap-2 text-xs font-semibold text-[#111317] dark:text-[#F4F4F6] mb-3">
           <TrendingUp size={15} className="text-[#111317] dark:text-[#F4F4F6]" />
-          <span>MCG Zone-Wise Critical & High Flood Pressure (Zones 1–4)</span>
+          <span>
+            {lang === 'hi'
+              ? 'MCG ज़ोन-वार गंभीर और उच्च जलभराव दबाव (ज़ोन 1–4)'
+              : 'MCG Zone-Wise Critical & High Flood Pressure (Zones 1–4)'}
+          </span>
         </div>
         <div className="h-52">
           <ResponsiveContainer width="100%" height="100%">
@@ -865,9 +942,24 @@ export function ExecutiveBriefView() {
               <XAxis dataKey="zone" tick={{ fontSize: 11 }} />
               <YAxis tick={{ fontSize: 11 }} allowDecimals={false} />
               <Tooltip />
-              <Bar dataKey="critical" fill="#ef4444" radius={[4, 4, 0, 0]} name="Critical" />
-              <Bar dataKey="high" fill="#f59e0b" radius={[4, 4, 0, 0]} name="High" />
-              <Bar dataKey="total" fill="#181A1F" radius={[4, 4, 0, 0]} name="Total Hotspots" />
+              <Bar
+                dataKey="critical"
+                fill="#ef4444"
+                radius={[4, 4, 0, 0]}
+                name={lang === 'hi' ? 'गंभीर' : 'Critical'}
+              />
+              <Bar
+                dataKey="high"
+                fill="#f59e0b"
+                radius={[4, 4, 0, 0]}
+                name={lang === 'hi' ? 'अधिक' : 'High'}
+              />
+              <Bar
+                dataKey="total"
+                fill="#0D2621"
+                radius={[4, 4, 0, 0]}
+                name={lang === 'hi' ? 'कुल हॉटस्पॉट' : 'Total Hotspots'}
+              />
             </BarChart>
           </ResponsiveContainer>
         </div>

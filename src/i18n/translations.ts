@@ -1,8 +1,9 @@
 export type Lang = 'en' | 'hi';
 
 export const translations: Record<string, Record<Lang, string>> = {
-  'app.name': { en: 'Gurgaon Flood Help', hi: 'गुरुग्राम जलभराव सहायता' },
-  'app.subtitle': { en: 'Gurugram Citizen & MCG Response Portal', hi: 'गुरुग्राम नागरिक एवं MCG सहायता पोर्टल' },
+  'app.name': { en: 'SAHIBI', hi: 'साहिबी' },
+  'app.tagline': { en: 'IN HARMONY WITH WATER', hi: 'जल के साथ सामंजस्य में' },
+  'app.subtitle': { en: 'SAHIBI · Gurugram Citizen & MCG Response Portal', hi: 'साहिबी · गुरुग्राम नागरिक एवं MCG सहायता पोर्टल' },
 
   // Roles
   'role.citizen': { en: 'Citizen Portal', hi: 'नागरिक पोर्टल' },

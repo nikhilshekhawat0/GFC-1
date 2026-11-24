@@ -270,7 +270,7 @@ export function LeftCommandRail() {
                   <span className="truncate">{t(item.labelKey, lang)}</span>
                 </span>
                 {typeof item.badge === 'number' && (
-                  <span className="w-5 h-5 rounded-full bg-[#111317] dark:bg-[#F4F4F6] text-white dark:text-[#111317] text-[10px] font-bold flex items-center justify-center tabular-nums shrink-0">
+                  <span className="w-5 h-5 rounded-full bg-[#0D2621] dark:bg-[#F4F4F6] text-white dark:text-[#111317] text-[10px] font-bold flex items-center justify-center tabular-nums shrink-0">
                     {item.badge}
                   </span>
                 )}
@@ -355,7 +355,7 @@ export function LeftCommandRail() {
                     max={150}
                     value={rainfallMm}
                     onChange={(e) => setRainfallMm(Number(e.target.value))}
-                    className="w-full h-1.5 accent-[#111317] dark:accent-white cursor-pointer"
+                    className="w-full h-1.5 accent-[#0D2621] dark:accent-white cursor-pointer"
                     aria-label="Adjust expected 6-hour rainfall"
                   />
                 </div>
@@ -375,7 +375,7 @@ export function LeftCommandRail() {
                     placeholder={
                       lang === 'hi' ? 'सेक्टर, सड़क, वार्ड खोजें...' : 'Search sector, street, ward...'
                     }
-                    className="w-full pl-9 pr-3 py-2 rounded-full text-xs border border-[#E6E7EC] dark:border-[#242832] bg-white dark:bg-[#181B20] text-[#111317] dark:text-slate-100 placeholder:text-[#9CA3AF] focus:outline-none focus:ring-2 focus:ring-[#111317]/20 dark:focus:ring-white/20"
+                    className="w-full pl-9 pr-3 py-2 rounded-full text-xs border border-[#E6E7EC] dark:border-[#242832] bg-white dark:bg-[#181B20] text-[#111317] dark:text-slate-100 placeholder:text-[#9CA3AF] focus:outline-none focus:ring-2 focus:ring-[#0D2621]/20 dark:focus:ring-white/20"
                   />
                 </div>
 
@@ -457,7 +457,7 @@ export function LeftCommandRail() {
                         onClick={() => setSelectedCriticality(c.id)}
                         className={`px-2.5 py-0.5 rounded-full text-[11px] font-semibold transition-colors ${
                           selectedCriticality === c.id
-                            ? 'bg-[#111317] dark:bg-[#F4F4F6] text-white dark:text-[#111317]'
+                            ? 'bg-[#0D2621] dark:bg-[#F4F4F6] text-white dark:text-[#111317]'
                             : 'text-[#6B7280] dark:text-slate-400 hover:text-[#111317] dark:hover:text-white'
                         }`}
                       >
@@ -536,7 +536,7 @@ export function LeftCommandRail() {
       <div className="p-3 shrink-0 border-t border-[#E6E7EC] dark:border-[#22252D] bg-[#F3F4F6] dark:bg-[#111317]">
         <div className="rounded-2xl bg-[#E3E5EA]/80 dark:bg-[#1A1D24] border border-[#D7DAE2] dark:border-[#282C36] p-3 space-y-2.5">
           <div className="flex items-center gap-2.5 min-w-0">
-            <div className="w-8 h-8 rounded-full bg-[#111317] dark:bg-[#F4F4F6] text-white dark:text-[#111317] flex items-center justify-center shrink-0">
+            <div className="w-8 h-8 rounded-full bg-[#0D2621] dark:bg-[#F4F4F6] text-white dark:text-[#111317] flex items-center justify-center shrink-0">
               {authorityUser ? <ShieldCheck size={15} /> : <User size={15} />}
             </div>
             <div className="min-w-0">
@@ -556,7 +556,7 @@ export function LeftCommandRail() {
                 citizenUser || authorityUser ? 'settings' : 'citizen-login'
               )
             }
-            className="w-full py-2 px-3 rounded-full bg-[#111317] hover:bg-[#23262F] dark:bg-[#F4F4F6] dark:hover:bg-white text-white dark:text-[#111317] text-xs font-semibold flex items-center justify-center gap-1.5 transition-colors shadow-xs"
+            className="w-full py-2 px-3 rounded-full bg-[#0D2621] hover:bg-[#153B33] dark:bg-[#F4F4F6] dark:hover:bg-white text-white dark:text-[#111317] text-xs font-semibold flex items-center justify-center gap-1.5 transition-colors shadow-xs"
           >
             <Sparkles size={12} />
             <span>

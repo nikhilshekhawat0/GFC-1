@@ -261,7 +261,7 @@ export function HotspotDossier() {
         </div>
 
         {/* Historical Flood Frequency & Duration Chart */}
-        <HotspotHistoryChart hotspot={hotspot} />
+        <HotspotHistoryChart hotspot={hotspot} lang={lang} />
 
         {/* Location Verification Notice */}
         <div className="text-xs space-y-1">
@@ -283,7 +283,7 @@ export function HotspotDossier() {
           </div>
           {hotspot.gpsNote && (
             <p className="text-[11px] text-amber-700 dark:text-amber-300/90">
-              Map Note: {hotspot.gpsNote}
+              {lang === 'hi' ? 'मानचित्र नोट:' : 'Map Note:'} {hotspot.gpsNote}
             </p>
           )}
         </div>
@@ -368,7 +368,8 @@ export function HotspotDossier() {
                 >
                   <div className="min-w-0">
                     <p className="text-[11px] text-[#6B7280] dark:text-slate-400">
-                      L{tier} · {contact.role} {isCurrentSla ? '· Active SLA' : ''}
+                      L{tier} · {contact.role}{' '}
+                      {isCurrentSla ? (lang === 'hi' ? '· सक्रिय SLA' : '· Active SLA') : ''}
                     </p>
                     <p className="text-xs font-semibold text-[#111317] dark:text-[#F4F4F6] truncate">
                       {contact.name}
@@ -411,7 +412,8 @@ export function HotspotDossier() {
               {t('citizen.official_helpline', lang)}
             </p>
             <p className="text-[#6B7280] dark:text-slate-400 font-mono">
-              Toll-Free: {MCG_OFFICIAL_CHANNELS.helpline} · WA Bot: {MCG_OFFICIAL_CHANNELS.whatsappBot}
+              {lang === 'hi' ? 'टोल-फ्री:' : 'Toll-Free:'} {MCG_OFFICIAL_CHANNELS.helpline} ·{' '}
+              {lang === 'hi' ? 'व्हाट्सएप बॉट:' : 'WA Bot:'} {MCG_OFFICIAL_CHANNELS.whatsappBot}
             </p>
           </div>
           <a
@@ -433,16 +435,20 @@ export function HotspotDossier() {
             href={buildWhatsappHref(activeOfficer.phone, activeOfficer.name)}
             target="_blank"
             rel="noreferrer"
-            className="w-full py-2.5 px-4 rounded-full bg-[#111317] hover:bg-[#23262F] dark:bg-[#F4F4F6] dark:hover:bg-white text-white dark:text-[#111317] text-xs font-semibold flex items-center justify-center gap-2 transition-colors"
+            className="w-full py-2.5 px-4 rounded-full bg-[#0D2621] hover:bg-[#153B33] dark:bg-[#F4F4F6] dark:hover:bg-white text-white dark:text-[#111317] text-xs font-semibold flex items-center justify-center gap-2 transition-colors"
           >
             <ShieldAlert size={14} />
-            <span>Escalate to {activeOfficer.role}: {activeOfficer.name}</span>
+            <span>
+              {lang === 'hi'
+                ? `${activeOfficer.role} (${activeOfficer.name}) को भेजें`
+                : `Escalate to ${activeOfficer.role}: ${activeOfficer.name}`}
+            </span>
           </a>
         ) : (
           <>
             <button
               onClick={() => deployPumpToHotspot(hotspot.id)}
-              className="flex-1 py-2.5 px-3 rounded-full bg-[#111317] hover:bg-[#23262F] dark:bg-[#F4F4F6] dark:hover:bg-white text-white dark:text-[#111317] text-xs font-semibold flex items-center justify-center gap-1.5 transition-colors"
+              className="flex-1 py-2.5 px-3 rounded-full bg-[#0D2621] hover:bg-[#153B33] dark:bg-[#F4F4F6] dark:hover:bg-white text-white dark:text-[#111317] text-xs font-semibold flex items-center justify-center gap-1.5 transition-colors"
             >
               <Truck size={13} />
               <span>{t('cmd.deploy_pump', lang)}</span>

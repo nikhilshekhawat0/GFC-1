@@ -151,7 +151,7 @@ export function LegalModal({ open, initialTab, lang, onChangeTab, onClose }: Leg
             onClick={() => onChangeTab('privacy')}
             className={`inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-semibold transition-colors ${
               initialTab === 'privacy'
-                ? 'bg-[#111317] text-white dark:bg-[#F4F4F6] dark:text-[#111317]'
+                ? 'bg-[#0D2621] text-white dark:bg-[#F4F4F6] dark:text-[#111317]'
                 : 'bg-[#F3F4F6] dark:bg-[#23262F] text-[#6B7280] dark:text-slate-300 hover:bg-[#E5E7EB] dark:hover:bg-[#2E323D]'
             }`}
           >
@@ -163,7 +163,7 @@ export function LegalModal({ open, initialTab, lang, onChangeTab, onClose }: Leg
             onClick={() => onChangeTab('terms')}
             className={`inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-semibold transition-colors ${
               initialTab === 'terms'
-                ? 'bg-[#111317] text-white dark:bg-[#F4F4F6] dark:text-[#111317]'
+                ? 'bg-[#0D2621] text-white dark:bg-[#F4F4F6] dark:text-[#111317]'
                 : 'bg-[#F3F4F6] dark:bg-[#23262F] text-[#6B7280] dark:text-slate-300 hover:bg-[#E5E7EB] dark:hover:bg-[#2E323D]'
             }`}
           >
@@ -187,7 +187,7 @@ export function LegalModal({ open, initialTab, lang, onChangeTab, onClose }: Leg
           <button
             type="button"
             onClick={onClose}
-            className="px-4 py-1.5 rounded-full bg-[#111317] hover:bg-[#23262F] dark:bg-[#F4F4F6] dark:hover:bg-white text-white dark:text-[#111317] text-xs font-semibold transition-colors"
+            className="px-4 py-1.5 rounded-full bg-[#0D2621] hover:bg-[#153B33] dark:bg-[#F4F4F6] dark:hover:bg-white text-white dark:text-[#111317] text-xs font-semibold transition-colors"
           >
             {copy.close}
           </button>

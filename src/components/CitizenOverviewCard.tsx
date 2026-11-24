@@ -199,7 +199,7 @@ export function CitizenOverviewCard() {
               value={quickFilter}
               onChange={(e) => setQuickFilter(e.target.value)}
               placeholder={lang === 'hi' ? 'हॉटस्पॉट खोजें...' : 'Search hotspots...'}
-              className="w-full pl-9 pr-3 py-2 rounded-full text-xs border border-[#EAECEF] dark:border-[#242832] bg-[#F7F7F9] dark:bg-[#181B20] text-[#111317] dark:text-slate-100 placeholder:text-[#9CA3AF] focus:outline-none focus:ring-2 focus:ring-[#111317]/15"
+              className="w-full pl-9 pr-3 py-2 rounded-full text-xs border border-[#EAECEF] dark:border-[#242832] bg-[#F7F7F9] dark:bg-[#181B20] text-[#111317] dark:text-slate-100 placeholder:text-[#9CA3AF] focus:outline-none focus:ring-2 focus:ring-[#0D2621]/20"
             />
           </div>
         </div>
@@ -294,7 +294,7 @@ export function CitizenOverviewCard() {
         <button
           type="button"
           onClick={() => setActiveView('route')}
-          className="w-full py-2.5 px-4 rounded-full bg-[#111317] hover:bg-[#242832] dark:bg-[#F4F4F6] dark:hover:bg-white text-white dark:text-[#111317] text-xs font-semibold flex items-center justify-center gap-2 transition-colors shadow-xs"
+          className="w-full py-2.5 px-4 rounded-full bg-[#0D2621] hover:bg-[#153B33] dark:bg-[#F4F4F6] dark:hover:bg-white text-white dark:text-[#111317] text-xs font-semibold flex items-center justify-center gap-2 transition-colors shadow-xs"
         >
           <Route size={14} />
           <span>{t('citizen.safe_corridors', lang)}</span>

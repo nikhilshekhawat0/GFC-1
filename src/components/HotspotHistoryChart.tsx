@@ -11,6 +11,7 @@ import {
 } from 'recharts';
 import { History } from 'lucide-react';
 import type { McgHotspot } from '../data/mcgHotspots';
+import type { Lang } from '../i18n/translations';
 
 interface HistoryDatum {
   period: string;
@@ -29,9 +30,10 @@ interface CustomTooltipProps {
   active?: boolean;
   payload?: TooltipPayloadItem[];
   label?: string;
+  lang?: Lang;
 }
 
-function HistoryTooltip({ active, payload, label }: CustomTooltipProps) {
+function HistoryTooltip({ active, payload, label, lang = 'en' }: CustomTooltipProps) {
   if (!active || !payload || payload.length === 0) return null;
 
   const freqItem = payload.find((p) => p.dataKey === 'frequency');
@@ -43,8 +45,8 @@ function HistoryTooltip({ active, payload, label }: CustomTooltipProps) {
       {freqItem && (
         <p className="text-[#4B5563] dark:text-slate-300 flex items-center justify-between gap-3">
           <span className="flex items-center gap-1.5">
-            <span className="w-2 h-2 rounded-xs bg-[#181A1F] dark:bg-[#E4E4E7] inline-block" />
-            Flood Events:
+            <span className="w-2 h-2 rounded-xs bg-[#0D2621] dark:bg-[#E4E4E7] inline-block" />
+            {lang === 'hi' ? 'जलभराव घटनाएँ:' : 'Flood Events:'}
           </span>
           <span className="font-mono font-bold tabular-nums">{freqItem.value}</span>
         </p>
@@ -53,9 +55,11 @@ function HistoryTooltip({ active, payload, label }: CustomTooltipProps) {
         <p className="text-slate-700 dark:text-slate-300 flex items-center justify-between gap-3 mt-0.5">
           <span className="flex items-center gap-1.5">
             <span className="w-2 h-2 rounded-full bg-amber-600 inline-block" />
-            Avg Duration:
+            {lang === 'hi' ? 'औसत अवधि:' : 'Avg Duration:'}
           </span>
-          <span className="font-mono font-bold tabular-nums">{durItem.value} hrs</span>
+          <span className="font-mono font-bold tabular-nums">
+            {durItem.value} {lang === 'hi' ? 'घंटे' : 'hrs'}
+          </span>
         </p>
       )}
     </div>
@@ -153,9 +157,10 @@ function buildHotspotHistory(hotspot: McgHotspot): {
 
 interface HotspotHistoryChartProps {
   hotspot: McgHotspot;
+  lang?: Lang;
 }
 
-export function HotspotHistoryChart({ hotspot }: HotspotHistoryChartProps) {
+export function HotspotHistoryChart({ hotspot, lang = 'en' }: HotspotHistoryChartProps) {
   const [mode, setMode] = useState<'monthly' | 'yearly'>('monthly');
 
   const history = useMemo(() => buildHotspotHistory(hotspot), [hotspot]);
@@ -167,7 +172,7 @@ export function HotspotHistoryChart({ hotspot }: HotspotHistoryChartProps) {
         <div className="flex items-center gap-1.5 min-w-0">
           <History size={14} className="text-[#111317] dark:text-[#F4F4F6] shrink-0" />
           <h3 className="text-xs font-semibold text-[#111317] dark:text-[#F4F4F6] truncate">
-            Past Flood History
+            {lang === 'hi' ? 'पिछला जलभराव इतिहास' : 'Past Flood History'}
           </h3>
         </div>
 
@@ -177,22 +182,22 @@ export function HotspotHistoryChart({ hotspot }: HotspotHistoryChartProps) {
             onClick={() => setMode('monthly')}
             className={`px-2.5 py-0.5 rounded-full text-[10px] font-semibold transition-colors ${
               mode === 'monthly'
-                ? 'bg-[#111317] text-white dark:bg-[#F4F4F6] dark:text-[#111317]'
+                ? 'bg-[#0D2621] text-white dark:bg-[#F4F4F6] dark:text-[#111317]'
                 : 'text-[#6B7280] dark:text-slate-300 hover:text-[#111317]'
             }`}
           >
-            Monsoon Months
+            {lang === 'hi' ? 'मानसून माह' : 'Monsoon Months'}
           </button>
           <button
             type="button"
             onClick={() => setMode('yearly')}
             className={`px-2.5 py-0.5 rounded-full text-[10px] font-semibold transition-colors ${
               mode === 'yearly'
-                ? 'bg-[#111317] text-white dark:bg-[#F4F4F6] dark:text-[#111317]'
+                ? 'bg-[#0D2621] text-white dark:bg-[#F4F4F6] dark:text-[#111317]'
                 : 'text-[#6B7280] dark:text-slate-300 hover:text-[#111317]'
             }`}
           >
-            5-Year Trend
+            {lang === 'hi' ? '5-वर्षीय रुझान' : '5-Year Trend'}
           </button>
         </div>
       </div>
@@ -200,19 +205,25 @@ export function HotspotHistoryChart({ hotspot }: HotspotHistoryChartProps) {
       {/* Summary metrics */}
       <div className="grid grid-cols-3 gap-2 text-center">
         <div className="px-2 py-1.5 rounded-xl bg-white dark:bg-[#1B1E25] border border-[#EAECEF] dark:border-[#242832]">
-          <p className="text-[10px] text-[#6B7280] dark:text-slate-400">Events (5 yrs)</p>
+          <p className="text-[10px] text-[#6B7280] dark:text-slate-400">
+            {lang === 'hi' ? 'घटनाएँ (5 वर्ष)' : 'Events (5 yrs)'}
+          </p>
           <p className="text-xs font-mono font-bold tabular-nums text-[#111317] dark:text-[#F4F4F6] mt-0.5">
             {history.totalEvents}
           </p>
         </div>
         <div className="px-2 py-1.5 rounded-xl bg-white dark:bg-[#1B1E25] border border-[#EAECEF] dark:border-[#242832]">
-          <p className="text-[10px] text-[#6B7280] dark:text-slate-400">Avg Standing</p>
+          <p className="text-[10px] text-[#6B7280] dark:text-slate-400">
+            {lang === 'hi' ? 'औसत जमाव' : 'Avg Standing'}
+          </p>
           <p className="text-xs font-mono font-bold tabular-nums text-amber-600 dark:text-amber-400 mt-0.5">
-            {history.meanDurationHrs} hrs
+            {history.meanDurationHrs} {lang === 'hi' ? 'घं.' : 'hrs'}
           </p>
         </div>
         <div className="px-2 py-1.5 rounded-xl bg-white dark:bg-[#1B1E25] border border-[#EAECEF] dark:border-[#242832]">
-          <p className="text-[10px] text-[#6B7280] dark:text-slate-400">Peak Month</p>
+          <p className="text-[10px] text-[#6B7280] dark:text-slate-400">
+            {lang === 'hi' ? 'शीर्ष माह' : 'Peak Month'}
+          </p>
           <p className="text-xs font-semibold text-[#111317] dark:text-[#F4F4F6] mt-0.5">
             {history.peakPeriod}
           </p>
@@ -246,12 +257,12 @@ export function HotspotHistoryChart({ hotspot }: HotspotHistoryChartProps) {
               width={28}
               unit="h"
             />
-            <Tooltip content={<HistoryTooltip />} />
+            <Tooltip content={<HistoryTooltip lang={lang} />} />
             <Bar
               yAxisId="left"
               dataKey="frequency"
-              name="Events"
-              fill="#181A1F"
+              name={lang === 'hi' ? 'घटनाएँ' : 'Events'}
+              fill="#0D2621"
               radius={[4, 4, 0, 0]}
               barSize={20}
             />
@@ -259,7 +270,7 @@ export function HotspotHistoryChart({ hotspot }: HotspotHistoryChartProps) {
               yAxisId="right"
               type="monotone"
               dataKey="avgDurationHrs"
-              name="Duration (hrs)"
+              name={lang === 'hi' ? 'अवधि (घंटे)' : 'Duration (hrs)'}
               stroke="#D97706"
               strokeWidth={2.25}
               dot={{ r: 3.5, fill: '#D97706', strokeWidth: 1.5, stroke: '#ffffff' }}
@@ -271,12 +282,12 @@ export function HotspotHistoryChart({ hotspot }: HotspotHistoryChartProps) {
 
       <div className="flex items-center justify-between text-[10px] text-[#6B7280] dark:text-slate-400 pt-0.5">
         <span className="flex items-center gap-1.5">
-          <span className="w-2.5 h-2 rounded-xs bg-[#181A1F] dark:bg-[#E4E4E7] inline-block" />
-          Flood events (count)
+          <span className="w-2.5 h-2 rounded-xs bg-[#0D2621] dark:bg-[#E4E4E7] inline-block" />
+          {lang === 'hi' ? 'जलभराव घटनाएँ (संख्या)' : 'Flood events (count)'}
         </span>
         <span className="flex items-center gap-1.5">
           <span className="w-2.5 h-0.5 bg-amber-600 inline-block" />
-          Avg clearance time (hrs)
+          {lang === 'hi' ? 'औसत निकासी समय (घंटे)' : 'Avg clearance time (hrs)'}
         </span>
       </div>
     </div>

@@ -1,7 +1,7 @@
 import express from "express";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import { GoogleGenAI, Type } from "@google/genai";
+import { GoogleGenAI, ThinkingLevel, Type } from "@google/genai";
 
 // Load local .env if present (Node 22 native loader)
 try {
@@ -31,18 +31,28 @@ function getGeminiClient(): GoogleGenAI | null {
 
 async function generateWithFallback(
   ai: GoogleGenAI,
-  params: Omit<Parameters<GoogleGenAI["models"]["generateContent"]>[0], "model">
+  params: Omit<Parameters<GoogleGenAI["models"]["generateContent"]>[0], "model">,
+  timeoutMs = 15000
 ): Promise<{ response: Awaited<ReturnType<GoogleGenAI["models"]["generateContent"]>>; modelUsed: string }> {
   const models = ["gemini-4-hydrogen", "gemini-3.1-flash-lite"] as const;
   let lastError: unknown;
   for (const model of models) {
     try {
-      const response = await ai.models.generateContent({ ...params, model });
+      const response = await Promise.race([
+        ai.models.generateContent({ ...params, model }),
+        new Promise<never>((_, reject) =>
+          setTimeout(() => reject(new Error(`Gemini request timed out after ${timeoutMs}ms`)), timeoutMs)
+        ),
+      ]);
       return { response, modelUsed: model };
     } catch (err) {
       lastError = err;
       const msg = err instanceof Error ? err.message : String(err);
-      const isTransient = msg.includes("503") || msg.includes("UNAVAILABLE") || msg.includes("429");
+      const isTransient =
+        msg.includes("503") ||
+        msg.includes("UNAVAILABLE") ||
+        msg.includes("429") ||
+        msg.includes("timed out");
       if (!isTransient) throw err;
     }
   }
@@ -188,6 +198,7 @@ async function createServer() {
         causeAnalysis,
         photoBase64,
         photoMimeType,
+        lang = "en",
       } = req.body as {
         description?: string;
         locationName?: string;
@@ -195,6 +206,7 @@ async function createServer() {
         causeAnalysis?: string;
         photoBase64?: string;
         photoMimeType?: string;
+        lang?: "en" | "hi";
       };
 
       const ai = getGeminiClient();
@@ -206,6 +218,7 @@ async function createServer() {
 
       const promptText = `You are the Municipal Corporation of Gurugram (MCG) Flood Command AI Triage Engine.
 Analyze this citizen waterlogging report and optional street photo.
+Language for summary & safetyAdvice: ${lang === "hi" ? "Hindi (Devanagari script)" : "English"}.
 Location: ${locationName}${wardNo ? ` (Ward ${wardNo})` : ""}
 Known MCG Historical Cause: ${causeAnalysis || "Low-lying urban drainage corridor"}
 Citizen Description: ${description || "Waterlogging reported on street"}
@@ -234,6 +247,7 @@ Evaluate:
       const { response, modelUsed } = await generateWithFallback(ai, {
         contents: { parts },
         config: {
+          thinkingConfig: { thinkingLevel: ThinkingLevel.LOW },
           systemInstruction:
             "Return strictly valid JSON matching the schema. Be objective, civic-engineering focused, and concise.",
           responseMimeType: "application/json",
@@ -289,7 +303,7 @@ Evaluate:
       });
     } catch (err) {
       const message = err instanceof Error ? err.message : "Failed to run AI report triage";
-      console.error("[GFC AI Triage] Error:", message);
+      console.error("[SAHIBI AI Triage] Error:", message);
       res.status(500).json({ error: message });
     }
   });
@@ -298,19 +312,19 @@ Evaluate:
   app.post("/api/ai/briefing", async (req, res) => {
     try {
       const {
-        rainfallMm,
-        timelineHourOffset,
-        pumpMitigationActive,
-        highRiskCount,
-        topHotspots,
-        recentCitizenReports,
+        rainfallMm = 40,
+        timelineHourOffset = 0,
+        pumpMitigationActive = false,
+        highRiskCount = 0,
+        topHotspots = [],
+        recentCitizenReports = [],
         lang = "en",
-      } = req.body as {
-        rainfallMm: number;
-        timelineHourOffset: number;
-        pumpMitigationActive: boolean;
-        highRiskCount: number;
-        topHotspots: Array<{
+      } = (req.body ?? {}) as {
+        rainfallMm?: number;
+        timelineHourOffset?: number;
+        pumpMitigationActive?: boolean;
+        highRiskCount?: number;
+        topHotspots?: Array<{
           name: string;
           wardNo: number;
           zone: number;
@@ -319,7 +333,7 @@ Evaluate:
           owningAgency: string;
           jeName: string;
         }>;
-        recentCitizenReports: Array<{
+        recentCitizenReports?: Array<{
           locationName: string;
           severity: string;
           description: string;
@@ -362,6 +376,7 @@ Produce concise, decisive operational commands.`;
       const { response, modelUsed } = await generateWithFallback(ai, {
         contents: prompt,
         config: {
+          thinkingConfig: { thinkingLevel: ThinkingLevel.LOW },
           systemInstruction:
             "You are the Chief Municipal Flood Operations Analyst for Gurugram. Provide concrete, ward-specific directives with zero fluff.",
           responseMimeType: "application/json",
@@ -415,7 +430,7 @@ Produce concise, decisive operational commands.`;
       });
     } catch (err) {
       const message = err instanceof Error ? err.message : "Failed to generate AI briefing";
-      console.error("[GFC AI Briefing] Error:", message);
+      console.error("[SAHIBI AI Briefing] Error:", message);
       res.status(500).json({ error: message });
     }
   });
@@ -440,11 +455,11 @@ Produce concise, decisive operational commands.`;
   }
 
   app.listen(PORT, "0.0.0.0", () => {
-    console.log(`[GFC Server] Listening on http://0.0.0.0:${PORT} (${isProduction ? "production" : "development"})`);
+    console.log(`[SAHIBI Server] Listening on http://0.0.0.0:${PORT} (${isProduction ? "production" : "development"})`);
   });
 }
 
 createServer().catch((err) => {
-  console.error("[GFC Server] Fatal startup error:", err);
+  console.error("[SAHIBI Server] Fatal startup error:", err);
   process.exit(1);
 });

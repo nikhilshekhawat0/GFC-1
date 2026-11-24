@@ -131,7 +131,17 @@ export function RouteSafetyView() {
 
     const maxRisk = hits.length > 0 ? hits[0].tel.riskPct : 18;
     const verdict =
-      maxRisk >= 75 ? 'AVOID CORRIDOR' : maxRisk >= 55 ? 'CAUTION ADVISED' : 'CORRIDOR PASSABLE';
+      maxRisk >= 75
+        ? lang === 'hi'
+          ? 'मार्ग से बचें'
+          : 'AVOID CORRIDOR'
+        : maxRisk >= 55
+          ? lang === 'hi'
+            ? 'सावधानी बरतें'
+            : 'CAUTION ADVISED'
+          : lang === 'hi'
+            ? 'मार्ग सामान्य है'
+            : 'CORRIDOR PASSABLE';
 
     return { hits, maxRisk, verdict, preset };
   }, [
@@ -144,6 +154,7 @@ export function RouteSafetyView() {
     sensors,
     floodReports,
     dispatchRecords,
+    lang,
   ]);
 
   const handleHighlightOnMap = () => {
@@ -205,7 +216,7 @@ export function RouteSafetyView() {
               }}
               className={`p-4 rounded-2xl border text-left transition-all flex flex-col gap-2.5 ${
                 isActive
-                  ? 'border-[#111317] dark:border-[#F4F4F6] bg-white dark:bg-[#1B1E25] shadow-[0_6px_20px_rgba(17,19,23,0.07)]'
+                  ? 'border-[#0D2621] dark:border-[#F4F4F6] bg-white dark:bg-[#1B1E25] shadow-[0_6px_20px_rgba(13,38,33,0.1)]'
                   : 'border-[#EAECEF] dark:border-[#242832] bg-white/95 dark:bg-[#16191F] hover:border-[#D1D5DB] dark:hover:border-[#343947] shadow-[0_2px_8px_rgba(17,19,23,0.03)]'
               }`}
             >
@@ -237,7 +248,7 @@ export function RouteSafetyView() {
               }}
               className={`px-3.5 py-1.5 rounded-full text-xs font-semibold border transition-colors ${
                 activePresetId === p.id
-                  ? 'bg-[#111317] dark:bg-[#F4F4F6] border-transparent text-white dark:text-[#111317]'
+                  ? 'bg-[#0D2621] dark:bg-[#F4F4F6] border-transparent text-white dark:text-[#111317]'
                   : 'border-[#E6E7EC] dark:border-[#282C36] bg-white dark:bg-[#181B20] text-[#525866] dark:text-slate-300 hover:bg-[#F3F4F6] dark:hover:bg-[#23262F]'
               }`}
             >
@@ -261,8 +272,12 @@ export function RouteSafetyView() {
                 setActivePresetId(null);
                 setFromQuery(e.target.value);
               }}
-              placeholder="e.g. Palam Vihar, Sector 21, Basai"
-              className="w-full px-4 py-2.5 rounded-xl text-sm border border-[#E6E7EC] dark:border-[#282C36] bg-[#FAFAFB] dark:bg-[#111317] text-[#111317] dark:text-[#F4F4F6] focus:outline-none focus:ring-2 focus:ring-[#111317]/15"
+              placeholder={
+                lang === 'hi'
+                  ? 'जैसे पालम विहार, सेक्टर 21, बसई'
+                  : 'e.g. Palam Vihar, Sector 21, Basai'
+              }
+              className="w-full px-4 py-2.5 rounded-xl text-sm border border-[#E6E7EC] dark:border-[#282C36] bg-[#FAFAFB] dark:bg-[#111317] text-[#111317] dark:text-[#F4F4F6] focus:outline-none focus:ring-2 focus:ring-[#0D2621]/20"
             />
           </div>
           <div>
@@ -276,8 +291,12 @@ export function RouteSafetyView() {
                 setActivePresetId(null);
                 setToQuery(e.target.value);
               }}
-              placeholder="e.g. Ghata, Sheetla Mandir, Wazirabad"
-              className="w-full px-4 py-2.5 rounded-xl text-sm border border-[#E6E7EC] dark:border-[#282C36] bg-[#FAFAFB] dark:bg-[#111317] text-[#111317] dark:text-[#F4F4F6] focus:outline-none focus:ring-2 focus:ring-[#111317]/15"
+              placeholder={
+                lang === 'hi'
+                  ? 'जैसे घाटा, शीतला मंदिर, वज़ीराबाद'
+                  : 'e.g. Ghata, Sheetla Mandir, Wazirabad'
+              }
+              className="w-full px-4 py-2.5 rounded-xl text-sm border border-[#E6E7EC] dark:border-[#282C36] bg-[#FAFAFB] dark:bg-[#111317] text-[#111317] dark:text-[#F4F4F6] focus:outline-none focus:ring-2 focus:ring-[#0D2621]/20"
             />
           </div>
         </div>
@@ -299,7 +318,7 @@ export function RouteSafetyView() {
               </span>
               <span className="text-xs text-[#9CA3AF]">·</span>
               <span className="text-xs font-mono tabular-nums text-[#525866] dark:text-slate-300">
-                Peak Risk {matched.maxRisk}%
+                {lang === 'hi' ? 'अधिकतम जोखिम' : 'Peak Risk'} {matched.maxRisk}%
               </span>
             </div>
             <p className="text-xs text-[#6B7280] dark:text-slate-400">
@@ -307,12 +326,14 @@ export function RouteSafetyView() {
                 ? lang === 'hi'
                   ? matched.preset.altRouteHi
                   : matched.preset.altRouteEn
-                : 'Review flagged bottlenecks below before entering low-lying roads or underpasses.'}
+                : lang === 'hi'
+                  ? 'निचली सड़कों या अंडरपास में जाने से पहले नीचे चिह्नित जलभराव बिंदु देखें।'
+                  : 'Review flagged bottlenecks below before entering low-lying roads or underpasses.'}
             </p>
           </div>
           <button
             onClick={handleHighlightOnMap}
-            className="inline-flex items-center gap-1.5 px-5 py-2.5 rounded-full bg-[#111317] hover:bg-[#23262F] dark:bg-[#F4F4F6] dark:hover:bg-white text-white dark:text-[#111317] text-xs font-semibold whitespace-nowrap shrink-0 transition-colors"
+            className="inline-flex items-center gap-1.5 px-5 py-2.5 rounded-full bg-[#0D2621] hover:bg-[#153B33] dark:bg-[#F4F4F6] dark:hover:bg-white text-white dark:text-[#111317] text-xs font-semibold whitespace-nowrap shrink-0 transition-colors"
           >
             <Route size={14} />
             <span>{lang === 'hi' ? 'मानचित्र पर देखें' : 'Highlight on Map'}</span>
@@ -371,7 +392,9 @@ export function RouteSafetyView() {
         ))}
         {matched.hits.length === 0 && (
           <div className="p-6 text-center rounded-2xl border border-[#EAECEF] dark:border-[#242832] bg-white dark:bg-[#16191F] text-xs text-[#6B7280] dark:text-slate-400">
-            No MCG flood hotspots match "{fromQuery} {toQuery}". Try a sector number or chowk name.
+            {lang === 'hi'
+              ? `"${fromQuery} ${toQuery}" के लिए कोई MCG जलभराव बिंदु नहीं मिला। सेक्टर नंबर या चौक का नाम आज़माएं।`
+              : `No MCG flood hotspots match "${fromQuery} ${toQuery}". Try a sector number or chowk name.`}
           </div>
         )}
       </div>
@@ -433,7 +456,7 @@ export function AiFloodReportView() {
       setPhotoPreview(dataUrl);
       setPhotoMime(mimeType);
     } catch {
-      addToast('Could not process image file', 'error');
+      addToast(lang === 'hi' ? 'फोटो प्रोसेस नहीं हो सकी' : 'Could not process image file', 'error');
     }
   };
 
@@ -459,14 +482,18 @@ export function AiFloodReportView() {
       setSelectedHotspotIdInput(nearest.id);
 
       addToast(
-        `Real-time location captured (${fix.lat.toFixed(5)}, ${fix.lng.toFixed(5)})`,
+        lang === 'hi'
+          ? `रीयल-टाइम स्थान कैप्चर किया गया (${fix.lat.toFixed(5)}, ${fix.lng.toFixed(5)})`
+          : `Real-time location captured (${fix.lat.toFixed(5)}, ${fix.lng.toFixed(5)})`,
         'success'
       );
     } catch (err) {
       addToast(
         err instanceof Error
           ? err.message
-          : 'Location permission denied — please choose your area from the list',
+          : lang === 'hi'
+            ? 'लोकेशन अनुमति अस्वीकृत — कृपया सूची से अपना क्षेत्र चुनें'
+            : 'Location permission denied — please choose your area from the list',
         'warning'
       );
     } finally {
@@ -487,21 +514,35 @@ export function AiFloodReportView() {
       });
       setPostLoginRedirect('report');
       setActiveView('citizen-login');
-      addToast('Sign in with your phone number to register this flood report', 'info');
+      addToast(
+        lang === 'hi'
+          ? 'जलभराव रिपोर्ट दर्ज करने के लिए अपने फ़ोन नंबर से साइन इन करें'
+          : 'Sign in with your phone number to register this flood report',
+        'info'
+      );
       return;
     }
 
     if (!description.trim() && !photoPreview) {
-      addToast('Please describe the waterlogging or attach a street photo', 'warning');
+      addToast(
+        lang === 'hi'
+          ? 'कृपया जलभराव का विवरण लिखें या सड़क की फोटो जोड़ें'
+          : 'Please describe the waterlogging or attach a street photo',
+        'warning'
+      );
       return;
     }
 
     const reporterLabel =
       citizenUser?.name ||
-      (authorityUser ? `${authorityUser.name} (${authorityUser.employeeId})` : 'Gurugram Resident');
+      (authorityUser
+        ? `${authorityUser.name} (${authorityUser.employeeId})`
+        : lang === 'hi'
+          ? 'गुरुग्राम निवासी'
+          : 'Gurugram Resident');
 
     setSubmitting(true);
-    const gpsLabel = `Live GPS (${coords.lat.toFixed(4)}, ${coords.lng.toFixed(4)})`;
+    const gpsLabel = `${lang === 'hi' ? 'लाइव GPS' : 'Live GPS'} (${coords.lat.toFixed(4)}, ${coords.lng.toFixed(4)})`;
     const locationLabel =
       customLocation.trim() ||
       (locationMode === 'gps' ? gpsLabel : selectedHotspot?.name || 'Gurugram Street');
@@ -517,6 +558,7 @@ export function AiFloodReportView() {
           causeAnalysis: selectedHotspot?.causeAnalysis,
           photoBase64: photoPreview || undefined,
           photoMimeType: photoPreview ? photoMime : undefined,
+          lang,
         }),
       });
 
@@ -532,7 +574,10 @@ export function AiFloodReportView() {
         estimatedDepthCm: 28,
         blockedDrainSuspected: true,
         recommendedAgency: selectedHotspot?.owningAgency || 'MCG',
-        triageSummary: `Report logged by ${reporterLabel} for ${locationLabel}; Ward ${selectedHotspot?.wardNo || 'N/A'} Engineer notified for drain inspection.`,
+        triageSummary:
+          lang === 'hi'
+            ? `${reporterLabel} द्वारा ${locationLabel} के लिए रिपोर्ट दर्ज; वार्ड ${selectedHotspot?.wardNo || 'N/A'} अभियंता को जांच हेतु सूचित किया गया।`
+            : `Report logged by ${reporterLabel} for ${locationLabel}; Ward ${selectedHotspot?.wardNo || 'N/A'} Engineer notified for drain inspection.`,
         confidence: 82,
       };
 
@@ -551,7 +596,12 @@ export function AiFloodReportView() {
           confidence: Number(data.confidence ?? 85),
         };
       } else {
-        addToast('Automatic photo check busy — report saved and routed to the Ward Engineer', 'info');
+        addToast(
+          lang === 'hi'
+            ? 'स्वचालित फोटो जांच व्यस्त है — रिपोर्ट सहेजी गई और वार्ड अभियंता को भेज दी गई'
+            : 'Automatic photo check busy — report saved and routed to the Ward Engineer',
+          'info'
+        );
       }
 
       const reportLat = locationMode === 'gps' ? coords.lat : selectedHotspot ? selectedHotspot.lat : coords.lat;
@@ -598,7 +648,9 @@ export function AiFloodReportView() {
               {t('citizen.report_flood', lang)}
             </h2>
             <p className="text-xs sm:text-sm text-[#6B7280] dark:text-slate-400 mt-0.5">
-              Tell us where water has collected on your street so the right MCG Ward Engineer can respond quickly.
+              {lang === 'hi'
+                ? 'अपनी गली में जलभराव की जानकारी दें ताकि संबंधित MCG वार्ड अभियंता तुरंत कार्रवाई कर सकें।'
+                : 'Tell us where water has collected on your street so the right MCG Ward Engineer can respond quickly.'}
             </p>
           </div>
         </div>
@@ -622,10 +674,18 @@ export function AiFloodReportView() {
             <Navigation size={15} className={locating ? 'animate-spin' : ''} />
           </div>
           <p className="text-xs font-bold text-[#111317] dark:text-[#F4F4F6]">
-            {locating ? 'Detecting GPS...' : 'Pin Real-Time GPS'}
+            {locating
+              ? lang === 'hi'
+                ? 'GPS खोजा जा रहा है...'
+                : 'Detecting GPS...'
+              : lang === 'hi'
+                ? 'रीयल-टाइम GPS पिन करें'
+                : 'Pin Real-Time GPS'}
           </p>
           <p className="text-[11px] text-[#6B7280] dark:text-slate-400">
-            Lock exact street coordinates automatically for ward crew dispatch.
+            {lang === 'hi'
+              ? 'वार्ड टीम भेजने के लिए सड़क के सटीक निर्देशांक अपने आप लॉक करें।'
+              : 'Lock exact street coordinates automatically for ward crew dispatch.'}
           </p>
         </button>
 
@@ -633,9 +693,13 @@ export function AiFloodReportView() {
           <div className="w-8 h-8 rounded-xl bg-[#FCE9DF] dark:bg-[#3A2822] text-[#9A4B26] dark:text-[#F2B59A] flex items-center justify-center">
             <Upload size={15} />
           </div>
-          <p className="text-xs font-bold text-[#111317] dark:text-[#F4F4F6]">Attach Street Photo</p>
+          <p className="text-xs font-bold text-[#111317] dark:text-[#F4F4F6]">
+            {lang === 'hi' ? 'सड़क की फोटो जोड़ें' : 'Attach Street Photo'}
+          </p>
           <p className="text-[11px] text-[#6B7280] dark:text-slate-400">
-            Estimate standing water depth and blocked drain covers from field photos.
+            {lang === 'hi'
+              ? 'फोटो से पानी की गहराई और बंद नाले के ढक्कन का अनुमान लगाएं।'
+              : 'Estimate standing water depth and blocked drain covers from field photos.'}
           </p>
         </div>
 
@@ -643,9 +707,13 @@ export function AiFloodReportView() {
           <div className="w-8 h-8 rounded-xl bg-[#EAE4FA] dark:bg-[#2B253A] text-[#5B3D9E] dark:text-[#C8B9F6] flex items-center justify-center">
             <CheckCircle2 size={15} />
           </div>
-          <p className="text-xs font-bold text-[#111317] dark:text-[#F4F4F6]">Direct JE Routing</p>
+          <p className="text-xs font-bold text-[#111317] dark:text-[#F4F4F6]">
+            {lang === 'hi' ? 'सीधा JE रूटिंग' : 'Direct JE Routing'}
+          </p>
           <p className="text-[11px] text-[#6B7280] dark:text-slate-400">
-            Instant WhatsApp and call handoff to the responsible MCG Ward Engineer.
+            {lang === 'hi'
+              ? 'जिम्मेदार MCG वार्ड अभियंता को तुरंत व्हाट्सएप और कॉल संपर्क।'
+              : 'Instant WhatsApp and call handoff to the responsible MCG Ward Engineer.'}
           </p>
         </div>
       </div>
@@ -656,8 +724,12 @@ export function AiFloodReportView() {
           <div className="flex-1">
             <label className="block text-[11px] font-semibold text-[#6B7280] dark:text-slate-400 mb-1.5">
               {locationMode === 'gps'
-                ? 'Routing Ward (Optional — Pin Uses Your Real-Time GPS)'
-                : 'Where is the flooding? (Select Sector / Road)'}
+                ? lang === 'hi'
+                  ? 'रूटिंग वार्ड (वैकल्पिक — पिन आपका रीयल-टाइम GPS उपयोग करता है)'
+                  : 'Routing Ward (Optional — Pin Uses Your Real-Time GPS)'
+                : lang === 'hi'
+                  ? 'जलभराव कहाँ है? (सेक्टर / सड़क चुनें)'
+                  : 'Where is the flooding? (Select Sector / Road)'}
             </label>
             <select
               value={selectedHotspotIdInput}
@@ -685,7 +757,13 @@ export function AiFloodReportView() {
               className="w-full sm:w-auto inline-flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-full text-xs font-semibold border border-[#E6E7EC] dark:border-[#282C36] bg-[#F3F4F6] dark:bg-[#23262F] text-[#111317] dark:text-[#F4F4F6] hover:bg-[#EAECEF] dark:hover:bg-[#2E323D] transition-colors"
             >
               <Navigation size={13} className={locating ? 'animate-spin' : ''} />
-              {locating ? 'Fetching location...' : 'Fetch My Location'}
+              {locating
+                ? lang === 'hi'
+                  ? 'स्थान खोज रहे हैं...'
+                  : 'Fetching location...'
+                : lang === 'hi'
+                  ? 'मेरा स्थान प्राप्त करें'
+                  : 'Fetch My Location'}
             </button>
           </div>
         </div>
@@ -696,7 +774,7 @@ export function AiFloodReportView() {
               <MapPin size={14} className="text-[#111317] dark:text-blue-400 shrink-0" />
               <div className="min-w-0">
                 <p className="font-semibold text-[#111317] dark:text-[#F4F4F6]">
-                  Real-Time Location:{' '}
+                  {lang === 'hi' ? 'रीयल-टाइम स्थान:' : 'Real-Time Location:'}{' '}
                   <span className="font-mono">
                     {coords.lat.toFixed(5)}, {coords.lng.toFixed(5)}
                   </span>
@@ -725,20 +803,26 @@ export function AiFloodReportView() {
               }}
               className="text-xs font-semibold text-[#111317] dark:text-white hover:underline shrink-0"
             >
-              Show on Map
+              {lang === 'hi' ? 'मानचित्र पर दिखाएं' : 'Show on Map'}
             </button>
           </div>
         )}
 
         <div>
           <label className="block text-[11px] font-semibold text-[#6B7280] dark:text-slate-400 mb-1.5">
-            Nearby Landmark or House / Gate Number (optional)
+            {lang === 'hi'
+              ? 'नजदीकी लैंडमार्क या मकान / गेट नंबर (वैकल्पिक)'
+              : 'Nearby Landmark or House / Gate Number (optional)'}
           </label>
           <input
             type="text"
             value={customLocation}
             onChange={(e) => setCustomLocation(e.target.value)}
-            placeholder="e.g. Outside Gate No. 2, near Mother Dairy booth"
+            placeholder={
+              lang === 'hi'
+                ? 'जैसे: गेट नं. 2 के बाहर, मदर डेयरी बूथ के पास'
+                : 'e.g. Outside Gate No. 2, near Mother Dairy booth'
+            }
             className="w-full px-3.5 py-2.5 rounded-xl text-sm border border-[#E6E7EC] dark:border-[#282C36] bg-[#FAFAFB] dark:bg-[#111317] text-[#111317] dark:text-[#F4F4F6]"
           />
         </div>
@@ -746,22 +830,28 @@ export function AiFloodReportView() {
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
             <label className="block text-[11px] font-semibold text-[#6B7280] dark:text-slate-400 mb-1.5">
-              Photo of the Flooded Road (optional)
+              {lang === 'hi'
+                ? 'जलभराव वाली सड़क की फोटो (वैकल्पिक)'
+                : 'Photo of the Flooded Road (optional)'}
             </label>
-            <label className="flex flex-col items-center justify-center h-32 rounded-2xl border border-dashed border-[#D4D8E0] dark:border-[#343947] bg-[#FAFAFB] dark:bg-[#111317] cursor-pointer hover:border-[#111317] dark:hover:border-white transition-colors overflow-hidden">
+            <label className="flex flex-col items-center justify-center h-32 rounded-2xl border border-dashed border-[#D4D8E0] dark:border-[#343947] bg-[#FAFAFB] dark:bg-[#111317] cursor-pointer hover:border-[#0D2621] dark:hover:border-white transition-colors overflow-hidden">
               {photoPreview ? (
                 <img
                   src={photoPreview}
-                  alt="Uploaded street waterlogging preview"
+                  alt={lang === 'hi' ? 'अपलोड की गई सड़क जलभराव फोटो' : 'Uploaded street waterlogging preview'}
                   className="w-full h-full object-cover"
                 />
               ) : (
                 <div className="text-center px-3">
                   <Upload size={20} className="mx-auto text-[#6B7280] mb-1.5" />
                   <p className="text-xs font-semibold text-[#111317] dark:text-[#F4F4F6]">
-                    Click to upload a street photo
+                    {lang === 'hi' ? 'सड़क की फोटो अपलोड करें' : 'Click to upload a street photo'}
                   </p>
-                  <p className="text-[11px] text-[#6B7280]">Helps estimate water depth automatically</p>
+                  <p className="text-[11px] text-[#6B7280]">
+                    {lang === 'hi'
+                      ? 'पानी की गहराई का अनुमान लगाने में मदद करता है'
+                      : 'Helps estimate water depth automatically'}
+                  </p>
                 </div>
               )}
               <input type="file" accept="image/*" onChange={handlePhotoUpload} className="hidden" />
@@ -770,13 +860,17 @@ export function AiFloodReportView() {
 
           <div>
             <label className="block text-[11px] font-semibold text-[#6B7280] dark:text-slate-400 mb-1.5">
-              What does the street look like?
+              {lang === 'hi' ? 'सड़क की स्थिति कैसी दिखती है?' : 'What does the street look like?'}
             </label>
             <textarea
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               rows={5}
-              placeholder="e.g. Knee-deep water, cars are stalled, drain cover looks blocked by garbage..."
+              placeholder={
+                lang === 'hi'
+                  ? 'जैसे: घुटने तक पानी है, कारें बंद हो गई हैं, नाले का ढक्कन कचरे से बंद लग रहा है...'
+                  : 'e.g. Knee-deep water, cars are stalled, drain cover looks blocked by garbage...'
+              }
               className="w-full h-32 px-3.5 py-2.5 rounded-2xl text-sm border border-[#E6E7EC] dark:border-[#282C36] bg-[#FAFAFB] dark:bg-[#111317] text-[#111317] dark:text-[#F4F4F6] resize-none"
             />
           </div>
@@ -785,43 +879,59 @@ export function AiFloodReportView() {
         {citizenUser ? (
           <div className="flex items-center justify-between px-4 py-2.5 rounded-xl bg-[#F3F4F6] dark:bg-[#1D2028] border border-[#E6E7EC] dark:border-[#282C36] text-xs text-[#525866] dark:text-slate-300">
             <span>
-              Reporting as <strong className="text-[#111317] dark:text-[#F4F4F6]">{citizenUser.name}</strong> (+91 {citizenUser.phone})
+              {lang === 'hi' ? 'रिपोर्टकर्ता:' : 'Reporting as'}{' '}
+              <strong className="text-[#111317] dark:text-[#F4F4F6]">{citizenUser.name}</strong> (+91{' '}
+              {citizenUser.phone})
             </span>
             <button
               type="button"
               onClick={() => setActiveView('settings')}
               className="text-[#111317] dark:text-white font-semibold hover:underline"
             >
-              Account
+              {lang === 'hi' ? 'खाता' : 'Account'}
             </button>
           </div>
         ) : authorityUser ? (
           <div className="flex items-center justify-between px-4 py-2.5 rounded-xl bg-[#F3F4F6] dark:bg-[#1D2028] border border-[#E6E7EC] dark:border-[#282C36] text-xs text-[#525866] dark:text-slate-300">
             <span>
-              Reporting as <strong className="text-[#111317] dark:text-[#F4F4F6]">{authorityUser.name}</strong> ({authorityUser.employeeId})
+              {lang === 'hi' ? 'रिपोर्टकर्ता:' : 'Reporting as'}{' '}
+              <strong className="text-[#111317] dark:text-[#F4F4F6]">{authorityUser.name}</strong> (
+              {authorityUser.employeeId})
             </span>
           </div>
         ) : (
           <p className="text-xs text-[#6B7280] dark:text-slate-400">
-            You can browse reports without signing in. When you click submit, you will be asked to sign in with your phone number to register this report.
+            {lang === 'hi'
+              ? 'आप बिना साइन इन किए रिपोर्ट देख सकते हैं। सबमिट करने पर, रिपोर्ट दर्ज करने के लिए आपसे फ़ोन नंबर से साइन इन करने के लिए कहा जाएगा।'
+              : 'You can browse reports without signing in. When you click submit, you will be asked to sign in with your phone number to register this report.'}
           </p>
         )}
 
         <button
           onClick={handleSubmit}
           disabled={submitting}
-          className="w-full py-3 rounded-full bg-[#111317] hover:bg-[#23262F] dark:bg-[#F4F4F6] dark:hover:bg-white text-white dark:text-[#111317] text-sm font-semibold flex items-center justify-center gap-2 disabled:opacity-60 transition-colors shadow-xs"
+          className="w-full py-3 rounded-full bg-[#0D2621] hover:bg-[#153B33] dark:bg-[#F4F4F6] dark:hover:bg-white text-white dark:text-[#111317] text-sm font-semibold flex items-center justify-center gap-2 disabled:opacity-60 transition-colors shadow-xs"
         >
           {submitting ? (
             <>
               <Loader2 size={16} className="animate-spin" />
-              <span>Checking & Sending to Ward Engineer...</span>
+              <span>
+                {lang === 'hi'
+                  ? 'जांच हो रही है और वार्ड अभियंता को भेज रहे हैं...'
+                  : 'Checking & Sending to Ward Engineer...'}
+              </span>
             </>
           ) : (
             <>
               <Camera size={16} />
               <span>
-                {citizenUser || authorityUser ? 'Send Flood Report' : 'Sign In & Register Flood Report'}
+                {citizenUser || authorityUser
+                  ? lang === 'hi'
+                    ? 'जलभराव रिपोर्ट भेजें'
+                    : 'Send Flood Report'
+                  : lang === 'hi'
+                    ? 'साइन इन करें और रिपोर्ट दर्ज करें'
+                    : 'Sign In & Register Flood Report'}
               </span>
             </>
           )}
@@ -835,7 +945,9 @@ export function AiFloodReportView() {
             <div className="flex items-center gap-2">
               <CheckCircle2 size={18} className="text-emerald-600 dark:text-emerald-400" />
               <span className="text-sm font-bold text-[#111317] dark:text-[#F4F4F6]">
-                Report Received · Assessed as {lastTriaged.ai_severity.toUpperCase()} (~{lastTriaged.ai_depth_cm} cm deep)
+                {lang === 'hi'
+                  ? `रिपोर्ट प्राप्त · ${lastTriaged.ai_severity.toUpperCase()} (~${lastTriaged.ai_depth_cm} सेमी गहरा)`
+                  : `Report Received · Assessed as ${lastTriaged.ai_severity.toUpperCase()} (~${lastTriaged.ai_depth_cm} cm deep)`}
               </span>
             </div>
           </div>
@@ -847,7 +959,7 @@ export function AiFloodReportView() {
                 className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-semibold bg-white dark:bg-[#181B20] border border-[#E6E7EC] dark:border-[#282C36] text-[#111317] dark:text-[#F4F4F6]"
               >
                 <Phone size={12} />
-                Call Ward JE: {selectedHotspot.contacts.je.name}
+                {lang === 'hi' ? 'वार्ड JE को कॉल:' : 'Call Ward JE:'} {selectedHotspot.contacts.je.name}
               </a>
               <a
                 href={`https://wa.me/91${selectedHotspot.contacts.je.phone.replace(/\D/g, '')}?text=${encodeURIComponent(
@@ -858,7 +970,7 @@ export function AiFloodReportView() {
                 className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-semibold bg-emerald-600 text-white"
               >
                 <MessageCircle size={12} />
-                WhatsApp Ward JE
+                {lang === 'hi' ? 'वार्ड JE को व्हाट्सएप' : 'WhatsApp Ward JE'}
               </a>
             </div>
           )}
@@ -868,7 +980,9 @@ export function AiFloodReportView() {
       {/* Live Community Report Stream */}
       <div className="space-y-2.5">
         <h3 className="text-xs font-semibold text-[#6B7280] dark:text-slate-400">
-          Recent Resident Flood Reports ({floodReports.length})
+          {lang === 'hi'
+            ? `हाल की निवासी जलभराव रिपोर्ट (${floodReports.length})`
+            : `Recent Resident Flood Reports (${floodReports.length})`}
         </h3>
         {floodReports.map((rep) => (
           <div
@@ -886,10 +1000,20 @@ export function AiFloodReportView() {
                         : 'text-[#111317] dark:text-cyan-400'
                   }`}
                 >
-                  {rep.ai_severity}
+                  {lang === 'hi'
+                    ? rep.ai_severity === 'critical'
+                      ? 'गंभीर'
+                      : rep.ai_severity === 'high'
+                        ? 'अधिक'
+                        : rep.ai_severity === 'moderate'
+                          ? 'मध्यम'
+                          : 'कम'
+                    : rep.ai_severity}
                 </span>
                 <span className="text-[#9CA3AF]">·</span>
-                <span className="text-[#6B7280] dark:text-slate-400">~{rep.ai_depth_cm} cm</span>
+                <span className="text-[#6B7280] dark:text-slate-400">
+                  ~{rep.ai_depth_cm} {lang === 'hi' ? 'सेमी' : 'cm'}
+                </span>
                 <span className="text-[#9CA3AF]">·</span>
                 <span className="text-[#6B7280] dark:text-slate-400">{rep.ai_recommended_agency}</span>
               </div>
@@ -899,7 +1023,7 @@ export function AiFloodReportView() {
               <p className="text-xs text-[#525866] dark:text-slate-300">{rep.description}</p>
               {rep.ai_summary && (
                 <p className="text-[11px] text-[#6B7280] dark:text-slate-400">
-                  Assessment: {rep.ai_summary}
+                  {lang === 'hi' ? 'आकलन:' : 'Assessment:'} {rep.ai_summary}
                 </p>
               )}
             </div>
@@ -911,7 +1035,7 @@ export function AiFloodReportView() {
                 }}
                 className="px-3 py-1 rounded-full bg-[#F3F4F6] dark:bg-[#23262F] text-xs font-semibold text-[#111317] dark:text-[#F4F4F6] hover:bg-[#EAECEF] shrink-0"
               >
-                Map
+                {lang === 'hi' ? 'मानचित्र' : 'Map'}
               </button>
             )}
           </div>
@@ -940,11 +1064,16 @@ export function CitizenAlertsView() {
     if (!citizenUser && !authorityUser) {
       setPostLoginRedirect('alerts');
       setActiveView('citizen-login');
-      addToast('Sign in with your phone number to register ward rain alerts', 'info');
+      addToast(
+        lang === 'hi'
+          ? 'वार्ड वर्षा अलर्ट सक्रिय करने के लिए अपने फ़ोन नंबर से साइन इन करें'
+          : 'Sign in with your phone number to register ward rain alerts',
+        'info'
+      );
       return;
     }
     if (!phone.trim()) {
-      addToast('Enter a mobile number', 'warning');
+      addToast(lang === 'hi' ? 'मोबाइल नंबर दर्ज करें' : 'Enter a mobile number', 'warning');
       return;
     }
     const h = mcgHotspots.find((x) => x.id === hotspotId);
@@ -970,7 +1099,9 @@ export function CitizenAlertsView() {
               {t('citizen.subscribe_alerts', lang)}
             </h2>
             <p className="text-xs text-[#6B7280] dark:text-slate-400 mt-0.5">
-              Receive proactive T-2h waterlogging alerts for your Ward in English or Hindi
+              {lang === 'hi'
+                ? 'अपने वार्ड के लिए 2 घंटे पहले जलभराव चेतावनी अंग्रेज़ी या हिन्दी में प्राप्त करें'
+                : 'Receive proactive T-2h waterlogging alerts for your Ward in English or Hindi'}
             </p>
           </div>
         </div>
@@ -988,20 +1119,29 @@ export function CitizenAlertsView() {
         {([
           {
             id: 'whatsapp',
-            title: 'WhatsApp Alerts',
-            desc: 'Instant ward flood alerts & alternate road guidance via WhatsApp.',
+            title: lang === 'hi' ? 'व्हाट्सएप अलर्ट' : 'WhatsApp Alerts',
+            desc:
+              lang === 'hi'
+                ? 'व्हाट्सएप पर तुरंत वार्ड जलभराव चेतावनी और वैकल्पिक मार्ग मार्गदर्शन।'
+                : 'Instant ward flood alerts & alternate road guidance via WhatsApp.',
             iconBg: 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/50 dark:text-emerald-300',
           },
           {
             id: 'sms',
-            title: 'SMS Alerts',
-            desc: 'Low-bandwidth text warnings that deliver even on weak cellular data.',
+            title: lang === 'hi' ? 'SMS अलर्ट' : 'SMS Alerts',
+            desc:
+              lang === 'hi'
+                ? 'कम डेटा नेटवर्क पर भी पहुंचने वाले हल्के टेक्स्ट अलर्ट।'
+                : 'Low-bandwidth text warnings that deliver even on weak cellular data.',
             iconBg: 'bg-[#EAE4FA] text-[#5B3D9E] dark:bg-[#2B253A] dark:text-[#C8B9F6]',
           },
           {
             id: 'ivr',
-            title: 'Voice IVR Call',
-            desc: 'Automated Hindi/English voice warnings for senior residents.',
+            title: lang === 'hi' ? 'वॉइस IVR कॉल' : 'Voice IVR Call',
+            desc:
+              lang === 'hi'
+                ? 'वरिष्ठ नागरिकों के लिए स्वचालित हिन्दी/अंग्रेज़ी वॉइस कॉल चेतावनी।'
+                : 'Automated Hindi/English voice warnings for senior residents.',
             iconBg: 'bg-[#FCE9DF] text-[#9A4B26] dark:bg-[#3A2822] dark:text-[#F2B59A]',
           },
         ] as const).map((item) => {
@@ -1013,7 +1153,7 @@ export function CitizenAlertsView() {
               onClick={() => setChannel(item.id)}
               className={`p-4 rounded-2xl border text-left transition-all flex flex-col gap-2 ${
                 active
-                  ? 'border-[#111317] dark:border-[#F4F4F6] bg-white dark:bg-[#1B1E25] shadow-[0_6px_20px_rgba(17,19,23,0.07)]'
+                  ? 'border-[#0D2621] dark:border-[#F4F4F6] bg-white dark:bg-[#1B1E25] shadow-[0_6px_20px_rgba(13,38,33,0.1)]'
                   : 'border-[#EAECEF] dark:border-[#242832] bg-white/95 dark:bg-[#16191F] hover:border-[#D1D5DB]'
               }`}
             >
@@ -1030,7 +1170,7 @@ export function CitizenAlertsView() {
       <div className="p-5 sm:p-6 rounded-2xl border border-[#EAECEF] dark:border-[#242832] bg-white dark:bg-[#16191F] shadow-[0_2px_10px_rgba(17,19,23,0.03)] space-y-4">
         <div>
           <label className="block text-[11px] font-semibold text-[#6B7280] dark:text-slate-400 mb-1.5">
-            Mobile / WhatsApp Number
+            {lang === 'hi' ? 'मोबाइल / व्हाट्सएप नंबर' : 'Mobile / WhatsApp Number'}
           </label>
           <input
             type="tel"
@@ -1043,7 +1183,7 @@ export function CitizenAlertsView() {
 
         <div>
           <label className="block text-[11px] font-semibold text-[#6B7280] dark:text-slate-400 mb-1.5">
-            Ward / Hotspot Zone
+            {lang === 'hi' ? 'वार्ड / हॉटस्पॉट क्षेत्र' : 'Ward / Hotspot Zone'}
           </label>
           <select
             value={hotspotId}
@@ -1061,7 +1201,7 @@ export function CitizenAlertsView() {
 
         <button
           onClick={handleSubscribe}
-          className="w-full py-3 rounded-full bg-[#111317] hover:bg-[#23262F] dark:bg-[#F4F4F6] dark:hover:bg-white text-white dark:text-[#111317] text-sm font-semibold flex items-center justify-center gap-2 transition-colors"
+          className="w-full py-3 rounded-full bg-[#0D2621] hover:bg-[#153B33] dark:bg-[#F4F4F6] dark:hover:bg-white text-white dark:text-[#111317] text-sm font-semibold flex items-center justify-center gap-2 transition-colors"
         >
           <Bell size={15} />
           {lang === 'hi' ? 'वार्ड बारिश अलर्ट सक्रिय करें' : 'Activate Proactive Alerts'}
@@ -1108,10 +1248,13 @@ export function CitizenCalibrationView() {
           </div>
           <div>
             <h2 className="text-xl font-bold tracking-tight text-[#111317] dark:text-[#F4F4F6]">
-              Model Calibration & Transparency
+              {lang === 'hi' ? 'मॉडल सटीकता और पारदर्शिता' : 'Model Calibration & Transparency'}
             </h2>
             <p className="text-xs text-[#6B7280] dark:text-slate-400 mt-0.5">
-              {calibrationData.period} · Verified against citizen reports & MCG field logs
+              {lang === 'hi' ? 'मानसून तैयारी ऑडिट · 30-दिन' : calibrationData.period} ·{' '}
+              {lang === 'hi'
+                ? 'नागरिक रिपोर्ट और MCG फील्ड लॉग के विरुद्ध सत्यापित'
+                : 'Verified against citizen reports & MCG field logs'}
             </p>
           </div>
         </div>
@@ -1126,19 +1269,25 @@ export function CitizenCalibrationView() {
 
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
         <div className="p-5 rounded-2xl border border-[#EAECEF] dark:border-[#242832] bg-white dark:bg-[#16191F] shadow-[0_2px_10px_rgba(17,19,23,0.03)]">
-          <p className="text-xs font-medium text-[#6B7280] dark:text-slate-400">Alerts Issued</p>
+          <p className="text-xs font-medium text-[#6B7280] dark:text-slate-400">
+            {lang === 'hi' ? 'जारी अलर्ट' : 'Alerts Issued'}
+          </p>
           <p className="text-2xl font-mono font-bold tabular-nums text-[#111317] dark:text-[#F4F4F6] mt-1">
             {calibrationData.alerts_issued}
           </p>
         </div>
         <div className="p-5 rounded-2xl border border-[#EAECEF] dark:border-[#242832] bg-white dark:bg-[#16191F] shadow-[0_2px_10px_rgba(17,19,23,0.03)]">
-          <p className="text-xs font-medium text-[#6B7280] dark:text-slate-400">Verified Match</p>
+          <p className="text-xs font-medium text-[#6B7280] dark:text-slate-400">
+            {lang === 'hi' ? 'सत्यापित मिलान' : 'Verified Match'}
+          </p>
           <p className="text-2xl font-mono font-bold tabular-nums text-emerald-600 dark:text-emerald-400 mt-1">
             {calibrationData.alerts_verified_correct}
           </p>
         </div>
         <div className="p-5 rounded-2xl border border-[#EAECEF] dark:border-[#242832] bg-white dark:bg-[#16191F] shadow-[0_2px_10px_rgba(17,19,23,0.03)]">
-          <p className="text-xs font-medium text-[#6B7280] dark:text-slate-400">Accuracy</p>
+          <p className="text-xs font-medium text-[#6B7280] dark:text-slate-400">
+            {lang === 'hi' ? 'सटीकता' : 'Accuracy'}
+          </p>
           <p className="text-2xl font-mono font-bold tabular-nums text-[#111317] dark:text-white mt-1">
             {calibrationData.accuracy_pct}%
           </p>
@@ -1148,7 +1297,9 @@ export function CitizenCalibrationView() {
       <div className="p-5 rounded-2xl border border-[#EAECEF] dark:border-[#242832] bg-white dark:bg-[#16191F] shadow-[0_2px_10px_rgba(17,19,23,0.03)]">
         <div className="flex items-center gap-2 mb-3 text-xs font-semibold text-[#111317] dark:text-[#F4F4F6]">
           <Target size={15} className="text-[#111317] dark:text-slate-200" />
-          <span>Weekly Prediction Verification</span>
+          <span>
+            {lang === 'hi' ? 'साप्ताहिक पूर्वानुमान सत्यापन' : 'Weekly Prediction Verification'}
+          </span>
         </div>
         <div className="h-56">
           <ResponsiveContainer width="100%" height="100%">
@@ -1156,8 +1307,18 @@ export function CitizenCalibrationView() {
               <XAxis dataKey="week" tick={{ fontSize: 11 }} />
               <YAxis tick={{ fontSize: 11 }} allowDecimals={false} />
               <Tooltip />
-              <Bar dataKey="alerts" fill="#181A1F" radius={[4, 4, 0, 0]} name="Alerts Issued" />
-              <Bar dataKey="correct" fill="#10b981" radius={[4, 4, 0, 0]} name="Verified Correct" />
+              <Bar
+                dataKey="alerts"
+                fill="#0D2621"
+                radius={[4, 4, 0, 0]}
+                name={lang === 'hi' ? 'जारी अलर्ट' : 'Alerts Issued'}
+              />
+              <Bar
+                dataKey="correct"
+                fill="#10b981"
+                radius={[4, 4, 0, 0]}
+                name={lang === 'hi' ? 'सत्यापित सही' : 'Verified Correct'}
+              />
             </BarChart>
           </ResponsiveContainer>
         </div>

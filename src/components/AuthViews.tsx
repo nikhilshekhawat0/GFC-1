@@ -8,7 +8,6 @@ import {
   CheckCircle2,
   ArrowRight,
   Circle,
-  Droplets,
 } from 'lucide-react';
 import { MCG_OFFICIAL_CHANNELS } from '../data/mcgHotspots';
 import { useStore } from '../store/useStore';
@@ -333,13 +332,22 @@ export function DedicatedLoginPage({ initialPortal }: { initialPortal: 'citizen'
           <button
             type="button"
             onClick={handleBackToMap}
-            className="inline-flex items-center gap-2 text-left whitespace-nowrap hover:opacity-90 transition-opacity"
+            className="inline-flex items-center gap-2.5 text-left whitespace-nowrap hover:opacity-90 transition-opacity"
           >
-            <span className="w-7 h-7 rounded-full bg-[#111317] dark:bg-[#F4F4F6] text-white dark:text-[#111317] flex items-center justify-center shrink-0">
-              <Droplets size={14} />
+            <span className="w-8 h-8 rounded-full overflow-hidden bg-[#0D2621] border border-[#0D2621]/20 dark:border-[#2D3834] flex items-center justify-center shrink-0">
+              <img
+                src="/assets/aistudio/WhatsApp_Image_2026-11-24_at_19.35.38_86e861e1.jpeg"
+                alt="SAHIBI emblem"
+                className="w-full h-full object-cover object-center scale-[1.78]"
+              />
             </span>
-            <span className="text-sm sm:text-base font-bold tracking-tight text-[#111317] dark:text-[#F4F4F6]">
-              {t('app.name', lang)}
+            <span className="flex flex-col leading-none">
+              <span className="text-sm sm:text-[15px] font-bold tracking-[0.06em] text-[#0D2621] dark:text-[#F4F4F6]">
+                {t('app.name', lang)}
+              </span>
+              <span className="text-[9px] font-semibold tracking-[0.12em] text-[#6B7280] dark:text-slate-400 mt-0.5">
+                {t('app.tagline', lang)}
+              </span>
             </span>
           </button>
           <span className="hidden sm:inline-block h-4 w-px bg-[#E6E7EC] dark:bg-[#282C36]" />
@@ -377,7 +385,7 @@ export function DedicatedLoginPage({ initialPortal }: { initialPortal: 'citizen'
           <button
             type="button"
             onClick={handleBackToMap}
-            className="px-3.5 py-1.5 rounded-full bg-[#111317] hover:bg-[#23262F] dark:bg-[#F4F4F6] dark:hover:bg-white text-white dark:text-[#111317] text-xs font-semibold transition-colors whitespace-nowrap"
+            className="px-3.5 py-1.5 rounded-full bg-[#0D2621] hover:bg-[#153B33] dark:bg-[#F4F4F6] dark:hover:bg-white text-white dark:text-[#111317] text-xs font-semibold transition-colors whitespace-nowrap"
           >
             {copy.backToMap}
           </button>
@@ -427,7 +435,7 @@ export function DedicatedLoginPage({ initialPortal }: { initialPortal: 'citizen'
                   <button
                     type="button"
                     onClick={() => setActiveView('report')}
-                    className="flex-1 py-2.5 px-3 rounded-full bg-[#111317] hover:bg-[#23262F] dark:bg-[#F4F4F6] dark:hover:bg-white text-white dark:text-[#111317] text-xs font-semibold"
+                    className="flex-1 py-2.5 px-3 rounded-full bg-[#0D2621] hover:bg-[#153B33] dark:bg-[#F4F4F6] dark:hover:bg-white text-white dark:text-[#111317] text-xs font-semibold"
                   >
                     {copy.reportFlooding}
                   </button>
@@ -451,7 +459,7 @@ export function DedicatedLoginPage({ initialPortal }: { initialPortal: 'citizen'
                     value={phone}
                     onChange={(e) => setPhone(e.target.value)}
                     placeholder={copy.enterPhone}
-                    className="w-full pl-12 pr-10 py-2.5 rounded-xl text-sm border border-[#EAECEF] dark:border-[#282C36] bg-[#FAFAFB] dark:bg-[#111317] text-[#111317] dark:text-[#F4F4F6] placeholder:text-[#9CA3AF] focus:outline-none focus:ring-2 focus:ring-[#111317] dark:focus:ring-[#F4F4F6]"
+                    className="w-full pl-12 pr-10 py-2.5 rounded-xl text-sm border border-[#EAECEF] dark:border-[#282C36] bg-[#FAFAFB] dark:bg-[#111317] text-[#111317] dark:text-[#F4F4F6] placeholder:text-[#9CA3AF] focus:outline-none focus:ring-2 focus:ring-[#0D2621] dark:focus:ring-[#F4F4F6]"
                   />
                   <Circle
                     size={15}
@@ -471,7 +479,7 @@ export function DedicatedLoginPage({ initialPortal }: { initialPortal: 'citizen'
                         value={address}
                         onChange={(e) => setAddress(e.target.value)}
                         placeholder={copy.quickAddress}
-                        className="w-full pl-10 pr-3.5 py-2.5 rounded-xl text-sm border border-[#EAECEF] dark:border-[#282C36] bg-[#FAFAFB] dark:bg-[#111317] text-[#111317] dark:text-[#F4F4F6] placeholder:text-[#9CA3AF] focus:outline-none focus:ring-2 focus:ring-[#111317] dark:focus:ring-[#F4F4F6]"
+                        className="w-full pl-10 pr-3.5 py-2.5 rounded-xl text-sm border border-[#EAECEF] dark:border-[#282C36] bg-[#FAFAFB] dark:bg-[#111317] text-[#111317] dark:text-[#F4F4F6] placeholder:text-[#9CA3AF] focus:outline-none focus:ring-2 focus:ring-[#0D2621] dark:focus:ring-[#F4F4F6]"
                       />
                     </div>
 
@@ -481,12 +489,12 @@ export function DedicatedLoginPage({ initialPortal }: { initialPortal: 'citizen'
                         value={name}
                         onChange={(e) => setName(e.target.value)}
                         placeholder={copy.yourNameOptional}
-                        className="w-full px-3 py-2 rounded-xl text-xs border border-[#EAECEF] dark:border-[#282C36] bg-[#FAFAFB] dark:bg-[#111317] text-[#111317] dark:text-[#F4F4F6] placeholder:text-[#9CA3AF] focus:outline-none focus:ring-2 focus:ring-[#111317] dark:focus:ring-[#F4F4F6]"
+                        className="w-full px-3 py-2 rounded-xl text-xs border border-[#EAECEF] dark:border-[#282C36] bg-[#FAFAFB] dark:bg-[#111317] text-[#111317] dark:text-[#F4F4F6] placeholder:text-[#9CA3AF] focus:outline-none focus:ring-2 focus:ring-[#0D2621] dark:focus:ring-[#F4F4F6]"
                       />
                       <select
                         value={wardNo}
                         onChange={(e) => setWardNo(e.target.value)}
-                        className="w-full px-3 py-2 rounded-xl text-xs border border-[#EAECEF] dark:border-[#282C36] bg-[#FAFAFB] dark:bg-[#111317] text-[#111317] dark:text-[#F4F4F6] focus:outline-none focus:ring-2 focus:ring-[#111317] dark:focus:ring-[#F4F4F6]"
+                        className="w-full px-3 py-2 rounded-xl text-xs border border-[#EAECEF] dark:border-[#282C36] bg-[#FAFAFB] dark:bg-[#111317] text-[#111317] dark:text-[#F4F4F6] focus:outline-none focus:ring-2 focus:ring-[#0D2621] dark:focus:ring-[#F4F4F6]"
                       >
                         <option value="">{copy.wardOptional}</option>
                         {Array.from({ length: 36 }, (_, idx) => idx + 1).map((w) => (
@@ -515,7 +523,7 @@ export function DedicatedLoginPage({ initialPortal }: { initialPortal: 'citizen'
 
                 <button
                   type="submit"
-                  className="w-full py-2.5 rounded-full bg-[#111317] hover:bg-[#23262F] dark:bg-[#F4F4F6] dark:hover:bg-white text-white dark:text-[#111317] text-sm font-semibold transition-colors shadow-xs"
+                  className="w-full py-2.5 rounded-full bg-[#0D2621] hover:bg-[#153B33] dark:bg-[#F4F4F6] dark:hover:bg-white text-white dark:text-[#111317] text-sm font-semibold transition-colors shadow-xs"
                 >
                   {citizenMode === 'signin' ? copy.signIn : copy.signUpContinue}
                 </button>
@@ -534,7 +542,7 @@ export function DedicatedLoginPage({ initialPortal }: { initialPortal: 'citizen'
                 <button
                   type="button"
                   onClick={() => setActiveView('dispatch')}
-                  className="flex-1 py-2.5 px-3 rounded-full bg-[#111317] hover:bg-[#23262F] dark:bg-[#F4F4F6] dark:hover:bg-white text-white dark:text-[#111317] text-xs font-semibold"
+                  className="flex-1 py-2.5 px-3 rounded-full bg-[#0D2621] hover:bg-[#153B33] dark:bg-[#F4F4F6] dark:hover:bg-white text-white dark:text-[#111317] text-xs font-semibold"
                 >
                   {copy.openActionQueue}
                 </button>
@@ -556,7 +564,7 @@ export function DedicatedLoginPage({ initialPortal }: { initialPortal: 'citizen'
                   onClick={() => setSelectedRole('ward_engineer')}
                   className={`py-1.5 px-3 rounded-full border text-xs font-semibold transition-colors ${
                     selectedRole === 'ward_engineer'
-                      ? 'border-transparent bg-[#111317] text-white dark:bg-[#F4F4F6] dark:text-[#111317]'
+                      ? 'border-transparent bg-[#0D2621] text-white dark:bg-[#F4F4F6] dark:text-[#111317]'
                       : 'border-[#EAECEF] dark:border-[#282C36] text-[#6B7280] dark:text-slate-300 hover:bg-[#F3F4F6] dark:hover:bg-[#23262F]'
                   }`}
                 >
@@ -567,7 +575,7 @@ export function DedicatedLoginPage({ initialPortal }: { initialPortal: 'citizen'
                   onClick={() => setSelectedRole('command_authority')}
                   className={`py-1.5 px-3 rounded-full border text-xs font-semibold transition-colors ${
                     selectedRole === 'command_authority'
-                      ? 'border-transparent bg-[#111317] text-white dark:bg-[#F4F4F6] dark:text-[#111317]'
+                      ? 'border-transparent bg-[#0D2621] text-white dark:bg-[#F4F4F6] dark:text-[#111317]'
                       : 'border-[#EAECEF] dark:border-[#282C36] text-[#6B7280] dark:text-slate-300 hover:bg-[#F3F4F6] dark:hover:bg-[#23262F]'
                   }`}
                 >
@@ -580,7 +588,7 @@ export function DedicatedLoginPage({ initialPortal }: { initialPortal: 'citizen'
                   value={department}
                   onChange={(e) => setDepartment(e.target.value as 'MCG' | 'GMDA' | 'NHAI')}
                   aria-label={copy.departmentAria}
-                  className="px-2.5 py-2 rounded-xl text-xs font-semibold border border-[#EAECEF] dark:border-[#282C36] bg-[#FAFAFB] dark:bg-[#111317] text-[#111317] dark:text-[#F4F4F6] focus:outline-none focus:ring-2 focus:ring-[#111317] dark:focus:ring-[#F4F4F6]"
+                  className="px-2.5 py-2 rounded-xl text-xs font-semibold border border-[#EAECEF] dark:border-[#282C36] bg-[#FAFAFB] dark:bg-[#111317] text-[#111317] dark:text-[#F4F4F6] focus:outline-none focus:ring-2 focus:ring-[#0D2621] dark:focus:ring-[#F4F4F6]"
                 >
                   <option value="MCG">MCG</option>
                   <option value="GMDA">GMDA</option>
@@ -591,7 +599,7 @@ export function DedicatedLoginPage({ initialPortal }: { initialPortal: 'citizen'
                   value={officerName}
                   onChange={(e) => setOfficerName(e.target.value)}
                   placeholder={copy.officerNameOptional}
-                  className="col-span-2 px-3 py-2 rounded-xl text-xs border border-[#EAECEF] dark:border-[#282C36] bg-[#FAFAFB] dark:bg-[#111317] text-[#111317] dark:text-[#F4F4F6] placeholder:text-[#9CA3AF] focus:outline-none focus:ring-2 focus:ring-[#111317] dark:focus:ring-[#F4F4F6]"
+                  className="col-span-2 px-3 py-2 rounded-xl text-xs border border-[#EAECEF] dark:border-[#282C36] bg-[#FAFAFB] dark:bg-[#111317] text-[#111317] dark:text-[#F4F4F6] placeholder:text-[#9CA3AF] focus:outline-none focus:ring-2 focus:ring-[#0D2621] dark:focus:ring-[#F4F4F6]"
                 />
               </div>
 
@@ -601,7 +609,7 @@ export function DedicatedLoginPage({ initialPortal }: { initialPortal: 'citizen'
                   value={employeeId}
                   onChange={(e) => setEmployeeId(e.target.value)}
                   placeholder={copy.enterEmployeeId}
-                  className="w-full px-3.5 pr-10 py-2.5 rounded-xl text-sm font-mono border border-[#EAECEF] dark:border-[#282C36] bg-[#FAFAFB] dark:bg-[#111317] text-[#111317] dark:text-[#F4F4F6] placeholder:font-sans placeholder:text-[#9CA3AF] focus:outline-none focus:ring-2 focus:ring-[#111317] dark:focus:ring-[#F4F4F6]"
+                  className="w-full px-3.5 pr-10 py-2.5 rounded-xl text-sm font-mono border border-[#EAECEF] dark:border-[#282C36] bg-[#FAFAFB] dark:bg-[#111317] text-[#111317] dark:text-[#F4F4F6] placeholder:font-sans placeholder:text-[#9CA3AF] focus:outline-none focus:ring-2 focus:ring-[#0D2621] dark:focus:ring-[#F4F4F6]"
                 />
                 <BadgeCheck
                   size={16}
@@ -615,7 +623,7 @@ export function DedicatedLoginPage({ initialPortal }: { initialPortal: 'citizen'
                   value={passcode}
                   onChange={(e) => setPasscode(e.target.value)}
                   placeholder={copy.passcodePlaceholder}
-                  className="w-full px-3.5 pr-14 py-2.5 rounded-xl text-sm border border-[#EAECEF] dark:border-[#282C36] bg-[#FAFAFB] dark:bg-[#111317] text-[#111317] dark:text-[#F4F4F6] placeholder:text-[#9CA3AF] focus:outline-none focus:ring-2 focus:ring-[#111317] dark:focus:ring-[#F4F4F6]"
+                  className="w-full px-3.5 pr-14 py-2.5 rounded-xl text-sm border border-[#EAECEF] dark:border-[#282C36] bg-[#FAFAFB] dark:bg-[#111317] text-[#111317] dark:text-[#F4F4F6] placeholder:text-[#9CA3AF] focus:outline-none focus:ring-2 focus:ring-[#0D2621] dark:focus:ring-[#F4F4F6]"
                 />
                 <button
                   type="button"
@@ -656,7 +664,7 @@ export function DedicatedLoginPage({ initialPortal }: { initialPortal: 'citizen'
 
               <button
                 type="submit"
-                className="w-full py-2.5 rounded-full bg-[#111317] hover:bg-[#23262F] dark:bg-[#F4F4F6] dark:hover:bg-white text-white dark:text-[#111317] text-sm font-semibold transition-colors shadow-xs"
+                className="w-full py-2.5 rounded-full bg-[#0D2621] hover:bg-[#153B33] dark:bg-[#F4F4F6] dark:hover:bg-white text-white dark:text-[#111317] text-sm font-semibold transition-colors shadow-xs"
               >
                 {copy.signIn}
               </button>
@@ -677,7 +685,7 @@ export function DedicatedLoginPage({ initialPortal }: { initialPortal: 'citizen'
                 onClick={() => setActiveView('citizen-login')}
                 className={`py-2 px-3 rounded-full border text-xs font-semibold flex items-center justify-center gap-1.5 transition-colors ${
                   portal === 'citizen'
-                    ? 'border-[#111317] dark:border-[#F4F4F6] bg-[#FAFAFB] dark:bg-[#23262F] text-[#111317] dark:text-[#F4F4F6]'
+                    ? 'border-[#0D2621] dark:border-[#F4F4F6] bg-[#FAFAFB] dark:bg-[#23262F] text-[#0D2621] dark:text-[#F4F4F6]'
                     : 'border-[#EAECEF] dark:border-[#282C36] text-[#6B7280] dark:text-slate-300 hover:bg-[#F3F4F6] dark:hover:bg-[#23262F]'
                 }`}
               >
@@ -690,7 +698,7 @@ export function DedicatedLoginPage({ initialPortal }: { initialPortal: 'citizen'
                 onClick={() => setActiveView('authority-login')}
                 className={`py-2 px-3 rounded-full border text-xs font-semibold flex items-center justify-center gap-1.5 transition-colors ${
                   portal === 'authority'
-                    ? 'border-[#111317] dark:border-[#F4F4F6] bg-[#FAFAFB] dark:bg-[#23262F] text-[#111317] dark:text-[#F4F4F6]'
+                    ? 'border-[#0D2621] dark:border-[#F4F4F6] bg-[#FAFAFB] dark:bg-[#23262F] text-[#0D2621] dark:text-[#F4F4F6]'
                     : 'border-[#EAECEF] dark:border-[#282C36] text-[#6B7280] dark:text-slate-300 hover:bg-[#F3F4F6] dark:hover:bg-[#23262F]'
                 }`}
               >
@@ -733,7 +741,9 @@ export function DedicatedLoginPage({ initialPortal }: { initialPortal: 'citizen'
       {/* Footer with legible frosted pill */}
       <footer className="relative z-10 py-2.5 flex justify-center px-4 shrink-0">
         <div className="inline-flex flex-wrap items-center justify-center gap-x-2.5 gap-y-1 rounded-full bg-white/90 dark:bg-[#16191F]/90 backdrop-blur-md px-4 py-1 text-[11px] text-[#6B7280] dark:text-slate-300 border border-[#E6E7EC] dark:border-[#242832] shadow-xs">
-          <span>{t('app.name', lang)}</span>
+          <span className="font-semibold text-[#111317] dark:text-[#F4F4F6]">
+            {t('app.name', lang)} · {t('app.tagline', lang)}
+          </span>
           <span className="text-[#D1D5DB] dark:text-slate-600">|</span>
           <button
             type="button"
